@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}VegListings{% endblock %}</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <nav class="bg-green-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="/" class="text-xl font-bold hover:text-green-200">🌱 VegListings</a>
+            <div class="space-x-4">
+                <a href="/" class="hover:text-green-200">Home</a>
+                <a href="/listings" class="hover:text-green-200">Browse</a>
+                <a href="/create" class="hover:text-green-200">Post Listing</a>
+            </div>
+        </div>
+    </nav>
+    
+    <main class="container mx-auto p-4">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
