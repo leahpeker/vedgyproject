@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-8">
+    <div class="bg-white p-8 rounded-lg shadow">
+        <h2 class="text-2xl font-bold mb-6 text-center">Sign In</h2>
+        
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-4">
+                {{ form.email.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                {{ form.email(class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent") }}
+                {% if form.email.errors %}
+                    <div class="text-red-600 text-sm mt-1">{{ form.email.errors[0] }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="mb-6">
+                {{ form.password.label(class="block text-sm font-medium text-gray-700 mb-1") }}
+                {{ form.password(class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent") }}
+                {% if form.password.errors %}
+                    <div class="text-red-600 text-sm mt-1">{{ form.password.errors[0] }}</div>
+                {% endif %}
+            </div>
+            
+            {{ form.submit(class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 font-medium") }}
+        </form>
+        
+        <p class="mt-4 text-center text-sm text-gray-600">
+            Don't have an account? <a href="/signup" class="text-green-600 hover:text-green-800">Sign up</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -6,6 +6,7 @@
     <title>{% block title %}VegListings{% endblock %}</title>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gray-50 min-h-screen">
     <nav class="bg-green-600 text-white p-4">
@@ -14,7 +15,18 @@
             <div class="space-x-4">
                 <a href="/" class="hover:text-green-200">Home</a>
                 <a href="/listings" class="hover:text-green-200">Browse</a>
-                <a href="/create" class="hover:text-green-200">Post Listing</a>
+                {% if current_user.is_authenticated %}
+                    {% if current_user.has_paid_account() %}
+                        <a href="/create" class="hover:text-green-200">Post Listing</a>
+                    {% else %}
+                        <a href="/upgrade" class="hover:text-green-200">Upgrade to Post</a>
+                    {% endif %}
+                    <span class="text-green-200">Hi, {{ current_user.first_name }}!</span>
+                    <a href="/logout" class="hover:text-green-200">Logout</a>
+                {% else %}
+                    <a href="/login" class="hover:text-green-200">Login</a>
+                    <a href="/signup" class="hover:text-green-200">Sign Up</a>
+                {% endif %}
             </div>
         </div>
     </nav>

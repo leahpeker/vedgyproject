@@ -1,68 +1,219 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto">
+<div class="max-w-4xl mx-auto">
     <h1 class="text-2xl font-bold mb-6">Create New Listing</h1>
     
-    <form method="POST" class="bg-white p-6 rounded-lg shadow space-y-4">
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-            <input type="text" name="title" required 
-                   class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                   placeholder="Cozy room in vegan-friendly house">
-        </div>
+    <form method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded-lg shadow">
         
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-            <textarea name="description" required rows="4"
-                      class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                      placeholder="Describe your space, lifestyle, and what you're looking for..."></textarea>
+        <!-- Basic Information -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Basic Information</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                    <input type="text" name="title" required 
+                           class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                           placeholder="Cozy room in vegan-friendly house">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                    <textarea name="description" required rows="4"
+                              class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                              placeholder="Describe your space, lifestyle, and what you're looking for..."></textarea>
+                </div>
+            </div>
         </div>
-        
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Location</label>
-            <input type="text" name="location" required 
-                   class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                   placeholder="City, Neighborhood">
+
+        <!-- Location -->
+        <div class="mb-8" x-data="{ 
+            city: '', 
+            borough: '',
+            get isNYC() { return this.city === 'New York'; },
+            get neighborhoodPlaceholder() {
+                if (this.city === 'New York') return 'e.g. Williamsburg, SoHo, Park Slope';
+                if (this.city === 'Los Angeles') return 'e.g. Venice, Hollywood, Santa Monica';
+                if (this.city === 'Chicago') return 'e.g. Lincoln Park, Wicker Park, River North';
+                return 'e.g. Neighborhood or area';
+            }
+        }" x-init="$watch('city', value => { if (value !== 'New York') borough = ''; })">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Location</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">City *</label>
+                    <select name="city" x-model="city" required 
+                            class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="">Select city...</option>
+                        <option value="New York">New York</option>
+                        <option value="Los Angeles">Los Angeles</option>
+                        <option value="Chicago">Chicago</option>
+                    </select>
+                </div>
+                
+                <div x-show="isNYC" x-transition>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Borough *</label>
+                    <select name="borough" x-model="borough" :required="isNYC"
+                            class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="">Select borough...</option>
+                        <option value="Manhattan">Manhattan</option>
+                        <option value="Brooklyn">Brooklyn</option>
+                        <option value="Queens">Queens</option>
+                        <option value="Bronx">Bronx</option>
+                        <option value="Staten Island">Staten Island</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Neighborhood</label>
+                    <input type="text" name="neighborhood" 
+                           :placeholder="neighborhoodPlaceholder"
+                           class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                </div>
+            </div>
         </div>
-        
-        <div class="grid md:grid-cols-2 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Rental Type</label>
-                <select name="rental_type" required 
-                        class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                    <option value="">Select type...</option>
-                    <option value="sublet">Sublet</option>
-                    <option value="new_lease">New Lease</option>
-                    <option value="month_to_month">Month to Month</option>
-                </select>
+
+        <!-- Rental Details -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Rental Details</h2>
+            
+            <div class="grid md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Rental Type *</label>
+                    <select name="rental_type" required 
+                            class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="">Select type...</option>
+                        <option value="sublet">Sublet</option>
+                        <option value="new_lease">New Lease</option>
+                        <option value="month_to_month">Month to Month</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Room Type *</label>
+                    <select name="room_type" required 
+                            class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="">Select type...</option>
+                        <option value="private_room">Private Room</option>
+                        <option value="shared_room">Shared Room</option>
+                        <option value="entire_place">Entire Place</option>
+                    </select>
+                </div>
             </div>
             
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Room Type</label>
-                <select name="room_type" required 
-                        class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                    <option value="">Select type...</option>
-                    <option value="private_room">Private Room</option>
-                    <option value="shared_room">Shared Room</option>
-                    <option value="entire_place">Entire Place</option>
-                </select>
+            <div class="grid md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Monthly Rent ($) *</label>
+                    <input type="number" name="price" required min="0" step="1"
+                           class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                           placeholder="1200">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Available Date *</label>
+                    <input type="date" name="date_available" required
+                           class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">End Date <span class="text-gray-500">(optional)</span></label>
+                    <input type="date" name="date_until"
+                           class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Size <span class="text-gray-500">(optional)</span></label>
+                    <input type="text" name="size" 
+                           class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                           placeholder="e.g. 12x10 feet, 200 sq ft">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Transportation <span class="text-gray-500">(optional)</span></label>
+                    <input type="text" name="transportation" 
+                           class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                           placeholder="e.g. Near L train, Bus route 42">
+                </div>
             </div>
         </div>
-        
-        <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Monthly Rent ($)</label>
-            <input type="number" name="price" required min="0" step="1"
-                   class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                   placeholder="1200">
+
+        <!-- About You -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">About You</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">About You as the Lister *</label>
+                    <textarea name="about_lister" required rows="3"
+                              class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                              placeholder="Tell potential tenants about yourself, your lifestyle, interests, etc."></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Your Relationship to This Space *</label>
+                    <select name="lister_relationship" required 
+                            class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="">Select...</option>
+                        <option value="owner">I own the space</option>
+                        <option value="manager">I manage the space</option>
+                        <option value="tenant">I am the current tenant</option>
+                        <option value="roommate">I am a current roommate</option>
+                        <option value="agent">I am a rental agent/broker</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
         </div>
-        
-        <div class="flex items-center">
-            <input type="checkbox" name="seeking_roommate" id="seeking_roommate" 
-                   class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
-            <label for="seeking_roommate" class="ml-2 block text-sm text-gray-700">
-                I am seeking a roommate
-            </label>
+
+        <!-- Requirements -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Rental Requirements</h2>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Requirements for Potential Tenants *</label>
+                <textarea name="rental_requirements" required rows="4"
+                          class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                          placeholder="What are you looking for in a tenant? Any specific requirements, preferences, or deal-breakers?"></textarea>
+            </div>
+        </div>
+
+        <!-- Photos -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Photos</h2>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Photos</label>
+                <input type="file" name="photos" multiple accept="image/*"
+                       class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                <p class="text-sm text-gray-500 mt-1">Upload up to 5 photos. First photo will be the main photo.</p>
+            </div>
+        </div>
+
+        <!-- Options -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Additional Options</h2>
+            
+            <div class="space-y-3">
+                <div class="flex items-center">
+                    <input type="checkbox" name="seeking_roommate" id="seeking_roommate" 
+                           class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                    <label for="seeking_roommate" class="ml-2 block text-sm text-gray-700">
+                        I am seeking a roommate (not just a tenant)
+                    </label>
+                </div>
+                
+                <div class="flex items-center">
+                    <input type="checkbox" name="include_phone" id="include_phone" 
+                           class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                    <label for="include_phone" class="ml-2 block text-sm text-gray-700">
+                        Include my phone number in contact information
+                    </label>
+                </div>
+            </div>
         </div>
         
         <div class="flex space-x-4">

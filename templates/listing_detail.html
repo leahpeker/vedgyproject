@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <!-- Header with price and basic info -->
+        <div class="p-6 border-b">
+            <div class="flex justify-between items-start mb-4">
+                <h1 class="text-3xl font-bold text-gray-800">{{ listing.title }}</h1>
+                <div class="text-right">
+                    <div class="text-3xl font-bold text-green-600">${{ listing.price }}/mo</div>
+                    <div class="text-sm text-gray-500">Monthly rent</div>
+                </div>
+            </div>
+            
+            <div class="flex items-center text-gray-600 mb-4">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                </svg>
+                {{ listing.location }}
+            </div>
+            
+            <div class="flex flex-wrap gap-2">
+                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+                    {{ listing.rental_type.replace('_', ' ').title() }}
+                </span>
+                <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                    {{ listing.room_type.replace('_', ' ').title() }}
+                </span>
+                {% if listing.seeking_roommate %}
+                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                    Seeking Roommate
+                </span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Photos -->
+        {% if listing.photos %}
+        <div class="relative bg-gray-100 p-4">
+            <div class="max-w-2xl mx-auto">
+                <div class="relative bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center" style="height: 600px;">
+                    {% for photo in listing.photos %}
+                    <img id="photo-{{ loop.index0 }}" 
+                         src="{{ url_for('static', filename='uploads/' + photo.filename) }}" 
+                         alt="{{ listing.title }}" 
+                         class="w-full h-full object-contain absolute top-0 left-0 transition-opacity duration-300 {% if loop.index0 == 0 %}opacity-100{% else %}opacity-0{% endif %}">
+                    {% endfor %}
+                    
+                    {% if listing.photos|length > 1 %}
+                    <!-- Navigation arrows -->
+                    <button id="prev-btn" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75">
+                        ‹
+                    </button>
+                    <button id="next-btn" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white p-2 rounded-full hover:bg-opacity-75">
+                        ›
+                    </button>
+                    
+                    <!-- Photo counter -->
+                    <div class="absolute bottom-4 right-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
+                        <span id="current-photo">1</span> / {{ listing.photos|length }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if listing.photos|length > 1 %}
+                <!-- Thumbnail navigation -->
+                <div class="mt-4 flex justify-center gap-2 overflow-x-auto">
+                    {% for photo in listing.photos %}
+                    <img class="w-16 h-16 object-cover rounded cursor-pointer border-2 {% if loop.index0 == 0 %}border-green-500{% else %}border-transparent{% endif %} hover:border-green-300 flex-shrink-0" 
+                         src="{{ url_for('static', filename='uploads/' + photo.filename) }}" 
+                         alt="{{ listing.title }}"
+                         onclick="showPhoto({{ loop.index0 }})">
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <script>
+            let currentPhotoIndex = 0;
+            const totalPhotos = {{ listing.photos|length }};
+            
+            function showPhoto(index) {
+                // Hide current photo
+                document.getElementById('photo-' + currentPhotoIndex).classList.add('opacity-0');
+                document.getElementById('photo-' + currentPhotoIndex).classList.remove('opacity-100');
+                
+                // Update thumbnails
+                const thumbnails = document.querySelectorAll('.cursor-pointer');
+                thumbnails[currentPhotoIndex].classList.remove('border-green-500');
+                thumbnails[currentPhotoIndex].classList.add('border-transparent');
+                
+                // Show new photo
+                currentPhotoIndex = index;
+                document.getElementById('photo-' + currentPhotoIndex).classList.remove('opacity-0');
+                document.getElementById('photo-' + currentPhotoIndex).classList.add('opacity-100');
+                
+                // Update thumbnails
+                thumbnails[currentPhotoIndex].classList.add('border-green-500');
+                thumbnails[currentPhotoIndex].classList.remove('border-transparent');
+                
+                // Update counter
+                document.getElementById('current-photo').textContent = currentPhotoIndex + 1;
+            }
+            
+            {% if listing.photos|length > 1 %}
+            document.getElementById('prev-btn').addEventListener('click', function() {
+                const prevIndex = currentPhotoIndex === 0 ? totalPhotos - 1 : currentPhotoIndex - 1;
+                showPhoto(prevIndex);
+            });
+            
+            document.getElementById('next-btn').addEventListener('click', function() {
+                const nextIndex = currentPhotoIndex === totalPhotos - 1 ? 0 : currentPhotoIndex + 1;
+                showPhoto(nextIndex);
+            });
+            {% endif %}
+        </script>
+        {% endif %}
+        
+        <script>
+        function copyEmail(email) {
+            navigator.clipboard.writeText(email).then(function() {
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                button.classList.add('bg-green-600');
+                
+                setTimeout(function() {
+                    button.textContent = originalText;
+                    button.classList.remove('bg-green-600');
+                    button.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                }, 2000);
+            });
+        }
+        
+        function toggleContactInfo() {
+            const info = document.getElementById('contact-info');
+            info.classList.toggle('hidden');
+        }
+        </script>
+        
+        <!-- Main content -->
+        <div class="p-6">
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Description -->
+                <div class="md:col-span-2">
+                    <h2 class="text-xl font-semibold mb-4">Description</h2>
+                    <div class="prose max-w-none">
+                        <p class="text-gray-700 leading-relaxed whitespace-pre-line">{{ listing.description }}</p>
+                    </div>
+                </div>
+                
+                <!-- Sidebar with details -->
+                <div class="space-y-6">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold mb-3">Details</h3>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Rental Type:</span>
+                                <span class="font-medium">{{ listing.rental_type.replace('_', ' ').title() }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Room Type:</span>
+                                <span class="font-medium">{{ listing.room_type.replace('_', ' ').title() }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Looking for Roommate:</span>
+                                <span class="font-medium">{{ 'Yes' if listing.seeking_roommate else 'No' }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Posted:</span>
+                                <span class="font-medium">{{ listing.created_at.strftime('%B %d, %Y') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold mb-3">Posted By</h3>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                <span class="text-green-600 font-semibold">{{ listing.user.first_name[0].upper() }}</span>
+                            </div>
+                            <div>
+                                <div class="font-medium">{{ listing.user.first_name }} {{ listing.user.last_name[0].upper() }}.</div>
+                                <div class="text-sm text-gray-500">Member since {{ listing.user.created_at.strftime('%B %Y') }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact section -->
+                    {% if current_user.is_authenticated %}
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <h4 class="font-semibold mb-2">📧 Contact Listing Owner</h4>
+                            <a href="mailto:{{ listing.get_masked_email() }}" class="text-blue-800 font-mono text-sm hover:text-blue-600 cursor-pointer break-all">
+                                {{ listing.get_masked_email() }}
+                            </a>
+                            <button onclick="copyEmail('{{ listing.get_masked_email() }}')" class="block text-sm text-blue-600 hover:text-blue-800 mt-1">
+                                Click to copy email address
+                            </button>
+                            <p class="text-sm text-gray-600 mt-2">This masked email forwards to the listing owner</p>
+                        </div>
+                    {% else %}
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                            <h4 class="font-semibold text-yellow-800 mb-2">🔒 Contact Listing Owner</h4>
+                            <p class="text-yellow-700 mb-3">Sign in to contact listing owners</p>
+                            <a href="/login" class="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 font-medium transition-colors inline-block text-center">
+                                Sign In to Contact
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Back to listings -->
+    <div class="mt-6">
+        <a href="/listings" class="text-green-600 hover:text-green-800 font-medium">
+            ← Back to all listings
+        </a>
+    </div>
+</div>
+{% endblock %}
