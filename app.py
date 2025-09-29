@@ -12,6 +12,7 @@ import hashlib
 import requests
 import hmac
 import json
+import uuid
 from datetime import datetime
 from enum import Enum
 from PIL import Image
@@ -47,6 +48,12 @@ class ListerRelationship(Enum):
             (cls.AGENT.value, 'I am a rental agent/broker'),
             (cls.OTHER.value, 'Other')
         ]
+    
+    @classmethod
+    def get_display_text(cls, value):
+        """Get the human-readable display text for a relationship value"""
+        choices_dict = dict(cls.choices())
+        return choices_dict.get(value, value)
 
 class NYCBorough(Enum):
     MANHATTAN = 'Manhattan'
@@ -64,6 +71,42 @@ class NYCBorough(Enum):
             (cls.BRONX.value, 'Bronx'),
             (cls.STATEN_ISLAND.value, 'Staten Island')
         ]
+
+class FurnishedStatus(Enum):
+    NOT_FURNISHED = 'not_furnished'
+    PARTIALLY_FURNISHED = 'partially_furnished'
+    FULLY_FURNISHED = 'fully_furnished'
+    
+    @classmethod
+    def choices(cls):
+        return [
+            (cls.NOT_FURNISHED.value, 'Not furnished'),
+            (cls.PARTIALLY_FURNISHED.value, 'Partially furnished'),
+            (cls.FULLY_FURNISHED.value, 'Fully furnished')
+        ]
+    
+    @classmethod
+    def get_display_text(cls, value):
+        """Get the human-readable display text for furnished status"""
+        choices_dict = dict(cls.choices())
+        return choices_dict.get(value, value)
+
+class VeganHouseholdType(Enum):
+    FULLY_VEGAN = 'fully_vegan'
+    MIXED_HOUSEHOLD = 'mixed_household'
+    
+    @classmethod
+    def choices(cls):
+        return [
+            (cls.FULLY_VEGAN.value, 'Fully vegan household'),
+            (cls.MIXED_HOUSEHOLD.value, 'Mixed household')
+        ]
+    
+    @classmethod
+    def get_display_text(cls, value):
+        """Get the human-readable display text for vegan household type"""
+        choices_dict = dict(cls.choices())
+        return choices_dict.get(value, value)
 
 def get_major_cities():
     """Get list of major US cities - starting simple with just 3 cities"""
@@ -91,10 +134,10 @@ login_manager.login_message_category = 'info'
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    return User.query.get(user_id)
 
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -155,7 +198,7 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Sign In')
 
 class Listing(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     title = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=False)
     city = db.Column(db.String(100), nullable=False)
@@ -171,12 +214,16 @@ class Listing(db.Model):
     date_until = db.Column(db.Date, nullable=True)  # Optional end date for sublets
     transportation = db.Column(db.Text, nullable=True)  # Transportation options/details
     size = db.Column(db.String(50), nullable=True)  # Room/space size
+    furnished = db.Column(db.String(30), nullable=False)  # not_furnished, partially_furnished, fully_furnished
+    vegan_household = db.Column(db.String(30), nullable=False)  # fully_vegan, mixed_household
     about_lister = db.Column(db.Text, nullable=False)  # About the person posting
     lister_relationship = db.Column(db.String(30), nullable=False)  # owner, manager, tenant, etc.
     rental_requirements = db.Column(db.Text, nullable=False)  # Requirements for renters
+    pet_policy = db.Column(db.Text, nullable=False) 
+    phone_number = db.Column(db.Text, nullable=False) 
     include_phone = db.Column(db.Boolean, default=False, nullable=False)  # Whether to show phone in contact
     
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     
     photos = db.relationship('ListingPhoto', backref='listing', lazy=True, cascade='all, delete-orphan')
@@ -188,11 +235,23 @@ class Listing(db.Model):
         """Generate a masked email address for this listing"""
         listing_hash = hashlib.md5(f"listing_{self.id}_{self.created_at}".encode()).hexdigest()[:8]
         return f"listing-{listing_hash}@veglistings.com"
+    
+    def get_lister_relationship_display(self):
+        """Get the human-readable display text for lister relationship"""
+        return ListerRelationship.get_display_text(self.lister_relationship)
+    
+    def get_furnished_display(self):
+        """Get the human-readable display text for furnished status"""
+        return FurnishedStatus.get_display_text(self.furnished)
+    
+    def get_vegan_household_display(self):
+        """Get the human-readable display text for vegan household type"""
+        return VeganHouseholdType.get_display_text(self.vegan_household)
 
 class ListingPhoto(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     filename = db.Column(db.String(100), nullable=False)
-    listing_id = db.Column(db.Integer, db.ForeignKey('listing.id'), nullable=False)
+    listing_id = db.Column(db.String(36), db.ForeignKey('listing.id'), nullable=False)
     is_primary = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
@@ -224,6 +283,9 @@ def listings():
     room_type = request.args.get('room_type')
     seeking_roommate = request.args.get('seeking_roommate')
     city_search = request.args.get('city')
+    borough_search = request.args.get('borough')
+    furnished = request.args.get('furnished')
+    vegan_household = request.args.get('vegan_household')
     min_price = request.args.get('min_price')
     max_price = request.args.get('max_price')
     
@@ -239,6 +301,15 @@ def listings():
     if city_search:
         # City search - exact match or partial
         query = query.filter(Listing.city.ilike(f'%{city_search}%'))
+    if borough_search:
+        # Borough search - exact match
+        query = query.filter(Listing.borough == borough_search)
+    if furnished:
+        # Furnished status - exact match
+        query = query.filter(Listing.furnished == furnished)
+    if vegan_household:
+        # Vegan household type - exact match
+        query = query.filter(Listing.vegan_household == vegan_household)
     if min_price:
         query = query.filter(Listing.price >= int(min_price))
     if max_price:
@@ -267,8 +338,14 @@ def signup():
         user.set_password(form.password.data)
         db.session.add(user)
         db.session.commit()
-        flash('Registration successful! Please log in.', 'success')
-        return redirect(url_for('login'))
+        
+        # Automatically log in the user after signup
+        login_user(user)
+        flash(f'Welcome to VegListings, {user.first_name}!', 'success')
+        
+        # Redirect to next page or index
+        next_page = request.args.get('next')
+        return redirect(next_page) if next_page else redirect(url_for('index'))
     
     return render_template('signup.html', form=form)
 
@@ -302,7 +379,7 @@ def create_listing():
     # Check if user has paid account
     if not current_user.has_paid_account():
         flash('You need a paid membership to post listings. Please upgrade your account.', 'warning')
-        return redirect(url_for('upgrade'))
+        return redirect(url_for('upgrade', next=url_for('create_listing')))
     if request.method == 'POST':
         from datetime import datetime
         
@@ -326,9 +403,13 @@ def create_listing():
             date_until=date_until,
             transportation=request.form.get('transportation', ''),
             size=request.form.get('size', ''),
+            furnished=request.form['furnished'],
+            vegan_household=request.form['vegan_household'],
             about_lister=request.form['about_lister'],
             lister_relationship=request.form['lister_relationship'],
             rental_requirements=request.form['rental_requirements'],
+            pet_policy=request.form['pet_policy'],
+            phone_number=request.form.get('phone_number', ''),
             include_phone='include_phone' in request.form,
             user_id=current_user.id
         )
@@ -363,7 +444,9 @@ def listing_detail(listing_id):
 @login_required
 def upgrade():
     """Show upgrade to paid account page with Paddle checkout"""
-    return render_template('upgrade.html', user=current_user)
+    # Store the referring page for redirect after upgrade
+    next_page = request.args.get('next', request.referrer)
+    return render_template('upgrade.html', user=current_user, next_page=next_page)
 
 @app.route('/paddle/checkout')
 @login_required

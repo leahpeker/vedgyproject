@@ -79,6 +79,17 @@
         <div class="mb-8">
             <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Rental Details</h2>
             
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Household Type *</label>
+                <select name="vegan_household" required 
+                        class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <option value="">Select household type...</option>
+                    <option value="fully_vegan">Fully vegan household</option>
+                    <option value="mixed_household">Mixed household</option>
+                </select>
+                <p class="text-sm text-gray-500 mt-1">Are all household members vegan?</p>
+            </div>
+            
             <div class="grid md:grid-cols-2 gap-4 mb-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Rental Type *</label>
@@ -124,12 +135,23 @@
                 </div>
             </div>
             
-            <div class="grid md:grid-cols-2 gap-4">
+            <div class="grid md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Size <span class="text-gray-500">(optional)</span></label>
                     <input type="text" name="size" 
                            class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
                            placeholder="e.g. 12x10 feet, 200 sq ft">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Furnished Status *</label>
+                    <select name="furnished" required 
+                            class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="">Select...</option>
+                        <option value="not_furnished">Not furnished</option>
+                        <option value="partially_furnished">Partially furnished</option>
+                        <option value="fully_furnished">Fully furnished</option>
+                    </select>
                 </div>
                 
                 <div>
@@ -173,11 +195,20 @@
         <div class="mb-8">
             <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Rental Requirements</h2>
             
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Requirements for Potential Tenants *</label>
-                <textarea name="rental_requirements" required rows="4"
-                          class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                          placeholder="What are you looking for in a tenant? Any specific requirements, preferences, or deal-breakers?"></textarea>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Requirements for Potential Tenants *</label>
+                    <textarea name="rental_requirements" required rows="4"
+                              class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                              placeholder="What are you looking for in a tenant? Any specific requirements, preferences, or deal-breakers?"></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pet Policy *</label>
+                    <textarea name="pet_policy" required rows="2"
+                              class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                              placeholder="e.g. No pets allowed, Cats ok, Dogs with approval, etc."></textarea>
+                </div>
             </div>
         </div>
 
@@ -194,10 +225,10 @@
         </div>
 
         <!-- Options -->
-        <div class="mb-8">
+        <div class="mb-8" x-data="{ includePhone: false }">
             <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Additional Options</h2>
             
-            <div class="space-y-3">
+            <div class="space-y-4">
                 <div class="flex items-center">
                     <input type="checkbox" name="seeking_roommate" id="seeking_roommate" 
                            class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
@@ -206,12 +237,27 @@
                     </label>
                 </div>
                 
-                <div class="flex items-center">
-                    <input type="checkbox" name="include_phone" id="include_phone" 
-                           class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
-                    <label for="include_phone" class="ml-2 block text-sm text-gray-700">
-                        Include my phone number in contact information
-                    </label>
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <input type="checkbox" name="include_phone" id="include_phone" x-model="includePhone"
+                               class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                        <label for="include_phone" class="ml-2 block text-sm text-gray-700">
+                            Include my phone number in contact information
+                        </label>
+                    </div>
+                    
+                    <div x-show="includePhone" x-transition class="ml-6" x-data="{ phone: '' }">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                        <input type="tel" name="phone_number" :required="includePhone"
+                               pattern="^\(\d{3}\) \d{3}-\d{4}$"
+                               title="Please enter a valid US phone number in format: (555) 123-4567"
+                               class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                               placeholder="(555) 123-4567"
+                               x-model="phone"
+                               @input="phone = formatPhoneNumber($event.target.value)"
+                               maxlength="14">
+                        <p class="text-sm text-gray-500 mt-1">Format: (555) 123-4567</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -228,4 +274,30 @@
         </div>
     </form>
 </div>
+
+<script>
+function formatPhoneNumber(value) {
+    // Remove all non-digits
+    const phoneNumber = value.replace(/\D/g, '');
+    
+    // Don't format if empty
+    if (!phoneNumber) return '';
+    
+    // Limit to 10 digits
+    const limitedNumber = phoneNumber.slice(0, 10);
+    
+    // Format as (XXX) XXX-XXXX
+    if (limitedNumber.length <= 3) {
+        return limitedNumber;
+    } else if (limitedNumber.length <= 6) {
+        return `(${limitedNumber.slice(0, 3)}) ${limitedNumber.slice(3)}`;
+    } else {
+        return `(${limitedNumber.slice(0, 3)}) ${limitedNumber.slice(3, 6)}-${limitedNumber.slice(6)}`;
+    }
+}
+
+// Make function globally available for Alpine.js
+window.formatPhoneNumber = formatPhoneNumber;
+</script>
+
 {% endblock %}

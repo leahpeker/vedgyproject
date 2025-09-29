@@ -217,8 +217,10 @@ function simulateSuccessfulSubscription() {
         })
     })
     .then(() => {
-        alert('Demo subscription activated! Refresh the page to see changes.');
-        window.location.reload();
+        alert('Demo subscription activated!');
+        // Redirect to the page that sent us here, or to create listing
+        const nextPage = '{{ next_page }}' || '/create';
+        window.location.href = nextPage;
     });
 }
 

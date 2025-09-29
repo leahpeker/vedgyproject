@@ -17,7 +17,7 @@
                 <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
                 </svg>
-                {{ listing.location }}
+                {{ listing.city }}{% if listing.borough %}, {{ listing.borough }}{% endif %}{% if listing.neighborhood %} - {{ listing.neighborhood }}{% endif %}
             </div>
             
             <div class="flex flex-wrap gap-2">
@@ -26,6 +26,9 @@
                 </span>
                 <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
                     {{ listing.room_type.replace('_', ' ').title() }}
+                </span>
+                <span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm font-medium">
+                    {{ listing.get_vegan_household_display() }}
                 </span>
                 {% if listing.seeking_roommate %}
                 <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -145,18 +148,51 @@
         <div class="p-6">
             <div class="grid md:grid-cols-3 gap-8">
                 <!-- Description -->
-                <div class="md:col-span-2">
-                    <h2 class="text-xl font-semibold mb-4">Description</h2>
-                    <div class="prose max-w-none">
-                        <p class="text-gray-700 leading-relaxed whitespace-pre-line">{{ listing.description }}</p>
+                <div class="md:col-span-2 space-y-8">
+                    <!-- Description -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-3">Description</h3>
+                        <p class="text-gray-700 whitespace-pre-line">{{ listing.description }}</p>
+                    </div>
+                    
+                    <!-- About the Lister -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-3">About the Lister</h3>
+                        <p class="text-gray-700 mb-3 whitespace-pre-line">{{ listing.about_lister }}</p>
+                        <p class="text-sm text-gray-500">
+                            <strong>Relationship to space:</strong> {{ listing.get_lister_relationship_display() }}
+                        </p>
+                    </div>
+                    
+                    <!-- Requirements -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-3">Requirements & Preferences</h3>
+                        <p class="text-gray-700 whitespace-pre-line">{{ listing.rental_requirements }}</p>
+                    </div>
+                    
+                    <!-- Pet Policy -->
+                    <div class="bg-white border border-gray-200 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold mb-3">Pet Policy</h3>
+                        <p class="text-gray-700 whitespace-pre-line">{{ listing.pet_policy }}</p>
                     </div>
                 </div>
                 
                 <!-- Sidebar with details -->
                 <div class="space-y-6">
+                    <!-- Basic Details -->
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <h3 class="font-semibold mb-3">Details</h3>
                         <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Available:</span>
+                                <span class="font-medium">{{ listing.date_available.strftime('%B %d, %Y') }}</span>
+                            </div>
+                            {% if listing.date_until %}
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Until:</span>
+                                <span class="font-medium">{{ listing.date_until.strftime('%B %d, %Y') }}</span>
+                            </div>
+                            {% endif %}
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Rental Type:</span>
                                 <span class="font-medium">{{ listing.rental_type.replace('_', ' ').title() }}</span>
@@ -165,8 +201,22 @@
                                 <span class="text-gray-600">Room Type:</span>
                                 <span class="font-medium">{{ listing.room_type.replace('_', ' ').title() }}</span>
                             </div>
+                            {% if listing.size %}
                             <div class="flex justify-between">
-                                <span class="text-gray-600">Looking for Roommate:</span>
+                                <span class="text-gray-600">Size:</span>
+                                <span class="font-medium">{{ listing.size }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Furnished:</span>
+                                <span class="font-medium">{{ listing.get_furnished_display() }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Household Type:</span>
+                                <span class="font-medium">{{ listing.get_vegan_household_display() }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Seeking Roommate:</span>
                                 <span class="font-medium">{{ 'Yes' if listing.seeking_roommate else 'No' }}</span>
                             </div>
                             <div class="flex justify-between">
@@ -176,6 +226,14 @@
                         </div>
                     </div>
                     
+                    <!-- Transportation -->
+                    {% if listing.transportation %}
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-semibold mb-3">Transportation</h3>
+                        <p class="text-sm text-gray-700">{{ listing.transportation }}</p>
+                    </div>
+                    {% endif %}
+                    
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <h3 class="font-semibold mb-3">Posted By</h3>
                         <div class="flex items-center">
@@ -184,7 +242,6 @@
                             </div>
                             <div>
                                 <div class="font-medium">{{ listing.user.first_name }} {{ listing.user.last_name[0].upper() }}.</div>
-                                <div class="text-sm text-gray-500">Member since {{ listing.user.created_at.strftime('%B %Y') }}</div>
                             </div>
                         </div>
                     </div>
@@ -192,14 +249,33 @@
                     <!-- Contact section -->
                     {% if current_user.is_authenticated %}
                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <h4 class="font-semibold mb-2">📧 Contact Listing Owner</h4>
-                            <a href="mailto:{{ listing.get_masked_email() }}" class="text-blue-800 font-mono text-sm hover:text-blue-600 cursor-pointer break-all">
-                                {{ listing.get_masked_email() }}
-                            </a>
-                            <button onclick="copyEmail('{{ listing.get_masked_email() }}')" class="block text-sm text-blue-600 hover:text-blue-800 mt-1">
-                                Click to copy email address
-                            </button>
-                            <p class="text-sm text-gray-600 mt-2">This masked email forwards to the listing owner</p>
+                            <h4 class="font-semibold mb-2">📧 Contact {{ listing.user.first_name }}</h4>
+                            
+                            <!-- Email Contact -->
+                            <div class="mb-3">
+                                <a href="mailto:{{ listing.get_masked_email() }}" class="text-blue-800 font-mono text-sm hover:text-blue-600 cursor-pointer break-all">
+                                    {{ listing.get_masked_email() }}
+                                </a>
+                                <button onclick="copyEmail('{{ listing.get_masked_email() }}')" class="block text-sm text-blue-600 hover:text-blue-800 mt-1">
+                                    Click to copy email address
+                                </button>
+                                <p class="text-sm text-gray-600 mt-1">This masked email forwards to the listing owner</p>
+                            </div>
+                            
+                            <!-- Phone Contact if included -->
+                            {% if listing.include_phone and listing.phone_number %}
+                            <div class="border-t border-blue-200 pt-3">
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
+                                    </svg>
+                                    <a href="tel:{{ listing.phone_number }}" class="text-blue-800 font-medium hover:text-blue-600">
+                                        {{ listing.phone_number }}
+                                    </a>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-1 ml-6">Call or text</p>
+                            </div>
+                            {% endif %}
                         </div>
                     {% else %}
                         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
