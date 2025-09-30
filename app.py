@@ -14,7 +14,14 @@ from enum import Enum
 from PIL import Image
 from dotenv import load_dotenv
 import io
-from b2sdk.v2 import InMemoryAccountInfo, B2Api
+
+# Try to import B2 SDK, but don't fail if it's not available
+try:
+    from b2sdk.v2 import InMemoryAccountInfo, B2Api
+    B2_AVAILABLE = True
+except ImportError:
+    B2_AVAILABLE = False
+    print("B2 SDK not available - photo uploads will use local storage")
 
 # Load environment variables from .env file
 load_dotenv()
@@ -269,13 +276,20 @@ def expire_old_listings():
 
 def get_b2_api():
     """Initialize Backblaze B2 API connection"""
+    if not B2_AVAILABLE:
+        return None
+        
     if not all([app.config['B2_KEY_ID'], app.config['B2_APPLICATION_KEY'], app.config['B2_BUCKET_ID']]):
         return None
     
-    info = InMemoryAccountInfo()
-    b2_api = B2Api(info)
-    b2_api.authorize_account("production", app.config['B2_KEY_ID'], app.config['B2_APPLICATION_KEY'])
-    return b2_api
+    try:
+        info = InMemoryAccountInfo()
+        b2_api = B2Api(info)
+        b2_api.authorize_account("production", app.config['B2_KEY_ID'], app.config['B2_APPLICATION_KEY'])
+        return b2_api
+    except Exception as e:
+        print(f"B2 API initialization error: {e}")
+        return None
 
 def save_picture_to_b2(form_picture):
     """Save picture to Backblaze B2 storage"""
@@ -310,7 +324,7 @@ def save_picture_to_b2(form_picture):
         file_info = bucket.upload_bytes(
             img_bytes.getvalue(),
             picture_fn,
-            content_type=f'image/{img_format.lower()}'
+            content_type='image/jpeg'
         )
         
         return picture_fn
@@ -320,8 +334,8 @@ def save_picture_to_b2(form_picture):
 
 def save_picture(form_picture):
     """Save picture to B2 if configured, otherwise save locally"""
-    # Try B2 first if configured
-    if app.config['B2_KEY_ID']:
+    # Try B2 first if configured and available
+    if B2_AVAILABLE and app.config['B2_KEY_ID']:
         b2_filename = save_picture_to_b2(form_picture)
         if b2_filename:
             return b2_filename
@@ -349,11 +363,51 @@ def save_picture(form_picture):
     
     return picture_fn
 
+def delete_photo_from_b2(filename):
+    """Delete a photo from Backblaze B2 storage"""
+    try:
+        b2_api = get_b2_api()
+        if not b2_api:
+            return False
+            
+        bucket = b2_api.get_bucket_by_id(app.config['B2_BUCKET_ID'])
+        
+        # Find and delete the file
+        file_versions = bucket.ls(filename)
+        for file_version, _ in file_versions:
+            if file_version.file_name == filename:
+                bucket.delete_file_version(file_version.id_, file_version.file_name)
+                print(f"Deleted {filename} from B2")
+                return True
+        
+        print(f"File {filename} not found in B2")
+        return False
+    except Exception as e:
+        print(f"Error deleting {filename} from B2: {e}")
+        return False
+
+def delete_photo_file(filename):
+    """Delete photo from B2 if configured, otherwise delete locally"""
+    if B2_AVAILABLE and app.config['B2_KEY_ID']:
+        # Try to delete from B2
+        success = delete_photo_from_b2(filename)
+        if success:
+            return
+    
+    # Fallback: delete local file
+    try:
+        photo_path = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'], filename)
+        if os.path.exists(photo_path):
+            os.remove(photo_path)
+            print(f"Deleted local file: {filename}")
+    except Exception as e:
+        print(f"Error deleting local file {filename}: {e}")
+
 def get_photo_url(filename):
     """Get the URL for a photo (B2 or local)"""
     if app.config['B2_KEY_ID'] and app.config['B2_BUCKET_NAME']:
-        # Return B2 URL format - still need bucket name for URL
-        return f"https://f002.backblazeb2.com/file/{app.config['B2_BUCKET_NAME']}/{filename}"
+        # Use S3-compatible URL format which should work better with CORS
+        return f"https://{app.config['B2_BUCKET_NAME']}.s3.us-east-005.backblazeb2.com/{filename}"
     else:
         # Return local URL
         return url_for('static', filename=f'uploads/{filename}')
@@ -752,10 +806,8 @@ def delete_listing(listing_id):
     
     # Delete associated photos first
     for photo in listing.photos:
-        # Delete the actual file
-        photo_path = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'], photo.filename)
-        if os.path.exists(photo_path):
-            os.remove(photo_path)
+        # Delete the actual file from storage (B2 or local)
+        delete_photo_file(photo.filename)
         db.session.delete(photo)
     
     # Delete the listing
@@ -787,6 +839,35 @@ def deactivate_listing(listing_id):
     
     flash('Listing deactivated successfully.', 'success')
     return redirect(url_for('dashboard'))
+
+@app.route('/delete-photo/<photo_id>', methods=['POST'])
+@login_required
+def delete_photo(photo_id):
+    """Delete a photo from a listing"""
+    from flask import jsonify
+    
+    photo = ListingPhoto.query.get_or_404(photo_id)
+    listing = photo.listing
+    
+    # Check if user owns this listing
+    if listing.user_id != current_user.id:
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 403
+    
+    # Only allow deleting photos from draft listings
+    if listing.status != ListingStatus.DRAFT.value:
+        return jsonify({'success': False, 'error': 'Can only delete photos from draft listings'}), 400
+    
+    try:
+        # Delete the actual file from storage (B2 or local)
+        delete_photo_file(photo.filename)
+        
+        # Delete the photo record
+        db.session.delete(photo)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
     with app.app_context():
