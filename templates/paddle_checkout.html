@@ -19,7 +19,7 @@
     </div>
     
     <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-        <div id="checkout-container">
+        <div id="checkout-container" class="checkout-container">
             <!-- Paddle checkout will be loaded here -->
             <div class="text-center py-8">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
@@ -41,9 +41,20 @@
 <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
 <script>
 // Initialize Paddle with environment variables
-// In production, these would come from environment variables
 const PADDLE_ENVIRONMENT = "{{ 'production' if config.get('PADDLE_ENVIRONMENT') == 'production' else 'sandbox' }}";
-const PADDLE_CLIENT_TOKEN = "{{ config.get('PADDLE_CLIENT_TOKEN', 'test_your-client-token-here') }}";
+const PADDLE_CLIENT_TOKEN = "{{ config.get('PADDLE_CLIENT_TOKEN', '') }}";
+// Debug: Check what we're getting
+console.log('Amount received:', {{ amount|default(0) }});
+console.log('Config BUDGET:', "{{ config.PADDLE_PRICE_ID_LISTING_BUDGET }}");
+console.log('Config MID:', "{{ config.PADDLE_PRICE_ID_LISTING_MID }}");
+console.log('Config SUPPORTER:', "{{ config.PADDLE_PRICE_ID_LISTING_SUPPORTER }}");
+
+const PRICE_ID = "{% if amount == 5 %}{{ config.PADDLE_PRICE_ID_LISTING_BUDGET }}{% elif amount == 10 %}{{ config.PADDLE_PRICE_ID_LISTING_MID }}{% elif amount == 15 %}{{ config.PADDLE_PRICE_ID_LISTING_SUPPORTER }}{% endif %}";
+const USER_EMAIL = "{{ user_email }}";
+const LISTING_ID = "{{ listing_id }}";
+const PAYMENT_TYPE = "{{ type }}";
+const AMOUNT = {{ amount|default(0)|float }};
+
 
 // Initialize Paddle
 Paddle.Environment.set(PADDLE_ENVIRONMENT);
@@ -66,32 +77,80 @@ Paddle.Setup({
 
 // Create checkout when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    // Create the checkout
-    Paddle.Checkout.open({
-        settings: {
-            displayMode: "inline",
-            frameTarget: "checkout-container",
-            frameInitialHeight: 450,
-            frameStyle: "width: 100%; min-width: 312px; background-color: transparent; border: none;"
-        },
-        items: [{
-            priceId: "{% if amount == 5 %}{{ config.PADDLE_PRICE_ID_LISTING_BUDGET }}{% elif amount == 10 %}{{ config.PADDLE_PRICE_ID_LISTING_MID }}{% elif amount == 15 %}{{ config.PADDLE_PRICE_ID_LISTING_SUPPORTER }}{% endif %}",
-            quantity: 1
-        }],
-        customer: {
-            email: "{{ user_email }}"
-        },
-        customData: {
-            listing_id: "{{ listing_id }}",
-            {% if type == 'renewal' %}
-            renewal: true
-            {% endif %}
-        }
+    // Check if container exists
+    const container = document.getElementById('checkout-container');
+    if (!container) {
+        console.error('checkout-container not found');
+        return;
+    }
+    
+    // Debug credentials and data being sent
+    console.log('Paddle Environment:', PADDLE_ENVIRONMENT);
+    console.log('Paddle Token:', PADDLE_CLIENT_TOKEN ? 'Set' : 'Missing');
+    console.log('Price ID:', PRICE_ID);
+    console.log('User Email:', USER_EMAIL);
+    console.log('Listing ID:', LISTING_ID);
+    console.log('Custom Data:', {
+        listing_id: LISTING_ID,
+        renewal: PAYMENT_TYPE === 'renewal'
     });
+    
+    // Create the checkout with error handling
+    try {
+        Paddle.Checkout.open({
+            settings: {
+                displayMode: "inline",
+                frameTarget: "checkout-container",
+                frameInitialHeight: 450,
+                frameStyle: "width: 100%; min-width: 312px; background-color: transparent; border: none;"
+            },
+            items: [{
+                priceId: PRICE_ID,
+                quantity: 1
+            }],
+            customer: {
+                email: USER_EMAIL
+            },
+            customData: {
+                listing_id: LISTING_ID,
+                renewal: PAYMENT_TYPE === 'renewal'
+            }
+        });
+        
+        // Remove spinner after a delay if Paddle doesn't load
+        setTimeout(() => {
+            const spinner = container.querySelector('.animate-spin');
+            if (spinner && spinner.parentElement) {
+                console.log('Paddle checkout may have failed, showing fallback');
+                showFallback();
+            }
+        }, 5000);
+    } catch (error) {
+        console.error('Paddle checkout failed:', error);
+        showFallback();
+    }
 });
 
-// Development fallback - remove in production
-if (PADDLE_CLIENT_TOKEN === 'test_your-client-token-here') {
+function showFallback() {
+    const container = document.getElementById('checkout-container');
+    if (container) {
+        container.innerHTML = `
+            <div class="text-center py-8">
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                    <h3 class="font-semibold text-yellow-800 mb-2">⚠️ Checkout Unavailable</h3>
+                    <p class="text-yellow-700 mb-4">Unable to load payment processor. This might be due to configuration issues.</p>
+                    <p class="text-sm text-yellow-600 mb-4">Amount: <strong>$${AMOUNT}</strong> for ${PAYMENT_TYPE}</p>
+                    <button onclick="simulatePayment()" class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">
+                        Simulate Payment (Dev Only)
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Development fallback when Paddle credentials are missing
+if (!PADDLE_CLIENT_TOKEN || PADDLE_CLIENT_TOKEN === '') {
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('checkout-container').innerHTML = `
             <div class="text-center py-8">

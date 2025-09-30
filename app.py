@@ -16,6 +16,10 @@ import uuid
 from datetime import datetime
 from enum import Enum
 from PIL import Image
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 class ListingStatus(Enum):
     DRAFT = 'draft'
@@ -293,6 +297,14 @@ def save_picture(form_picture):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/terms')
+def terms():
+    return render_template('terms.html')
+
+@app.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
 
 @app.route('/listings')
 def listings():

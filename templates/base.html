@@ -31,5 +31,33 @@
     <main class="container mx-auto p-4">
         {% block content %}{% endblock %}
     </main>
+    
+    <footer class="bg-gray-800 text-white p-8 mt-16">
+        <div class="container mx-auto">
+            <div class="flex flex-wrap justify-between">
+                <div class="w-full md:w-1/3 mb-6 md:mb-0">
+                    <h3 class="text-lg font-semibold mb-4">🌱 VegListings</h3>
+                    <p class="text-gray-300">Connecting vegan-friendly renters and property owners.</p>
+                </div>
+                <div class="w-full md:w-1/3 mb-6 md:mb-0">
+                    <h4 class="text-md font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/listings" class="text-gray-300 hover:text-white">Browse Listings</a></li>
+                        <li><a href="/create" class="text-gray-300 hover:text-white">Post a Listing</a></li>
+                    </ul>
+                </div>
+                <div class="w-full md:w-1/3">
+                    <h4 class="text-md font-semibold mb-4">Legal</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/terms" class="text-gray-300 hover:text-white">Terms of Service</a></li>
+                        <li><a href="/privacy" class="text-gray-300 hover:text-white">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-4 text-center text-gray-400">
+                <p>&copy; 2025 VegListings. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>
