@@ -147,6 +147,12 @@ login_manager.login_message_category = 'info'
 def photo_url(filename):
     return get_photo_url(filename)
 
+# Initialize database tables on startup
+@app.before_first_request
+def create_tables():
+    db.create_all()
+    create_default_admin()
+
 # Admin decorator
 def admin_required(f):
     @wraps(f)
