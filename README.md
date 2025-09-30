@@ -69,7 +69,7 @@ VegListings helps vegans find housing in vegan-friendly households. Whether you'
 
 - **Report bugs** - Found something broken? Open an issue!
 - **Suggest features** - Ideas for improvements? We want to hear them!
-- **Fix bugs** - Check our [Issues](https://github.com/yourusername/veglistings/issues) for bugs to fix
+- **Fix bugs** - Check our [Issues](https://github.com/leahpeker/veglistings/issues) for bugs to fix
 - **Add features** - Pick up a feature request or propose your own
 - **Improve UI/UX** - Help make the site more beautiful and usable
 - **Write tests** - Help us maintain code quality
@@ -96,7 +96,7 @@ VegListings helps vegans find housing in vegan-friendly households. Whether you'
 - RESTful API design
 - Improved mobile app support
 
-See our [Issues](https://github.com/yourusername/veglistings/issues) for specific tasks!
+See our [Issues](https://github.com/leahpeker/veglistings/issues) for specific tasks!
 
 ### 🔧 Development Guidelines
 
