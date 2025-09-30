@@ -125,6 +125,7 @@ else:
 # Backblaze B2 configuration
 app.config['B2_KEY_ID'] = os.environ.get('B2_KEY_ID')
 app.config['B2_APPLICATION_KEY'] = os.environ.get('B2_APPLICATION_KEY')
+app.config['B2_BUCKET_ID'] = os.environ.get('B2_BUCKET_ID')
 app.config['B2_BUCKET_NAME'] = os.environ.get('B2_BUCKET_NAME')
 
 db = SQLAlchemy(app)
@@ -268,7 +269,7 @@ def expire_old_listings():
 
 def get_b2_api():
     """Initialize Backblaze B2 API connection"""
-    if not all([app.config['B2_KEY_ID'], app.config['B2_APPLICATION_KEY'], app.config['B2_BUCKET_NAME']]):
+    if not all([app.config['B2_KEY_ID'], app.config['B2_APPLICATION_KEY'], app.config['B2_BUCKET_ID']]):
         return None
     
     info = InMemoryAccountInfo()
@@ -283,7 +284,7 @@ def save_picture_to_b2(form_picture):
         if not b2_api:
             return None
             
-        bucket = b2_api.get_bucket_by_name(app.config['B2_BUCKET_NAME'])
+        bucket = b2_api.get_bucket_by_id(app.config['B2_BUCKET_ID'])
         
         # Generate unique filename
         random_hex = secrets.token_hex(8)
@@ -340,7 +341,7 @@ def save_picture(form_picture):
 def get_photo_url(filename):
     """Get the URL for a photo (B2 or local)"""
     if app.config['B2_KEY_ID'] and app.config['B2_BUCKET_NAME']:
-        # Return B2 URL format
+        # Return B2 URL format - still need bucket name for URL
         return f"https://f002.backblazeb2.com/file/{app.config['B2_BUCKET_NAME']}/{filename}"
     else:
         # Return local URL
