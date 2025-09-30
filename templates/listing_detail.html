@@ -253,13 +253,12 @@
                             
                             <!-- Email Contact -->
                             <div class="mb-3">
-                                <a href="mailto:{{ listing.get_masked_email() }}" class="text-blue-800 font-mono text-sm hover:text-blue-600 cursor-pointer break-all">
-                                    {{ listing.get_masked_email() }}
+                                <a href="mailto:{{ listing.user.email }}" class="text-blue-800 font-mono text-sm hover:text-blue-600 cursor-pointer break-all">
+                                    {{ listing.user.email }}
                                 </a>
-                                <button onclick="copyEmail('{{ listing.get_masked_email() }}')" class="block text-sm text-blue-600 hover:text-blue-800 mt-1">
+                                <button onclick="copyEmail('{{ listing.user.email }}')" class="block text-sm text-blue-600 hover:text-blue-800 mt-1">
                                     Click to copy email address
                                 </button>
-                                <p class="text-sm text-gray-600 mt-1">This masked email forwards to the listing owner</p>
                             </div>
                             
                             <!-- Phone Contact if included -->

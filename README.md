@@ -86,6 +86,7 @@ VegListings helps vegans find housing in vegan-friendly households. Whether you'
 **Medium Priority:**
 - OAuth integration (Google, GitHub)
 - User profiles and messaging
+- On-platform messaging system (instead of direct email contact)
 - Email notifications
 - Saved searches
 

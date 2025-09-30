@@ -278,12 +278,19 @@
                 </div>
                 
                 <div class="space-y-3">
+                    <div class="bg-blue-50 border border-blue-200 rounded p-3 mb-4">
+                        <h4 class="font-medium text-blue-800 mb-2">📞 Contact Information</h4>
+                        <p class="text-sm text-blue-700">
+                            Your email address will always be visible to logged-in users. You can optionally include your phone number for additional contact options.
+                        </p>
+                    </div>
+                    
                     <div class="flex items-center">
                         <input type="checkbox" name="include_phone" id="include_phone" x-model="includePhone"
                                class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                                {% if form_data.get('include_phone') %}checked{% endif %}>
                         <label for="include_phone" class="ml-2 block text-sm text-gray-700">
-                            Include my phone number in contact information
+                            Also include my phone number in contact information
                         </label>
                     </div>
                     
