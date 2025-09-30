@@ -288,17 +288,22 @@ def save_picture_to_b2(form_picture):
         
         # Generate unique filename
         random_hex = secrets.token_hex(8)
-        _, f_ext = os.path.splitext(form_picture.filename)
-        picture_fn = f"{random_hex}{f_ext}"
+        picture_fn = f"{random_hex}.jpg"  # Always save as .jpg for smaller files
         
-        # Resize image in memory
+        # Resize and optimize image in memory
         img = Image.open(form_picture)
-        img.thumbnail((800, 600))
         
-        # Convert to bytes
+        # Convert to RGB if necessary (for JPEG)
+        if img.mode in ('RGBA', 'LA', 'P'):
+            img = img.convert('RGB')
+            
+        # Resize to max 800x600 while maintaining aspect ratio
+        img.thumbnail((800, 600), Image.Resampling.LANCZOS)
+        
+        # Convert to bytes with compression
         img_bytes = io.BytesIO()
-        img_format = 'JPEG' if f_ext.lower() in ['.jpg', '.jpeg'] else 'PNG'
-        img.save(img_bytes, format=img_format)
+        # Save as JPEG with 85% quality for good balance of size/quality
+        img.save(img_bytes, format='JPEG', quality=85, optimize=True)
         img_bytes.seek(0)
         
         # Upload to B2
@@ -323,18 +328,24 @@ def save_picture(form_picture):
     
     # Fallback to local storage
     random_hex = secrets.token_hex(8)
-    _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = random_hex + f_ext
+    picture_fn = f"{random_hex}.jpg"  # Always save as .jpg for smaller files
     picture_path = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'], picture_fn)
     
     # Create upload directory if it doesn't exist
     os.makedirs(os.path.dirname(picture_path), exist_ok=True)
     
-    # Resize image
-    output_size = (800, 600)
+    # Resize and optimize image
     img = Image.open(form_picture)
-    img.thumbnail(output_size)
-    img.save(picture_path)
+    
+    # Convert to RGB if necessary (for JPEG)
+    if img.mode in ('RGBA', 'LA', 'P'):
+        img = img.convert('RGB')
+        
+    # Resize to max 800x600 while maintaining aspect ratio
+    img.thumbnail((800, 600), Image.Resampling.LANCZOS)
+    
+    # Save as optimized JPEG
+    img.save(picture_path, format='JPEG', quality=85, optimize=True)
     
     return picture_fn
 
@@ -503,13 +514,23 @@ def create_listing():
         photos = request.files.getlist('photos')
         for i, photo in enumerate(photos[:10]):  # Limit to 10 photos
             if photo and photo.filename:
+                # Check file size (limit to 10MB)
+                photo.seek(0, 2)  # Seek to end
+                file_size = photo.tell()
+                photo.seek(0)  # Reset to beginning
+                
+                if file_size > 10 * 1024 * 1024:  # 10MB limit
+                    flash(f'Photo "{photo.filename}" is too large. Please use images under 10MB.', 'warning')
+                    continue
+                    
                 filename = save_picture(photo)
-                listing_photo = ListingPhoto(
-                    filename=filename,
-                    listing_id=listing.id,
-                    is_primary=(i == 0)  # First photo is primary
-                )
-                db.session.add(listing_photo)
+                if filename:  # Only add if save was successful
+                    listing_photo = ListingPhoto(
+                        filename=filename,
+                        listing_id=listing.id,
+                        is_primary=(i == 0)  # First photo is primary
+                    )
+                    db.session.add(listing_photo)
         
         db.session.commit()
         flash('Your listing draft has been saved!', 'success')
@@ -570,13 +591,23 @@ def edit_listing(listing_id):
         photos = request.files.getlist('photos')
         for photo in photos[:10-len(listing.photos)]:  # Don't exceed 10 total
             if photo and photo.filename:
+                # Check file size (limit to 10MB)
+                photo.seek(0, 2)  # Seek to end
+                file_size = photo.tell()
+                photo.seek(0)  # Reset to beginning
+                
+                if file_size > 10 * 1024 * 1024:  # 10MB limit
+                    flash(f'Photo "{photo.filename}" is too large. Please use images under 10MB.', 'warning')
+                    continue
+                    
                 filename = save_picture(photo)
-                listing_photo = ListingPhoto(
-                    filename=filename,
-                    listing_id=listing.id,
-                    is_primary=(len(listing.photos) == 0)
-                )
-                db.session.add(listing_photo)
+                if filename:  # Only add if save was successful
+                    listing_photo = ListingPhoto(
+                        filename=filename,
+                        listing_id=listing.id,
+                        is_primary=(len(listing.photos) == 0)
+                    )
+                    db.session.add(listing_photo)
         
         db.session.commit()
         flash('Your listing has been updated!', 'success')
