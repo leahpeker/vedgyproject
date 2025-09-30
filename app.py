@@ -14,6 +14,7 @@ from enum import Enum
 from PIL import Image
 from dotenv import load_dotenv
 import io
+from functools import wraps
 
 # Try to import B2 SDK, but don't fail if it's not available
 try:
@@ -146,9 +147,22 @@ login_manager.login_message_category = 'info'
 def photo_url(filename):
     return get_photo_url(filename)
 
+# Admin decorator
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated or not isinstance(current_user, Admin):
+            return redirect(url_for('admin_login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(user_id)
+    # Try loading as user first, then as admin
+    user = User.query.get(user_id)
+    if user:
+        return user
+    return Admin.query.get(user_id)
 
 class User(UserMixin, db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -170,6 +184,19 @@ class User(UserMixin, db.Model):
         """Users can always create listings, payment happens per listing"""
         return True
 
+class Admin(UserMixin, db.Model):
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    
+    def set_password(self, password):
+        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+    
+    def check_password(self, password):
+        return bcrypt.check_password_hash(self.password_hash, password)
+
 class RegistrationForm(FlaskForm):
     first_name = StringField('First Name', validators=[DataRequired(), Length(min=1, max=50)])
     last_name = StringField('Last Name', validators=[DataRequired(), Length(min=1, max=50)])
@@ -189,6 +216,11 @@ class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Sign In')
+
+class AdminLoginForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Admin Sign In')
 
 class Listing(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -869,9 +901,91 @@ def delete_photo(photo_id):
         db.session.rollback()
         return jsonify({'success': False, 'error': str(e)}), 500
 
+# Admin Routes
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    """Admin login page"""
+    if current_user.is_authenticated and isinstance(current_user, Admin):
+        return redirect(url_for('admin_dashboard'))
+    
+    form = AdminLoginForm()
+    if form.validate_on_submit():
+        admin = Admin.query.filter_by(email=form.email.data).first()
+        if admin and admin.check_password(form.password.data):
+            login_user(admin)
+            flash('Admin login successful!', 'success')
+            return redirect(url_for('admin_dashboard'))
+        flash('Invalid admin credentials', 'danger')
+    
+    return render_template('admin_login.html', form=form)
+
+@app.route('/admin/dashboard')
+@admin_required
+def admin_dashboard():
+    """Admin dashboard showing pending listings"""
+    # Get all listings that need approval
+    pending_listings = Listing.query.filter_by(status=ListingStatus.PAYMENT_SUBMITTED.value).order_by(Listing.created_at.desc()).all()
+    
+    return render_template('admin_dashboard.html', pending_listings=pending_listings)
+
+@app.route('/admin/listing/<listing_id>')
+@admin_required
+def admin_review_listing(listing_id):
+    """Admin page to review individual listing"""
+    listing = Listing.query.get_or_404(listing_id)
+    return render_template('admin_review_listing.html', listing=listing)
+
+@app.route('/admin/approve/<listing_id>', methods=['POST'])
+@admin_required
+def admin_approve_listing(listing_id):
+    """Approve a listing"""
+    listing = Listing.query.get_or_404(listing_id)
+    
+    if listing.status == ListingStatus.PAYMENT_SUBMITTED.value:
+        listing.activate_listing()  # Sets to ACTIVE and sets expiration
+        db.session.commit()
+        flash(f'Listing "{listing.title}" approved and activated!', 'success')
+    else:
+        flash('Listing cannot be approved in its current state.', 'warning')
+    
+    return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/reject/<listing_id>', methods=['POST'])
+@admin_required
+def admin_reject_listing(listing_id):
+    """Reject a listing"""
+    listing = Listing.query.get_or_404(listing_id)
+    
+    if listing.status == ListingStatus.PAYMENT_SUBMITTED.value:
+        listing.status = ListingStatus.DRAFT.value
+        db.session.commit()
+        flash(f'Listing "{listing.title}" rejected and returned to draft.', 'info')
+    else:
+        flash('Listing cannot be rejected in its current state.', 'warning')
+    
+    return redirect(url_for('admin_dashboard'))
+
+def create_default_admin():
+    """Create default admin if none exists"""
+    if Admin.query.first() is None:
+        admin_email = os.environ.get('ADMIN_EMAIL')
+        admin_password = os.environ.get('ADMIN_PASSWORD')
+        admin_name = os.environ.get('ADMIN_NAME', 'Admin')
+        
+        if admin_email and admin_password:
+            admin = Admin(
+                email=admin_email,
+                name=admin_name
+            )
+            admin.set_password(admin_password)
+            db.session.add(admin)
+            db.session.commit()
+            print(f"✅ Default admin created: {admin_email}")
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+        create_default_admin()
     
     # Use Railway's PORT environment variable or default to 8000
     port = int(os.environ.get('PORT', 8000))
