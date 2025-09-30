@@ -4,7 +4,7 @@
 <div class="max-w-2xl mx-auto">
     <div class="text-center mb-8">
         <h1 class="text-3xl font-bold text-gray-800 mb-4">Complete Your Listing Payment</h1>
-        <p class="text-lg text-gray-600 mb-4">Choose your payment amount to make your listing live for 30 days</p>
+        <p class="text-lg text-gray-600 mb-4">Pay what you can afford - minimum $3</p>
         
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-md mx-auto mb-6">
             <h3 class="font-semibold text-yellow-800 mb-2">📝 Your Listing</h3>
@@ -13,92 +13,85 @@
         </div>
     </div>
     
-    <!-- Sliding Scale Pricing -->
-    <div class="grid md:grid-cols-3 gap-6 mb-8">
-        <!-- $5 Tier -->
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
-            <div class="bg-gray-600 text-white p-4 text-center">
-                <div class="text-3xl font-bold mb-1">$5</div>
-                <p class="text-gray-200 text-sm">Student / Low Income</p>
-            </div>
-            <div class="p-4">
-                <button onclick="selectAmount(5)" class="w-full bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700 transition-colors">
-                    Select $5
-                </button>
-            </div>
-        </div>
+    <!-- Sliding Scale Guide -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <h2 class="text-xl font-semibold text-center mb-6">💚 Sliding Scale Payment Guide</h2>
         
-        <!-- $15 Tier -->
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden border-2 border-green-500">
-            <div class="bg-green-600 text-white p-4 text-center">
-                <div class="text-3xl font-bold mb-1">$10<span class="text-xs ml-1">POPULAR</span></div>
-                <p class="text-green-200 text-sm">Standard Rate</p>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                <div class="flex-1">
+                    <h3 class="font-semibold text-blue-800">Student / Low Income</h3>
+                    <p class="text-blue-600 text-sm">Limited income, no major assets</p>
+                </div>
+                <div class="text-2xl font-bold text-blue-700">$3</div>
             </div>
-            <div class="p-4">
-                <button onclick="selectAmount(10)" class="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition-colors">
-                    Select $10
-                </button>
+            
+            <div class="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                <div class="flex-1">
+                    <h3 class="font-semibold text-green-800">Median Income</h3>
+                    <p class="text-green-600 text-sm">Stable income, no major debt</p>
+                </div>
+                <div class="text-2xl font-bold text-green-700">$8</div>
             </div>
-        </div>
-        
-        <!-- $25 Tier -->
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
-            <div class="bg-purple-600 text-white p-4 text-center">
-                <div class="text-3xl font-bold mb-1">$15</div>
-                <p class="text-purple-200 text-sm">Support Our Mission</p>
-            </div>
-            <div class="p-4">
-                <button onclick="selectAmount(15)" class="w-full bg-purple-600 text-white py-2 px-4 rounded hover:bg-purple-700 transition-colors">
-                    Select $15
-                </button>
+            
+            <div class="flex items-center justify-between p-4 bg-purple-50 rounded-lg">
+                <div class="flex-1">
+                    <h3 class="font-semibold text-purple-800">High Income / Assets</h3>
+                    <p class="text-purple-600 text-sm">High income or substantial assets</p>
+                </div>
+                <div class="text-2xl font-bold text-purple-700">$15</div>
             </div>
         </div>
     </div>
     
-    <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
-        <div class="bg-gray-50 border-b p-4">
-            <h2 class="text-xl font-semibold text-center">What you get:</h2>
+    <!-- Payment Instructions -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <div class="text-center mb-6">
+            <h2 class="text-xl font-semibold mb-4">💳 How to Pay</h2>
         </div>
         
-        <div class="p-6">
-            <ul class="space-y-3 mb-6">
-                <li class="flex items-center">
-                    <svg class="w-5 h-5 text-green-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                    </svg>
-                    Your listing will be live for 30 days
-                </li>
-                <li class="flex items-center">
-                    <svg class="w-5 h-5 text-green-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                    </svg>
-                    Visible to all users browsing listings
-                </li>
-            </ul>
+        <div class="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+            <h3 class="text-lg font-semibold text-green-800 mb-4">Send payment via Venmo, then come back here to confirm</h3>
             
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                <h4 class="font-semibold text-blue-800 mb-2">💡 How it works</h4>
-                <p class="text-blue-700 text-sm">
-                    After 30 days, your listing will automatically expire and become hidden. 
-                    You can renew it anytime by paying again.
-                </p>
+            <div class="mb-4">
+                <a href="https://venmo.com/u/leah-peker" target="_blank" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                    Pay @leah-peker on Venmo
+                </a>
             </div>
             
-            <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-                <h4 class="font-semibold text-orange-800 mb-2">⚠️ Important Note</h4>
-                <p class="text-orange-700 text-sm">
-                    <strong>Once your listing goes live, it cannot be edited.</strong> Please make sure all information is correct before completing payment. 
-                    You can only renew the listing when it expires.
-                </p>
+            <div class="text-sm text-green-700 space-y-2 mb-4">
+                <p><strong>Venmo:</strong> @leah-peker</p>
+                <p><strong>Note:</strong> Include your listing title in the payment note</p>
+                <p><strong>Amount:</strong> Your choice based on the guide above (minimum $3)</p>
             </div>
             
-            <button onclick="startCheckout()" id="checkout-btn" disabled class="w-full bg-gray-400 text-white py-3 px-6 rounded-lg text-lg font-semibold cursor-not-allowed transition-colors">
-                Select an amount above
-            </button>
-            
-            <p class="text-center text-sm text-gray-500 mt-4">
-                Secure payment processed by Paddle. 30-day money-back guarantee.
-            </p>
+            <div class="border-t border-green-300 pt-4">
+                <p class="text-sm text-green-700 mb-3">After you've sent the payment:</p>
+                <a href="/listing/{{ listing.id }}?payment=submitted" class="inline-block bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
+                    ✓ I've sent payment via Venmo
+                </a>
+            </div>
+        </div>
+        
+        <div class="mt-6 space-y-3">
+            <div class="flex items-center text-sm text-gray-600">
+                <svg class="w-5 h-5 text-green-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                Your listing will be live for 30 days
+            </div>
+            <div class="flex items-center text-sm text-gray-600">
+                <svg class="w-5 h-5 text-green-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                We'll activate your listing within 24 hours of payment
+            </div>
+            <div class="flex items-center text-sm text-gray-600">
+                <svg class="w-5 h-5 text-green-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                You can renew your listing when it expires
+            </div>
         </div>
     </div>
     
@@ -106,38 +99,4 @@
         <a href="/preview/{{ listing.id }}" class="text-green-600 hover:text-green-800">← Back to listing preview</a>
     </div>
 </div>
-
-<script>
-let selectedAmount = null;
-
-function selectAmount(amount) {
-    selectedAmount = amount;
-    
-    // Reset all buttons
-    const buttons = document.querySelectorAll('button[onclick^="selectAmount"]');
-    buttons.forEach(btn => {
-        btn.classList.remove('ring-2', 'ring-blue-500');
-    });
-    
-    // Highlight selected button
-    event.target.classList.add('ring-2', 'ring-blue-500');
-    
-    // Enable checkout button
-    const checkoutBtn = document.getElementById('checkout-btn');
-    checkoutBtn.disabled = false;
-    checkoutBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-    checkoutBtn.classList.add('bg-green-600', 'hover:bg-green-700');
-    checkoutBtn.textContent = `Pay $${amount} to Publish Listing`;
-}
-
-function startCheckout() {
-    if (!selectedAmount) {
-        alert('Please select a payment amount first');
-        return;
-    }
-    
-    // Create Paddle checkout for listing payment
-    window.location.href = `/paddle/checkout/listing/${selectedAmount}/{{ listing.id }}`;
-}
-</script>
 {% endblock %}

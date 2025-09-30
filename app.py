@@ -23,6 +23,7 @@ load_dotenv()
 
 class ListingStatus(Enum):
     DRAFT = 'draft'
+    PAYMENT_SUBMITTED = 'payment_submitted'
     ACTIVE = 'active'
     EXPIRED = 'expired'
     
@@ -467,6 +468,15 @@ def create_listing():
 @app.route('/listing/<listing_id>')
 def listing_detail(listing_id):
     listing = Listing.query.get_or_404(listing_id)
+    
+    # Handle payment submission confirmation
+    if request.args.get('payment') == 'submitted':
+        if listing.status == ListingStatus.DRAFT.value and listing.user_id == current_user.id:
+            listing.status = ListingStatus.PAYMENT_SUBMITTED.value
+            db.session.commit()
+            flash('Payment confirmation received! We\'ll review and activate your listing within 24 hours.', 'success')
+        return redirect(url_for('listing_detail', listing_id=listing_id))
+    
     return render_template('listing_detail.html', listing=listing)
 
 @app.route('/preview/<listing_id>')
@@ -495,11 +505,13 @@ def dashboard():
     # Categorize listings
     active_listings = [l for l in user_listings if l.status == ListingStatus.ACTIVE.value]
     draft_listings = [l for l in user_listings if l.status == ListingStatus.DRAFT.value]
+    payment_submitted_listings = [l for l in user_listings if l.status == ListingStatus.PAYMENT_SUBMITTED.value]
     expired_listings = [l for l in user_listings if l.status == ListingStatus.EXPIRED.value]
     
     return render_template('dashboard.html', 
                          active_listings=active_listings,
                          draft_listings=draft_listings,
+                         payment_submitted_listings=payment_submitted_listings,
                          expired_listings=expired_listings)
 
 @app.route('/pay/<listing_id>')
