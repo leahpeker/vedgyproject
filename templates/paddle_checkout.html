@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
             frameStyle: "width: 100%; min-width: 312px; background-color: transparent; border: none;"
         },
         items: [{
-            priceId: "{{ config.get('PADDLE_PRICE_ID_' + amount|string, 'pri_your-price-id-here') }}",
+            priceId: "{% if amount == 5 %}{{ config.PADDLE_PRICE_ID_LISTING_BUDGET }}{% elif amount == 10 %}{{ config.PADDLE_PRICE_ID_LISTING_MID }}{% elif amount == 15 %}{{ config.PADDLE_PRICE_ID_LISTING_SUPPORTER }}{% endif %}",
             quantity: 1
         }],
         customer: {
