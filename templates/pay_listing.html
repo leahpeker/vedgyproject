@@ -3,8 +3,13 @@
 {% block content %}
 <div class="max-w-2xl mx-auto">
     <div class="text-center mb-8">
+        {% if request.args.get('renewal') == 'true' %}
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">Renew Your Listing</h1>
+        <p class="text-lg text-gray-600 mb-4">Extend your listing for another 30 days - minimum $3</p>
+        {% else %}
         <h1 class="text-3xl font-bold text-gray-800 mb-4">Complete Your Listing Payment</h1>
         <p class="text-lg text-gray-600 mb-4">Pay what you can afford - minimum $3</p>
+        {% endif %}
         
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-md mx-auto mb-6">
             <h3 class="font-semibold text-yellow-800 mb-2">📝 Your Listing</h3>
@@ -61,7 +66,11 @@
             
             <div class="text-sm text-green-700 space-y-2 mb-4">
                 <p><strong>Venmo:</strong> @leah-peker</p>
+                {% if request.args.get('renewal') == 'true' %}
+                <p><strong>Note:</strong> Include "RENEWAL: {{ listing.title }}" in the payment note</p>
+                {% else %}
                 <p><strong>Note:</strong> Include your listing title in the payment note</p>
+                {% endif %}
                 <p><strong>Amount:</strong> Your choice based on the guide above (minimum $3)</p>
             </div>
             

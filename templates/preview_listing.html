@@ -11,7 +11,7 @@
             <span class="text-yellow-800 font-medium">This is a preview of your listing</span>
         </div>
         <div class="flex space-x-3">
-            <a href="/create" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 text-sm">
+            <a href="/edit/{{ listing.id }}" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 text-sm">
                 ← Edit Listing
             </a>
             <a href="/pay/{{ listing.id }}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm">
@@ -245,7 +245,7 @@
                         <h4 class="font-semibold text-yellow-800 mb-2">👀 Preview Mode</h4>
                         <p class="text-yellow-700 text-sm mb-3">This is how your listing will appear to other users once you complete payment.</p>
                         <div class="space-y-2">
-                            <a href="/create" class="block w-full bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 text-sm font-medium text-center">
+                            <a href="/edit/{{ listing.id }}" class="block w-full bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 text-sm font-medium text-center">
                                 ← Edit Listing
                             </a>
                             <a href="/pay/{{ listing.id }}" class="block w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 text-sm font-medium text-center">

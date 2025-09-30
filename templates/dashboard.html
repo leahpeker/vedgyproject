@@ -46,9 +46,11 @@
                                 <a href="/listing/{{ listing.id }}" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">
                                     View
                                 </a>
-                                <a href="/renew/{{ listing.id }}" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">
-                                    Renew
-                                </a>
+                                <form method="POST" action="/deactivate/{{ listing.id }}" class="inline" onsubmit="return confirm('Are you sure you want to deactivate this listing? It will be hidden from public view.')">
+                                    <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">
+                                        Deactivate
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -157,6 +159,58 @@
     </div>
     {% endif %}
     
+    <!-- Deactivated Listings -->
+    {% if deactivated_listings %}
+    <div class="mb-8">
+        <h2 class="text-xl font-semibold mb-4 flex items-center">
+            <span class="w-3 h-3 bg-orange-500 rounded-full mr-2"></span>
+            Deactivated Listings ({{ deactivated_listings|length }})
+        </h2>
+        <div class="grid gap-4">
+            {% for listing in deactivated_listings %}
+            <div class="bg-white rounded-lg shadow hover:shadow-md transition-shadow overflow-hidden border-l-4 border-orange-500">
+                <div class="flex min-h-[120px]">
+                    {% if listing.photos %}
+                    <div class="w-[120px] h-[120px] bg-gray-200 flex-shrink-0">
+                        <img src="{{ url_for('static', filename='uploads/' + listing.photos[0].filename) }}" 
+                             alt="{{ listing.title }}" class="w-full h-full object-cover">
+                    </div>
+                    {% endif %}
+                    
+                    <div class="flex-1 p-4">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-lg font-semibold">{{ listing.title }}</h3>
+                            <span class="text-xl font-bold text-green-600">${{ listing.price }}/mo</span>
+                        </div>
+                        
+                        <p class="text-gray-600 text-sm mb-2">📍 {{ listing.city }}{% if listing.borough %}, {{ listing.borough }}{% endif %}</p>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">
+                                <span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs">Deactivated</span>
+                            </div>
+                            
+                            <div class="flex space-x-2">
+                                <a href="/preview/{{ listing.id }}" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">
+                                    Preview
+                                </a>
+                                <a href="/renew/{{ listing.id }}" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">
+                                    Renew
+                                </a>
+                                <form method="POST" action="/delete/{{ listing.id }}" class="inline" onsubmit="return confirm('Are you sure you want to permanently delete this listing? This cannot be undone.')">
+                                    <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">
+                                        Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
     
     <!-- Expired Listings -->
     {% if expired_listings %}
@@ -198,6 +252,11 @@
                                 <a href="/renew/{{ listing.id }}" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">
                                     Renew
                                 </a>
+                                <form method="POST" action="/delete/{{ listing.id }}" class="inline" onsubmit="return confirm('Are you sure you want to permanently delete this expired listing? This cannot be undone.')">
+                                    <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">
+                                        Delete
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>

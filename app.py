@@ -1,17 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_bcrypt import Bcrypt
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileAllowed, MultipleFileField
 from wtforms import StringField, PasswordField, SubmitField, ValidationError
 from wtforms.validators import DataRequired, Email, Length, EqualTo
 import os
 import secrets
 import hashlib
-import requests
-import hmac
-import json
 import uuid
 from datetime import datetime
 from enum import Enum
@@ -25,12 +21,8 @@ class ListingStatus(Enum):
     DRAFT = 'draft'
     PAYMENT_SUBMITTED = 'payment_submitted'
     ACTIVE = 'active'
+    DEACTIVATED = 'deactivated'
     EXPIRED = 'expired'
-    
-class PaddleEventType(Enum):
-    TRANSACTION_COMPLETED = 'transaction.completed'
-    TRANSACTION_CREATED = 'transaction.created'
-    TRANSACTION_UPDATED = 'transaction.updated'
 
 class ListerRelationship(Enum):
     OWNER = 'owner'
@@ -128,16 +120,6 @@ if os.environ.get('RAILWAY_ENVIRONMENT'):
 else:
     app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
-# Paddle configuration
-app.config['PADDLE_CLIENT_TOKEN'] = os.environ.get('PADDLE_CLIENT_TOKEN')
-app.config['PADDLE_WEBHOOK_SECRET'] = os.environ.get('PADDLE_WEBHOOK_SECRET')
-app.config['PADDLE_ENVIRONMENT'] = os.environ.get('PADDLE_ENVIRONMENT', 'sandbox')
-
-# Paddle Price IDs for different amounts (set in production)
-app.config['PADDLE_PRICE_ID_LISTING_BUDGET'] = os.environ.get('PADDLE_PRICE_ID_LISTING_BUDGET')
-app.config['PADDLE_PRICE_ID_LISTING_MID'] = os.environ.get('PADDLE_PRICE_ID_LISTING_MID') 
-app.config['PADDLE_PRICE_ID_LISTING_SUPPORTER'] = os.environ.get('PADDLE_PRICE_ID_LISTING_SUPPORTER')
-
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
@@ -156,10 +138,6 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128), nullable=False)
     phone = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-    
-    # Paddle customer info for future transactions
-    paddle_customer_id = db.Column(db.String(100))
-    
     listings = db.relationship('Listing', backref='user', lazy=True)
     
     def set_password(self, password):
@@ -220,7 +198,6 @@ class Listing(db.Model):
     status = db.Column(db.String(20), default=ListingStatus.DRAFT.value, nullable=False)
     paid_at = db.Column(db.DateTime, nullable=True)
     expires_at = db.Column(db.DateTime, nullable=True)  # 30 days from paid_at
-    paddle_transaction_id = db.Column(db.String(100), nullable=True)
     
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
@@ -247,13 +224,12 @@ class Listing(db.Model):
         """Get the human-readable display text for vegan household type"""
         return VeganHouseholdType.get_display_text(self.vegan_household)
     
-    def activate_listing(self, transaction_id):
+    def activate_listing(self):
         """Activate listing after successful payment"""
         from datetime import timedelta
         self.status = ListingStatus.ACTIVE.value
         self.paid_at = datetime.now()
         self.expires_at = datetime.now() + timedelta(days=30)
-        self.paddle_transaction_id = transaction_id
 
 class ListingPhoto(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -463,7 +439,98 @@ def create_listing():
         flash('Your listing draft has been saved!', 'success')
         return redirect(url_for('preview_listing', listing_id=listing.id))
     
-    return render_template('create_listing.html')
+    form_data = {}
+    return render_template('create_listing.html', form_data=form_data)
+
+@app.route('/edit/<listing_id>', methods=['GET', 'POST'])
+@login_required
+def edit_listing(listing_id):
+    """Edit an existing draft listing using the create form"""
+    listing = Listing.query.get_or_404(listing_id)
+    
+    # Check if user owns this listing
+    if listing.user_id != current_user.id:
+        flash('You can only edit your own listings.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    # Only allow editing drafts
+    if listing.status != ListingStatus.DRAFT.value:
+        flash('Only draft listings can be edited.', 'warning')
+        return redirect(url_for('dashboard'))
+    
+    if request.method == 'POST':
+        # Update existing listing with form data (same logic as create)
+        from datetime import datetime
+        
+        date_available = datetime.strptime(request.form['date_available'], '%Y-%m-%d').date()
+        date_until = None
+        if request.form.get('date_until'):
+            date_until = datetime.strptime(request.form['date_until'], '%Y-%m-%d').date()
+        
+        # Update all fields
+        listing.title = request.form['title']
+        listing.description = request.form['description']
+        listing.city = request.form['city']
+        listing.borough = request.form.get('borough', None)
+        listing.neighborhood = request.form.get('neighborhood', '')
+        listing.rental_type = request.form['rental_type']
+        listing.room_type = request.form['room_type']
+        listing.price = int(request.form['price'])
+        listing.seeking_roommate = 'seeking_roommate' in request.form
+        listing.date_available = date_available
+        listing.date_until = date_until
+        listing.transportation = request.form.get('transportation', '')
+        listing.size = request.form.get('size', '')
+        listing.furnished = request.form['furnished']
+        listing.vegan_household = request.form['vegan_household']
+        listing.about_lister = request.form['about_lister']
+        listing.lister_relationship = request.form['lister_relationship']
+        listing.rental_requirements = request.form['rental_requirements']
+        listing.pet_policy = request.form['pet_policy']
+        listing.phone_number = request.form.get('phone_number', '')
+        listing.include_phone = 'include_phone' in request.form
+        
+        # Handle additional photos
+        photos = request.files.getlist('photos')
+        for photo in photos[:10-len(listing.photos)]:  # Don't exceed 10 total
+            if photo and photo.filename:
+                filename = save_picture(photo)
+                listing_photo = ListingPhoto(
+                    filename=filename,
+                    listing_id=listing.id,
+                    is_primary=(len(listing.photos) == 0)
+                )
+                db.session.add(listing_photo)
+        
+        db.session.commit()
+        flash('Your listing has been updated!', 'success')
+        return redirect(url_for('preview_listing', listing_id=listing.id))
+    
+    # GET request - show form with existing data
+    form_data = {
+        'title': listing.title,
+        'description': listing.description,
+        'city': listing.city,
+        'borough': listing.borough or '',
+        'neighborhood': listing.neighborhood or '',
+        'rental_type': listing.rental_type,
+        'room_type': listing.room_type,
+        'price': listing.price,
+        'seeking_roommate': listing.seeking_roommate,
+        'date_available': listing.date_available.strftime('%Y-%m-%d') if listing.date_available else '',
+        'date_until': listing.date_until.strftime('%Y-%m-%d') if listing.date_until else '',
+        'transportation': listing.transportation or '',
+        'size': listing.size or '',
+        'furnished': listing.furnished,
+        'vegan_household': listing.vegan_household,
+        'about_lister': listing.about_lister,
+        'lister_relationship': listing.lister_relationship,
+        'rental_requirements': listing.rental_requirements,
+        'pet_policy': listing.pet_policy,
+        'phone_number': listing.phone_number or '',
+        'include_phone': listing.include_phone
+    }
+    return render_template('create_listing.html', listing=listing, edit_mode=True, form_data=form_data)
 
 @app.route('/listing/<listing_id>')
 def listing_detail(listing_id):
@@ -506,12 +573,14 @@ def dashboard():
     active_listings = [l for l in user_listings if l.status == ListingStatus.ACTIVE.value]
     draft_listings = [l for l in user_listings if l.status == ListingStatus.DRAFT.value]
     payment_submitted_listings = [l for l in user_listings if l.status == ListingStatus.PAYMENT_SUBMITTED.value]
+    deactivated_listings = [l for l in user_listings if l.status == ListingStatus.DEACTIVATED.value]
     expired_listings = [l for l in user_listings if l.status == ListingStatus.EXPIRED.value]
     
     return render_template('dashboard.html', 
                          active_listings=active_listings,
                          draft_listings=draft_listings,
                          payment_submitted_listings=payment_submitted_listings,
+                         deactivated_listings=deactivated_listings,
                          expired_listings=expired_listings)
 
 @app.route('/pay/<listing_id>')
@@ -537,7 +606,7 @@ def pay_for_listing(listing_id):
 @app.route('/renew/<listing_id>')
 @login_required
 def renew_listing(listing_id):
-    """Renew an expired listing"""
+    """Renew an expired or deactivated listing - redirect to edit page first"""
     listing = Listing.query.get_or_404(listing_id)
     
     # Check if user owns this listing
@@ -545,12 +614,18 @@ def renew_listing(listing_id):
         flash('You can only renew your own listings.', 'danger')
         return redirect(url_for('dashboard'))
     
-    # Check if listing can be renewed (expired or active)
-    if listing.status not in [ListingStatus.EXPIRED.value, ListingStatus.ACTIVE.value]:
-        flash('This listing cannot be renewed.', 'warning')
+    # Check if listing can be renewed (expired or deactivated)
+    if listing.status not in [ListingStatus.EXPIRED.value, ListingStatus.DEACTIVATED.value]:
+        flash('Only expired or deactivated listings can be renewed.', 'warning')
         return redirect(url_for('dashboard'))
     
-    return render_template('renew_listing.html', listing=listing)
+    # Convert to draft status so it can be edited
+    listing.status = ListingStatus.DRAFT.value
+    db.session.commit()
+    
+    flash('Listing converted to draft. Please review and update before republishing.', 'info')
+    # Redirect to edit page (we need to create this route)
+    return redirect(url_for('edit_listing', listing_id=listing_id))
 
 @app.route('/delete/<listing_id>', methods=['POST'])
 @login_required
@@ -563,9 +638,9 @@ def delete_listing(listing_id):
         flash('You can only delete your own listings.', 'danger')
         return redirect(url_for('dashboard'))
     
-    # Only allow deleting drafts
-    if listing.status != ListingStatus.DRAFT.value:
-        flash('You can only delete draft listings.', 'warning')
+    # Only allow deleting drafts, deactivated, and expired listings
+    if listing.status not in [ListingStatus.DRAFT.value, ListingStatus.DEACTIVATED.value, ListingStatus.EXPIRED.value]:
+        flash('You can only delete draft, deactivated, or expired listings.', 'warning')
         return redirect(url_for('dashboard'))
     
     # Delete associated photos first
@@ -580,128 +655,31 @@ def delete_listing(listing_id):
     db.session.delete(listing)
     db.session.commit()
     
-    flash('Draft listing deleted successfully.', 'success')
+    flash('Listing deleted successfully.', 'success')
     return redirect(url_for('dashboard'))
 
-@app.route('/upgrade')
+@app.route('/deactivate/<listing_id>', methods=['POST'])
 @login_required
-def upgrade():
-    """Show upgrade to paid account page with Paddle checkout"""
-    # Store the referring page for redirect after upgrade
-    next_page = request.args.get('next', request.referrer)
-    return render_template('upgrade.html', user=current_user, next_page=next_page)
-
-@app.route('/paddle/checkout/listing/<int:amount>/<listing_id>')
-@login_required
-def paddle_checkout_listing(amount, listing_id):
-    """Create Paddle checkout session for listing payment"""
+def deactivate_listing(listing_id):
+    """Deactivate an active listing"""
     listing = Listing.query.get_or_404(listing_id)
     
     # Check if user owns this listing
     if listing.user_id != current_user.id:
-        flash('You can only pay for your own listings.', 'danger')
+        flash('You can only deactivate your own listings.', 'danger')
         return redirect(url_for('dashboard'))
     
-    # In production, create a real Paddle checkout session
-    checkout_data = {
-        'amount': amount,
-        'listing_id': listing_id,
-        'listing_title': listing.title,
-        'user_email': current_user.email,
-        'type': 'listing'
-    }
-    
-    return render_template('paddle_checkout.html', **checkout_data)
-
-@app.route('/paddle/checkout/renewal/<int:amount>/<listing_id>')
-@login_required
-def paddle_checkout_renewal(amount, listing_id):
-    """Create Paddle checkout session for listing renewal"""
-    listing = Listing.query.get_or_404(listing_id)
-    
-    # Check if user owns this listing
-    if listing.user_id != current_user.id:
-        flash('You can only renew your own listings.', 'danger')
+    # Only allow deactivating active listings
+    if listing.status != ListingStatus.ACTIVE.value:
+        flash('Only active listings can be deactivated.', 'warning')
         return redirect(url_for('dashboard'))
     
-    # In production, create a real Paddle checkout session
-    checkout_data = {
-        'amount': amount,
-        'listing_id': listing_id,
-        'listing_title': listing.title,
-        'user_email': current_user.email,
-        'type': 'renewal'
-    }
+    # Deactivate the listing
+    listing.status = ListingStatus.DEACTIVATED.value
+    db.session.commit()
     
-    return render_template('paddle_checkout.html', **checkout_data)
-
-@app.route('/paddle/webhook', methods=['POST'])
-def paddle_webhook():
-    """Handle Paddle webhook notifications"""
-    # Verify webhook signature
-    signature = request.headers.get('paddle-signature')
-    webhook_secret = app.config['PADDLE_WEBHOOK_SECRET']
-    
-    # In production, verify the webhook signature
-    # payload = request.get_data()
-    # expected_signature = hmac.new(
-    #     webhook_secret.encode(), payload, hashlib.sha256
-    # ).hexdigest()
-    
-    data = request.get_json()
-    event_type = data.get('event_type')
-    
-    if event_type == PaddleEventType.TRANSACTION_COMPLETED.value:
-        handle_transaction_completed(data)
-    elif event_type == PaddleEventType.TRANSACTION_CREATED.value:
-        handle_transaction_created(data)
-    elif event_type == PaddleEventType.TRANSACTION_UPDATED.value:
-        handle_transaction_updated(data)
-    
-    return jsonify({'status': 'success'}), 200
-
-def handle_transaction_completed(data):
-    """Handle completed listing payment or renewal"""
-    transaction_id = data.get('transaction_id')
-    customer_email = data.get('customer_email')
-    custom_data = data.get('custom_data', {})
-    listing_id = custom_data.get('listing_id')
-    is_renewal = custom_data.get('renewal', False)
-    
-    if listing_id:
-        listing = Listing.query.get(listing_id)
-        if listing:
-            if is_renewal:
-                # Handle renewal - extend expiration date
-                from datetime import timedelta
-                if listing.status == ListingStatus.EXPIRED.value or listing.status == ListingStatus.ACTIVE.value:
-                    listing.status = ListingStatus.ACTIVE.value
-                    listing.paddle_transaction_id = transaction_id
-                    
-                    # If expired, start from now. If active, extend from current expiration
-                    if listing.status == ListingStatus.EXPIRED.value or not listing.expires_at:
-                        listing.paid_at = datetime.now()
-                        listing.expires_at = datetime.now() + timedelta(days=30)
-                    else:
-                        # Extend from current expiration date
-                        listing.expires_at = listing.expires_at + timedelta(days=30)
-                    
-                    db.session.commit()
-            else:
-                # Handle new listing payment
-                if listing.status == ListingStatus.DRAFT.value:
-                    listing.activate_listing(transaction_id)
-                    db.session.commit()
-
-def handle_transaction_created(data):
-    """Handle transaction creation - not much to do here"""
-    pass
-
-def handle_transaction_updated(data):
-    """Handle transaction updates"""
-    # Could handle status changes here if needed
-    pass
-
+    flash('Listing deactivated successfully.', 'success')
+    return redirect(url_for('dashboard'))
 
 if __name__ == '__main__':
     with app.app_context():
