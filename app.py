@@ -13,6 +13,8 @@ from datetime import datetime
 from enum import Enum
 from PIL import Image
 from dotenv import load_dotenv
+import io
+from b2sdk.v2 import InMemoryAccountInfo, B2Api
 
 # Load environment variables from .env file
 load_dotenv()
@@ -120,11 +122,21 @@ if os.environ.get('RAILWAY_ENVIRONMENT'):
 else:
     app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
+# Backblaze B2 configuration
+app.config['B2_KEY_ID'] = os.environ.get('B2_KEY_ID')
+app.config['B2_APPLICATION_KEY'] = os.environ.get('B2_APPLICATION_KEY')
+app.config['B2_BUCKET_NAME'] = os.environ.get('B2_BUCKET_NAME')
+
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 login_manager.login_message_category = 'info'
+
+# Make get_photo_url available in templates
+@app.template_global()
+def photo_url(filename):
+    return get_photo_url(filename)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -254,7 +266,61 @@ def expire_old_listings():
     
     return len(expired_listings)
 
+def get_b2_api():
+    """Initialize Backblaze B2 API connection"""
+    if not all([app.config['B2_KEY_ID'], app.config['B2_APPLICATION_KEY'], app.config['B2_BUCKET_NAME']]):
+        return None
+    
+    info = InMemoryAccountInfo()
+    b2_api = B2Api(info)
+    b2_api.authorize_account("production", app.config['B2_KEY_ID'], app.config['B2_APPLICATION_KEY'])
+    return b2_api
+
+def save_picture_to_b2(form_picture):
+    """Save picture to Backblaze B2 storage"""
+    try:
+        b2_api = get_b2_api()
+        if not b2_api:
+            return None
+            
+        bucket = b2_api.get_bucket_by_name(app.config['B2_BUCKET_NAME'])
+        
+        # Generate unique filename
+        random_hex = secrets.token_hex(8)
+        _, f_ext = os.path.splitext(form_picture.filename)
+        picture_fn = f"{random_hex}{f_ext}"
+        
+        # Resize image in memory
+        img = Image.open(form_picture)
+        img.thumbnail((800, 600))
+        
+        # Convert to bytes
+        img_bytes = io.BytesIO()
+        img_format = 'JPEG' if f_ext.lower() in ['.jpg', '.jpeg'] else 'PNG'
+        img.save(img_bytes, format=img_format)
+        img_bytes.seek(0)
+        
+        # Upload to B2
+        file_info = bucket.upload_bytes(
+            img_bytes.getvalue(),
+            picture_fn,
+            content_type=f'image/{img_format.lower()}'
+        )
+        
+        return picture_fn
+    except Exception as e:
+        print(f"B2 upload error: {e}")
+        return None
+
 def save_picture(form_picture):
+    """Save picture to B2 if configured, otherwise save locally"""
+    # Try B2 first if configured
+    if app.config['B2_KEY_ID']:
+        b2_filename = save_picture_to_b2(form_picture)
+        if b2_filename:
+            return b2_filename
+    
+    # Fallback to local storage
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_fn = random_hex + f_ext
@@ -270,6 +336,15 @@ def save_picture(form_picture):
     img.save(picture_path)
     
     return picture_fn
+
+def get_photo_url(filename):
+    """Get the URL for a photo (B2 or local)"""
+    if app.config['B2_KEY_ID'] and app.config['B2_BUCKET_NAME']:
+        # Return B2 URL format
+        return f"https://f002.backblazeb2.com/file/{app.config['B2_BUCKET_NAME']}/{filename}"
+    else:
+        # Return local URL
+        return url_for('static', filename=f'uploads/{filename}')
 
 @app.route('/')
 def index():

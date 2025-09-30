@@ -45,7 +45,7 @@
                 <div class="relative bg-gray-200 rounded-lg overflow-hidden flex items-center justify-center" style="height: 600px;">
                     {% for photo in listing.photos %}
                     <img id="photo-{{ loop.index0 }}" 
-                         src="{{ url_for('static', filename='uploads/' + photo.filename) }}" 
+                         src="{{ photo_url(photo.filename) }}" 
                          alt="{{ listing.title }}" 
                          class="w-full h-full object-contain absolute top-0 left-0 transition-opacity duration-300 {% if loop.index0 == 0 %}opacity-100{% else %}opacity-0{% endif %}">
                     {% endfor %}
@@ -71,7 +71,7 @@
                 <div class="mt-4 flex justify-center gap-2 overflow-x-auto">
                     {% for photo in listing.photos %}
                     <img class="w-16 h-16 object-cover rounded cursor-pointer border-2 {% if loop.index0 == 0 %}border-green-500{% else %}border-transparent{% endif %} hover:border-green-300 flex-shrink-0" 
-                         src="{{ url_for('static', filename='uploads/' + photo.filename) }}" 
+                         src="{{ photo_url(photo.filename) }}" 
                          alt="{{ listing.title }}"
                          onclick="showPhoto({{ loop.index0 }})">
                     {% endfor %}

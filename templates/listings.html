@@ -108,7 +108,7 @@
                 <div class="flex min-h-[180px]">
                     {% if listing.photos %}
                     <div class="w-[180px] h-[180px] bg-gray-200 flex-shrink-0">
-                        <img src="{{ url_for('static', filename='uploads/' + listing.photos[0].filename) }}" 
+                        <img src="{{ photo_url(listing.photos[0].filename) }}" 
                              alt="{{ listing.title }}" class="w-full h-full object-cover">
                     </div>
                     {% endif %}

@@ -2,7 +2,7 @@
 
 **Open-source vegan housing platform - contribute to make it better for everyone!**
 
-VegListings (veglistings.com) is a community-driven platform connecting vegan renters with vegan-friendly housing. This is the official repository - contribute code, report bugs, and help build the future of vegan housing together.
+VegListings is a community-driven platform connecting vegan renters with vegan-friendly housing. This is the official repository - contribute code, report bugs, and help build the future of vegan housing together.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
@@ -10,7 +10,7 @@ VegListings (veglistings.com) is a community-driven platform connecting vegan re
 
 ## 🌟 About VegListings
 
-**Live site**: [veglistings.com](https://veglistings.com)
+**Live site**: [veglistings.up.railway.app](https://veglistings.up.railway.app/)
 
 VegListings helps vegans find housing in vegan-friendly households. Whether you're looking for a fully vegan house or just a welcoming environment, we connect plant-based renters with like-minded hosts.
 
@@ -125,11 +125,27 @@ VegListings exists to support the vegan community by making it easier to find ho
 
 Our sliding-scale model ensures economic barriers don't prevent access, and our open-source model lets the community shape the platform's future.
 
+## 💚 Support the Project
+
+Love what we're building? Help keep VegListings free and community-focused!
+
+**📱 Quick Donations:**
+- **Venmo**: [@leah-peker](https://venmo.com/u/leah-peker)
+- **CashApp**: [$leahpeker](https://cash.app/$leahpeker)
+
+Your support helps with:
+- Server costs and infrastructure
+- New feature development  
+- Keeping the platform ad-free
+- Supporting the vegan community
+
+*Every contribution, no matter the size, makes a difference! 🌱*
+
 ## 💬 Get Involved
 
 - 🐛 **Issues**: Report bugs or request features
 - 💡 **Discussions**: Share ideas and ask questions  
-- 📧 **Contact**: Questions? Email [support@veglistings.com](mailto:support@veglistings.com)
+- 📧 **Contact**: Questions? Email [leahpeker@gmail.com](mailto:leahpeker@gmail.com)
 
 ---
 
