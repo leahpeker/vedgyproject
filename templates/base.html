@@ -16,11 +16,8 @@
                 <a href="/" class="hover:text-green-200">Home</a>
                 <a href="/listings" class="hover:text-green-200">Browse</a>
                 {% if current_user.is_authenticated %}
-                    {% if current_user.has_paid_account() %}
-                        <a href="/create" class="hover:text-green-200">Post Listing</a>
-                    {% else %}
-                        <a href="/upgrade" class="hover:text-green-200">Upgrade to Post</a>
-                    {% endif %}
+                    <a href="/create" class="hover:text-green-200">Post Listing</a>
+                    <a href="/dashboard" class="hover:text-green-200">My Listings</a>
                     <span class="text-green-200">Hi, {{ current_user.first_name }}!</span>
                     <a href="/logout" class="hover:text-green-200">Logout</a>
                 {% else %}

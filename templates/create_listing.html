@@ -220,7 +220,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-1">Photos</label>
                 <input type="file" name="photos" multiple accept="image/*"
                        class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                <p class="text-sm text-gray-500 mt-1">Upload up to 5 photos. First photo will be the main photo.</p>
+                <p class="text-sm text-gray-500 mt-1">Upload up to 10 photos. First photo will be the main photo.</p>
             </div>
         </div>
 
@@ -262,10 +262,46 @@
             </div>
         </div>
         
+        <!-- Payment Info -->
+        <div class="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-4 text-blue-800">💳 Payment Information</h2>
+            
+            <div class="space-y-3 mb-4">
+                <p class="text-blue-700">
+                    <strong>After creating your listing, you'll choose your payment amount to make it live for 30 days.</strong>
+                </p>
+                <p class="text-blue-600 text-sm">
+                    Sliding scale pricing - pay what works for your budget!
+                </p>
+            </div>
+            
+            <div x-data="{ showInfo: false }" class="space-y-3">
+                <button type="button" @click="showInfo = !showInfo" 
+                        class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
+                    <span x-text="showInfo ? 'Hide info' : 'Why do we charge for listings?'" class="mr-1"></span>
+                    <svg class="w-4 h-4 transition-transform" :class="showInfo ? 'rotate-180' : ''" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+                
+                <div x-show="showInfo" x-transition class="bg-white border border-blue-200 rounded p-4 text-sm text-blue-700">
+                    <p class="mb-2">
+                        <strong>🛡️ Prevent scammers:</strong> A small payment helps keep fake and spam listings off the platform.
+                    </p>
+                    <p class="mb-2">
+                        <strong>🌱 Support our mission:</strong> Your payment helps us maintain and improve this vegan-focused platform.
+                    </p>
+                    <p>
+                        <strong>🔧 Keep building:</strong> Funds go toward server costs, new features, and keeping VegListings free from ads.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
         <div class="flex space-x-4">
             <button type="submit" 
                     class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
-                Create Listing
+                Preview Listing
             </button>
             <a href="/listings" 
                class="border border-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-50">

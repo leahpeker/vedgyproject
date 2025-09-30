@@ -17,18 +17,15 @@ from datetime import datetime
 from enum import Enum
 from PIL import Image
 
-class SubscriptionStatus(Enum):
-    NONE = 'none'
-    ACTIVE = 'active' 
-    CANCELED = 'canceled'
+class ListingStatus(Enum):
+    DRAFT = 'draft'
+    ACTIVE = 'active'
     EXPIRED = 'expired'
-
+    
 class PaddleEventType(Enum):
-    SUBSCRIPTION_CREATED = 'subscription_created'
-    SUBSCRIPTION_UPDATED = 'subscription_updated'
-    SUBSCRIPTION_CANCELLED = 'subscription_cancelled'
-    SUBSCRIPTION_PAYMENT_SUCCESS = 'subscription_payment_success'
-    SUBSCRIPTION_PAYMENT_FAILED = 'subscription_payment_failed'
+    TRANSACTION_COMPLETED = 'transaction.completed'
+    TRANSACTION_CREATED = 'transaction.created'
+    TRANSACTION_UPDATED = 'transaction.updated'
 
 class ListerRelationship(Enum):
     OWNER = 'owner'
@@ -114,17 +111,27 @@ def get_major_cities():
     return [(city, city) for city in major_cities]
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///veglistings.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'your-secret-key-change-this-in-production'
-app.config['WTF_CSRF_ENABLED'] = False  # Disable CSRF for development
-app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
-# Paddle configuration (use sandbox for development)
-app.config['PADDLE_VENDOR_ID'] = 'your-paddle-vendor-id'
-app.config['PADDLE_API_KEY'] = 'your-paddle-api-key'  
-app.config['PADDLE_WEBHOOK_SECRET'] = 'your-paddle-webhook-secret'
-app.config['PADDLE_ENVIRONMENT'] = 'sandbox'  # Change to 'production' later
+# Load configuration from environment variables
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///veglistings.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')
+app.config['WTF_CSRF_ENABLED'] = False  # Disable CSRF for development
+# Use Railway volume for persistent storage in production
+if os.environ.get('RAILWAY_ENVIRONMENT'):
+    app.config['UPLOAD_FOLDER'] = '/app/uploads'
+else:
+    app.config['UPLOAD_FOLDER'] = 'static/uploads'
+
+# Paddle configuration
+app.config['PADDLE_CLIENT_TOKEN'] = os.environ.get('PADDLE_CLIENT_TOKEN')
+app.config['PADDLE_WEBHOOK_SECRET'] = os.environ.get('PADDLE_WEBHOOK_SECRET')
+app.config['PADDLE_ENVIRONMENT'] = os.environ.get('PADDLE_ENVIRONMENT', 'sandbox')
+
+# Paddle Price IDs for different amounts (set in production)
+app.config['PADDLE_PRICE_ID_LISTING_BUDGET'] = os.environ.get('PADDLE_PRICE_ID_LISTING_BUDGET')
+app.config['PADDLE_PRICE_ID_LISTING_MID'] = os.environ.get('PADDLE_PRICE_ID_LISTING_MID') 
+app.config['PADDLE_PRICE_ID_LISTING_SUPPORTER'] = os.environ.get('PADDLE_PRICE_ID_LISTING_SUPPORTER')
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
@@ -145,12 +152,8 @@ class User(UserMixin, db.Model):
     phone = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     
-    # Paddle subscription fields
-    subscription_status = db.Column(db.String(20), default=SubscriptionStatus.NONE.value)
-    subscription_start_date = db.Column(db.DateTime)
-    subscription_end_date = db.Column(db.DateTime)
+    # Paddle customer info for future transactions
     paddle_customer_id = db.Column(db.String(100))
-    paddle_subscription_id = db.Column(db.String(100))
     
     listings = db.relationship('Listing', backref='user', lazy=True)
     
@@ -160,22 +163,9 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
         return bcrypt.check_password_hash(self.password_hash, password)
     
-    def has_paid_account(self):
-        """Check if user has an active paid subscription"""
-        if not self.subscription_end_date:
-            return False
-        
-        return (self.subscription_status in [SubscriptionStatus.ACTIVE.value, SubscriptionStatus.CANCELED.value] and 
-                self.subscription_end_date > datetime.now())
-    
-    def subscription_expires_soon(self, days=7):
-        """Check if subscription expires within specified days"""
-        if not self.subscription_end_date:
-            return False
-        
-        from datetime import timedelta
-        warning_date = datetime.now() + timedelta(days=days)
-        return self.subscription_end_date <= warning_date
+    def can_create_listing(self):
+        """Users can always create listings, payment happens per listing"""
+        return True
 
 class RegistrationForm(FlaskForm):
     first_name = StringField('First Name', validators=[DataRequired(), Length(min=1, max=50)])
@@ -208,8 +198,6 @@ class Listing(db.Model):
     room_type = db.Column(db.String(20), nullable=False)    # private_room, shared_room, entire_place
     price = db.Column(db.Integer, nullable=False)  # monthly rent in dollars
     seeking_roommate = db.Column(db.Boolean, default=False, nullable=False)
-    
-    # New fields
     date_available = db.Column(db.Date, nullable=False)
     date_until = db.Column(db.Date, nullable=True)  # Optional end date for sublets
     transportation = db.Column(db.Text, nullable=True)  # Transportation options/details
@@ -222,6 +210,12 @@ class Listing(db.Model):
     pet_policy = db.Column(db.Text, nullable=False) 
     phone_number = db.Column(db.Text, nullable=False) 
     include_phone = db.Column(db.Boolean, default=False, nullable=False)  # Whether to show phone in contact
+    
+    # Payment and expiration tracking
+    status = db.Column(db.String(20), default=ListingStatus.DRAFT.value, nullable=False)
+    paid_at = db.Column(db.DateTime, nullable=True)
+    expires_at = db.Column(db.DateTime, nullable=True)  # 30 days from paid_at
+    paddle_transaction_id = db.Column(db.String(100), nullable=True)
     
     user_id = db.Column(db.String(36), db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
@@ -247,6 +241,14 @@ class Listing(db.Model):
     def get_vegan_household_display(self):
         """Get the human-readable display text for vegan household type"""
         return VeganHouseholdType.get_display_text(self.vegan_household)
+    
+    def activate_listing(self, transaction_id):
+        """Activate listing after successful payment"""
+        from datetime import timedelta
+        self.status = ListingStatus.ACTIVE.value
+        self.paid_at = datetime.now()
+        self.expires_at = datetime.now() + timedelta(days=30)
+        self.paddle_transaction_id = transaction_id
 
 class ListingPhoto(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -254,6 +256,22 @@ class ListingPhoto(db.Model):
     listing_id = db.Column(db.String(36), db.ForeignKey('listing.id'), nullable=False)
     is_primary = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+def expire_old_listings():
+    """Mark listings as expired if they're past their expiration date"""
+    from datetime import datetime
+    expired_listings = Listing.query.filter(
+        Listing.status == ListingStatus.ACTIVE.value,
+        Listing.expires_at <= datetime.now()
+    ).all()
+    
+    for listing in expired_listings:
+        listing.status = ListingStatus.EXPIRED.value
+    
+    if expired_listings:
+        db.session.commit()
+    
+    return len(expired_listings)
 
 def save_picture(form_picture):
     random_hex = secrets.token_hex(8)
@@ -278,6 +296,9 @@ def index():
 
 @app.route('/listings')
 def listings():
+    # Expire old listings before showing results
+    expire_old_listings()
+    
     # Get filter parameters
     rental_type = request.args.get('rental_type')
     room_type = request.args.get('room_type')
@@ -289,8 +310,8 @@ def listings():
     min_price = request.args.get('min_price')
     max_price = request.args.get('max_price')
     
-    # Build query
-    query = Listing.query
+    # Build query - only show active listings
+    query = Listing.query.filter(Listing.status == ListingStatus.ACTIVE.value)
     
     if rental_type:
         query = query.filter(Listing.rental_type == rental_type)
@@ -376,10 +397,6 @@ def logout():
 @app.route('/create', methods=['GET', 'POST'])
 @login_required
 def create_listing():
-    # Check if user has paid account
-    if not current_user.has_paid_account():
-        flash('You need a paid membership to post listings. Please upgrade your account.', 'warning')
-        return redirect(url_for('upgrade', next=url_for('create_listing')))
     if request.method == 'POST':
         from datetime import datetime
         
@@ -419,7 +436,7 @@ def create_listing():
         
         # Handle photo uploads
         photos = request.files.getlist('photos')
-        for i, photo in enumerate(photos[:5]):  # Limit to 5 photos
+        for i, photo in enumerate(photos[:10]):  # Limit to 10 photos
             if photo and photo.filename:
                 filename = save_picture(photo)
                 listing_photo = ListingPhoto(
@@ -430,15 +447,117 @@ def create_listing():
                 db.session.add(listing_photo)
         
         db.session.commit()
-        flash('Your listing has been created!', 'success')
-        return redirect(url_for('listings'))
+        flash('Your listing draft has been saved!', 'success')
+        return redirect(url_for('preview_listing', listing_id=listing.id))
     
     return render_template('create_listing.html')
 
-@app.route('/listing/<int:listing_id>')
+@app.route('/listing/<listing_id>')
 def listing_detail(listing_id):
     listing = Listing.query.get_or_404(listing_id)
     return render_template('listing_detail.html', listing=listing)
+
+@app.route('/preview/<listing_id>')
+@login_required
+def preview_listing(listing_id):
+    """Preview a draft listing before payment"""
+    listing = Listing.query.get_or_404(listing_id)
+    
+    # Check if user owns this listing
+    if listing.user_id != current_user.id:
+        flash('You can only preview your own listings.', 'danger')
+        return redirect(url_for('listings'))
+    
+    return render_template('preview_listing.html', listing=listing)
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    """User dashboard to manage their listings"""
+    # Get all user's listings
+    user_listings = Listing.query.filter_by(user_id=current_user.id).order_by(Listing.created_at.desc()).all()
+    
+    # Expire old listings before showing dashboard
+    expire_old_listings()
+    
+    # Categorize listings
+    active_listings = [l for l in user_listings if l.status == ListingStatus.ACTIVE.value]
+    draft_listings = [l for l in user_listings if l.status == ListingStatus.DRAFT.value]
+    expired_listings = [l for l in user_listings if l.status == ListingStatus.EXPIRED.value]
+    
+    return render_template('dashboard.html', 
+                         active_listings=active_listings,
+                         draft_listings=draft_listings,
+                         expired_listings=expired_listings)
+
+@app.route('/pay/<listing_id>')
+@login_required
+def pay_for_listing(listing_id):
+    """Payment page for a specific listing"""
+    listing = Listing.query.get_or_404(listing_id)
+    
+    # Check if user owns this listing
+    if listing.user_id != current_user.id:
+        flash('You can only pay for your own listings.', 'danger')
+        return redirect(url_for('listings'))
+    
+    # Check if already paid
+    if listing.status == ListingStatus.ACTIVE.value:
+        flash('This listing is already active!', 'info')
+        return redirect(url_for('listing_detail', listing_id=listing.id))
+    
+    # No need to change status - draft stays draft until paid
+    
+    return render_template('pay_listing.html', listing=listing)
+
+@app.route('/renew/<listing_id>')
+@login_required
+def renew_listing(listing_id):
+    """Renew an expired listing"""
+    listing = Listing.query.get_or_404(listing_id)
+    
+    # Check if user owns this listing
+    if listing.user_id != current_user.id:
+        flash('You can only renew your own listings.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    # Check if listing can be renewed (expired or active)
+    if listing.status not in [ListingStatus.EXPIRED.value, ListingStatus.ACTIVE.value]:
+        flash('This listing cannot be renewed.', 'warning')
+        return redirect(url_for('dashboard'))
+    
+    return render_template('renew_listing.html', listing=listing)
+
+@app.route('/delete/<listing_id>', methods=['POST'])
+@login_required
+def delete_listing(listing_id):
+    """Delete a draft listing"""
+    listing = Listing.query.get_or_404(listing_id)
+    
+    # Check if user owns this listing
+    if listing.user_id != current_user.id:
+        flash('You can only delete your own listings.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    # Only allow deleting drafts
+    if listing.status != ListingStatus.DRAFT.value:
+        flash('You can only delete draft listings.', 'warning')
+        return redirect(url_for('dashboard'))
+    
+    # Delete associated photos first
+    for photo in listing.photos:
+        # Delete the actual file
+        photo_path = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'], photo.filename)
+        if os.path.exists(photo_path):
+            os.remove(photo_path)
+        db.session.delete(photo)
+    
+    # Delete the listing
+    db.session.delete(listing)
+    db.session.commit()
+    
+    flash('Draft listing deleted successfully.', 'success')
+    return redirect(url_for('dashboard'))
 
 @app.route('/upgrade')
 @login_required
@@ -448,13 +567,49 @@ def upgrade():
     next_page = request.args.get('next', request.referrer)
     return render_template('upgrade.html', user=current_user, next_page=next_page)
 
-@app.route('/paddle/checkout')
+@app.route('/paddle/checkout/listing/<int:amount>/<listing_id>')
 @login_required
-def paddle_checkout():
-    """Create Paddle checkout session"""
-    # For now, return a simple checkout page
-    # In production, you'd create a Paddle checkout session
-    return render_template('paddle_checkout.html', user=current_user)
+def paddle_checkout_listing(amount, listing_id):
+    """Create Paddle checkout session for listing payment"""
+    listing = Listing.query.get_or_404(listing_id)
+    
+    # Check if user owns this listing
+    if listing.user_id != current_user.id:
+        flash('You can only pay for your own listings.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    # In production, create a real Paddle checkout session
+    checkout_data = {
+        'amount': amount,
+        'listing_id': listing_id,
+        'listing_title': listing.title,
+        'user_email': current_user.email,
+        'type': 'listing'
+    }
+    
+    return render_template('paddle_checkout.html', **checkout_data)
+
+@app.route('/paddle/checkout/renewal/<int:amount>/<listing_id>')
+@login_required
+def paddle_checkout_renewal(amount, listing_id):
+    """Create Paddle checkout session for listing renewal"""
+    listing = Listing.query.get_or_404(listing_id)
+    
+    # Check if user owns this listing
+    if listing.user_id != current_user.id:
+        flash('You can only renew your own listings.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    # In production, create a real Paddle checkout session
+    checkout_data = {
+        'amount': amount,
+        'listing_id': listing_id,
+        'listing_title': listing.title,
+        'user_email': current_user.email,
+        'type': 'renewal'
+    }
+    
+    return render_template('paddle_checkout.html', **checkout_data)
 
 @app.route('/paddle/webhook', methods=['POST'])
 def paddle_webhook():
@@ -472,91 +627,62 @@ def paddle_webhook():
     data = request.get_json()
     event_type = data.get('event_type')
     
-    if event_type == PaddleEventType.SUBSCRIPTION_CREATED.value:
-        handle_subscription_created(data)
-    elif event_type == PaddleEventType.SUBSCRIPTION_UPDATED.value:
-        handle_subscription_updated(data)
-    elif event_type == PaddleEventType.SUBSCRIPTION_CANCELLED.value:
-        handle_subscription_cancelled(data)
-    elif event_type == PaddleEventType.SUBSCRIPTION_PAYMENT_SUCCESS.value:
-        handle_subscription_payment_success(data)
-    elif event_type == PaddleEventType.SUBSCRIPTION_PAYMENT_FAILED.value:
-        handle_subscription_payment_failed(data)
+    if event_type == PaddleEventType.TRANSACTION_COMPLETED.value:
+        handle_transaction_completed(data)
+    elif event_type == PaddleEventType.TRANSACTION_CREATED.value:
+        handle_transaction_created(data)
+    elif event_type == PaddleEventType.TRANSACTION_UPDATED.value:
+        handle_transaction_updated(data)
     
     return jsonify({'status': 'success'}), 200
 
-def handle_subscription_created(data):
-    """Handle new subscription creation"""
+def handle_transaction_completed(data):
+    """Handle completed listing payment or renewal"""
+    transaction_id = data.get('transaction_id')
     customer_email = data.get('customer_email')
-    subscription_id = data.get('subscription_id')
-    customer_id = data.get('customer_id')
+    custom_data = data.get('custom_data', {})
+    listing_id = custom_data.get('listing_id')
+    is_renewal = custom_data.get('renewal', False)
     
-    user = User.query.filter_by(email=customer_email).first()
-    if user:
-        user.subscription_status = SubscriptionStatus.ACTIVE.value
-        user.paddle_subscription_id = subscription_id
-        user.paddle_customer_id = customer_id
-        user.subscription_start_date = datetime.now()
-        # Set end date based on subscription plan (monthly)
-        from datetime import timedelta
-        user.subscription_end_date = datetime.now() + timedelta(days=30)
-        db.session.commit()
+    if listing_id:
+        listing = Listing.query.get(listing_id)
+        if listing:
+            if is_renewal:
+                # Handle renewal - extend expiration date
+                from datetime import timedelta
+                if listing.status == ListingStatus.EXPIRED.value or listing.status == ListingStatus.ACTIVE.value:
+                    listing.status = ListingStatus.ACTIVE.value
+                    listing.paddle_transaction_id = transaction_id
+                    
+                    # If expired, start from now. If active, extend from current expiration
+                    if listing.status == ListingStatus.EXPIRED.value or not listing.expires_at:
+                        listing.paid_at = datetime.now()
+                        listing.expires_at = datetime.now() + timedelta(days=30)
+                    else:
+                        # Extend from current expiration date
+                        listing.expires_at = listing.expires_at + timedelta(days=30)
+                    
+                    db.session.commit()
+            else:
+                # Handle new listing payment
+                if listing.status == ListingStatus.DRAFT.value:
+                    listing.activate_listing(transaction_id)
+                    db.session.commit()
 
-def handle_subscription_updated(data):
-    """Handle subscription updates"""
-    subscription_id = data.get('subscription_id')
-    status = data.get('status')
-    
-    user = User.query.filter_by(paddle_subscription_id=subscription_id).first()
-    if user:
-        # Map Paddle status to our enum values
-        if status == 'active':
-            user.subscription_status = SubscriptionStatus.ACTIVE.value
-            from datetime import timedelta
-            user.subscription_end_date = datetime.now() + timedelta(days=30)
-        elif status == 'cancelled':
-            user.subscription_status = SubscriptionStatus.CANCELED.value
-        elif status == 'expired':
-            user.subscription_status = SubscriptionStatus.EXPIRED.value
-        
-        db.session.commit()
+def handle_transaction_created(data):
+    """Handle transaction creation - not much to do here"""
+    pass
 
-def handle_subscription_cancelled(data):
-    """Handle subscription cancellation"""
-    subscription_id = data.get('subscription_id')
-    
-    user = User.query.filter_by(paddle_subscription_id=subscription_id).first()
-    if user:
-        user.subscription_status = SubscriptionStatus.CANCELED.value
-        # Keep end_date as is - user retains access until end of billing period
-        db.session.commit()
+def handle_transaction_updated(data):
+    """Handle transaction updates"""
+    # Could handle status changes here if needed
+    pass
 
-def handle_subscription_payment_success(data):
-    """Handle successful subscription payment"""
-    subscription_id = data.get('subscription_id')
-    
-    user = User.query.filter_by(paddle_subscription_id=subscription_id).first()
-    if user:
-        user.subscription_status = SubscriptionStatus.ACTIVE.value
-        # Extend subscription for another month
-        from datetime import timedelta
-        if user.subscription_end_date and user.subscription_end_date > datetime.now():
-            user.subscription_end_date = user.subscription_end_date + timedelta(days=30)
-        else:
-            user.subscription_end_date = datetime.now() + timedelta(days=30)
-        db.session.commit()
-
-def handle_subscription_payment_failed(data):
-    """Handle failed subscription payment"""
-    subscription_id = data.get('subscription_id')
-    
-    user = User.query.filter_by(paddle_subscription_id=subscription_id).first()
-    if user:
-        # Don't immediately expire - Paddle usually retries
-        # We might want to send a notification email here
-        pass
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True, port=8000)
+    
+    # Use Railway's PORT environment variable or default to 8000
+    port = int(os.environ.get('PORT', 8000))
+    app.run(host='0.0.0.0', port=port, debug=False)

@@ -35,6 +35,10 @@ instance/
 *.db
 *.sqlite3
 
+# Uploads
+static/uploads/
+uploads/
+
 # Environment variables
 .env
 .flaskenv
