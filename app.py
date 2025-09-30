@@ -148,10 +148,9 @@ def photo_url(filename):
     return get_photo_url(filename)
 
 # Initialize database tables on startup
-@app.before_first_request
-def create_tables():
+with app.app_context():
     db.create_all()
-    create_default_admin()
+    # Note: create_default_admin() will be called later when the function is defined
 
 # Admin decorator
 def admin_required(f):
@@ -987,6 +986,10 @@ def create_default_admin():
             db.session.add(admin)
             db.session.commit()
             print(f"✅ Default admin created: {admin_email}")
+
+# Call admin creation on startup (for production)
+with app.app_context():
+    create_default_admin()
 
 if __name__ == '__main__':
     with app.app_context():
