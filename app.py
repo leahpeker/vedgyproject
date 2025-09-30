@@ -262,7 +262,7 @@ class Listing(db.Model):
     def get_masked_email(self):
         """Generate a masked email address for this listing"""
         listing_hash = hashlib.md5(f"listing_{self.id}_{self.created_at}".encode()).hexdigest()[:8]
-        return f"listing-{listing_hash}@veglistings.com"
+        return f"listing-{listing_hash}@veglistings.up.railway.app"
     
     def get_lister_relationship_display(self):
         """Get the human-readable display text for lister relationship"""
