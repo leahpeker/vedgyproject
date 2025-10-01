@@ -55,7 +55,13 @@ VegListings helps vegans find housing in vegan-friendly households. Whether you'
    pip install -r requirements.txt
    ```
 
-4. **Run locally**
+4. **Create a feature branch from development**
+   ```bash
+   git checkout development
+   git checkout -b feature/your-feature-name
+   ```
+
+5. **Run locally**
    ```bash
    python app.py
    ```
@@ -63,7 +69,7 @@ VegListings helps vegans find housing in vegan-friendly households. Whether you'
 
    *No configuration needed for local development!*
 
-6. **Make your changes and submit a PR!**
+6. **Make your changes and submit a PR to the development branch!**
 
 ### 🐛 Ways to Contribute
 
@@ -78,8 +84,6 @@ VegListings helps vegans find housing in vegan-friendly households. Whether you'
 ### 📋 Current Priorities
 
 **High Priority:**
-- Photo storage solution for production
-- Admin interface for approving listings  
 - Enhanced mobile experience
 - Search improvements
 
@@ -108,11 +112,11 @@ See our [Issues](https://github.com/leahpeker/veglistings/issues) for specific t
 
 ### 🎯 How to Submit Changes
 
-1. Create a new branch for your feature: `git checkout -b feature/your-feature-name`
+1. Create a new branch from development: `git checkout development && git checkout -b feature/your-feature-name`
 2. Make your changes and test locally
 3. Commit with a clear message: `git commit -m "Add feature: description"`
 4. Push to your fork: `git push origin feature/your-feature-name`
-5. Open a Pull Request to the main repository
+5. **Open a Pull Request to the `development` branch** (not main)
 
 ## 📄 License
 
