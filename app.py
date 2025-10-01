@@ -161,10 +161,10 @@ def admin_required(f):
 @login_manager.user_loader
 def load_user(user_id):
     # Try loading as user first, then as admin
-    user = User.query.get(user_id)
+    user = db.session.get(User, user_id)
     if user:
         return user
-    return Admin.query.get(user_id)
+    return db.session.get(Admin, user_id)
 
 class User(UserMixin, db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -245,7 +245,7 @@ class Listing(db.Model):
     lister_relationship = db.Column(db.String(30), nullable=False)  # owner, manager, tenant, etc.
     rental_requirements = db.Column(db.Text, nullable=False)  # Requirements for renters
     pet_policy = db.Column(db.Text, nullable=False) 
-    phone_number = db.Column(db.Text, nullable=False) 
+    phone_number = db.Column(db.Text, nullable=True) 
     include_phone = db.Column(db.Boolean, default=False, nullable=False)  # Whether to show phone in contact
     
     # Payment and expiration tracking
@@ -627,7 +627,7 @@ def create_listing():
 @login_required
 def edit_listing(listing_id):
     """Edit an existing draft listing using the create form"""
-    listing = Listing.query.get_or_404(listing_id)
+    listing = db.get_or_404(Listing, listing_id)
     
     # Check if user owns this listing
     if listing.user_id != current_user.id:
@@ -725,7 +725,7 @@ def edit_listing(listing_id):
 
 @app.route('/listing/<listing_id>')
 def listing_detail(listing_id):
-    listing = Listing.query.get_or_404(listing_id)
+    listing = db.get_or_404(Listing, listing_id)
     
     # Handle payment submission confirmation
     if request.args.get('payment') == 'submitted':
@@ -741,7 +741,7 @@ def listing_detail(listing_id):
 @login_required
 def preview_listing(listing_id):
     """Preview a draft listing before payment"""
-    listing = Listing.query.get_or_404(listing_id)
+    listing = db.get_or_404(Listing, listing_id)
     
     # Check if user owns this listing
     if listing.user_id != current_user.id:
@@ -778,7 +778,7 @@ def dashboard():
 @login_required
 def pay_for_listing(listing_id):
     """Payment page for a specific listing"""
-    listing = Listing.query.get_or_404(listing_id)
+    listing = db.get_or_404(Listing, listing_id)
     
     # Check if user owns this listing
     if listing.user_id != current_user.id:
@@ -798,7 +798,7 @@ def pay_for_listing(listing_id):
 @login_required
 def renew_listing(listing_id):
     """Renew an expired or deactivated listing - redirect to edit page first"""
-    listing = Listing.query.get_or_404(listing_id)
+    listing = db.get_or_404(Listing, listing_id)
     
     # Check if user owns this listing
     if listing.user_id != current_user.id:
@@ -822,7 +822,7 @@ def renew_listing(listing_id):
 @login_required
 def delete_listing(listing_id):
     """Delete a draft listing"""
-    listing = Listing.query.get_or_404(listing_id)
+    listing = db.get_or_404(Listing, listing_id)
     
     # Check if user owns this listing
     if listing.user_id != current_user.id:
@@ -851,7 +851,7 @@ def delete_listing(listing_id):
 @login_required
 def deactivate_listing(listing_id):
     """Deactivate an active listing"""
-    listing = Listing.query.get_or_404(listing_id)
+    listing = db.get_or_404(Listing, listing_id)
     
     # Check if user owns this listing
     if listing.user_id != current_user.id:
@@ -876,7 +876,7 @@ def delete_photo(photo_id):
     """Delete a photo from a listing"""
     from flask import jsonify
     
-    photo = ListingPhoto.query.get_or_404(photo_id)
+    photo = db.get_or_404(ListingPhoto, photo_id)
     listing = photo.listing
     
     # Check if user owns this listing
@@ -930,14 +930,14 @@ def admin_dashboard():
 @admin_required
 def admin_review_listing(listing_id):
     """Admin page to review individual listing"""
-    listing = Listing.query.get_or_404(listing_id)
+    listing = db.get_or_404(Listing, listing_id)
     return render_template('admin_review_listing.html', listing=listing)
 
 @app.route('/admin/approve/<listing_id>', methods=['POST'])
 @admin_required
 def admin_approve_listing(listing_id):
     """Approve a listing"""
-    listing = Listing.query.get_or_404(listing_id)
+    listing = db.get_or_404(Listing, listing_id)
     
     if listing.status == ListingStatus.PAYMENT_SUBMITTED.value:
         listing.activate_listing()  # Sets to ACTIVE and sets expiration
@@ -952,7 +952,7 @@ def admin_approve_listing(listing_id):
 @admin_required
 def admin_reject_listing(listing_id):
     """Reject a listing"""
-    listing = Listing.query.get_or_404(listing_id)
+    listing = db.get_or_404(Listing, listing_id)
     
     if listing.status == ListingStatus.PAYMENT_SUBMITTED.value:
         listing.status = ListingStatus.DRAFT.value
