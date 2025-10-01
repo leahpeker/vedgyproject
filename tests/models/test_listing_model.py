@@ -22,6 +22,8 @@ class TestListing:
             rental_requirements='Test requirements',
             pet_policy='No pets',
             furnished='not_furnished',
+            phone_number='(555) 123-4567',
+            include_phone=True,
             user_id=test_user.id,
             status=ListingStatus.DRAFT.value
         )

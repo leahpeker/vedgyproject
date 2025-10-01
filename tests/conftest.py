@@ -92,6 +92,8 @@ def draft_listing(test_user):
         rental_requirements='Must be vegan',
         pet_policy='No pets allowed',
         furnished='partially_furnished',
+        phone_number='(555) 123-4567',
+        include_phone=True,
         user_id=test_user.id,
         status='draft'
     )
@@ -116,6 +118,8 @@ def payment_submitted_listing(test_user):
         rental_requirements='Vegan-friendly',
         pet_policy='Cats allowed',
         furnished='fully_furnished',
+        phone_number='(555) 987-6543',
+        include_phone=False,
         user_id=test_user.id,
         status='payment_submitted'
     )
@@ -140,6 +144,8 @@ def active_listing(test_user):
         rental_requirements='Vegan only',
         pet_policy='No pets',
         furnished='not_furnished',
+        phone_number='(555) 111-2222',
+        include_phone=True,
         user_id=test_user.id,
         status='active'
     )

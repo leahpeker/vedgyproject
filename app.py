@@ -245,7 +245,7 @@ class Listing(db.Model):
     lister_relationship = db.Column(db.String(30), nullable=False)  # owner, manager, tenant, etc.
     rental_requirements = db.Column(db.Text, nullable=False)  # Requirements for renters
     pet_policy = db.Column(db.Text, nullable=False) 
-    phone_number = db.Column(db.Text, nullable=True) 
+    phone_number = db.Column(db.Text, nullable=False) 
     include_phone = db.Column(db.Boolean, default=False, nullable=False)  # Whether to show phone in contact
     
     # Payment and expiration tracking
