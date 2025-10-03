@@ -4,13 +4,14 @@ import tempfile
 import os
 from unittest.mock import Mock, patch
 from datetime import datetime, date
-from app import app, db, User, Admin, Listing, ListingPhoto
+from backend.app import create_app, db
+from backend.app.models import User, Admin, Listing, ListingPhoto
 
 @pytest.fixture
 def client():
     """Create a test client with clean database"""
-    # Create a temporary database file
-    db_fd, app.config['DATABASE'] = tempfile.mkstemp()
+    # Create app with test configuration
+    app = create_app()
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     app.config['TESTING'] = True
     app.config['WTF_CSRF_ENABLED'] = False
@@ -21,12 +22,14 @@ def client():
             db.create_all()
             yield client
             db.drop_all()
-    
-    os.close(db_fd)
 
 @pytest.fixture
 def app_context():
     """Application context for model tests"""
+    app = create_app()
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    app.config['TESTING'] = True
+    
     with app.app_context():
         db.create_all()
         yield app

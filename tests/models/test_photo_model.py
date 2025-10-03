@@ -1,6 +1,7 @@
 """Test ListingPhoto model"""
 import pytest
-from app import db, Listing, ListingPhoto
+from backend.app import db
+from backend.app.models import Listing, ListingPhoto
 
 class TestListingPhoto:
     """Test ListingPhoto model"""
