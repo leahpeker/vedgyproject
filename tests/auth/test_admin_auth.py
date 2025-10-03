@@ -1,6 +1,7 @@
 """Test admin authentication"""
 import pytest
-from app import db, Admin, Listing, ListingStatus
+from backend.app import db
+from backend.app.models import Admin, Listing, ListingStatus
 
 class TestAdminAuth:
     """Test admin authentication"""
@@ -67,7 +68,6 @@ class TestAdminAuth:
         assert response.status_code == 302
         
         # Listing should be activated
-        from app import ListingStatus
         updated_listing = db.session.get(Listing, payment_submitted_listing.id)
         assert updated_listing.status == ListingStatus.ACTIVE.value
     

@@ -1,7 +1,8 @@
 """Test Listing model"""
 import pytest
 from datetime import date
-from app import db, Listing, ListingStatus
+from backend.app import db
+from backend.app.models import Listing, ListingStatus
 
 class TestListing:
     """Test Listing model"""

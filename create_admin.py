@@ -4,7 +4,10 @@ Script to create an admin user
 Run with: python create_admin.py
 """
 
-from app import app, db, Admin
+from backend.app import create_app, db
+from backend.app.models import Admin
+
+app = create_app()
 
 def create_admin():
     with app.app_context():

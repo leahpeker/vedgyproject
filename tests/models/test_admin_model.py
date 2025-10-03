@@ -1,6 +1,7 @@
 """Test Admin model"""
 import pytest
-from app import db, Admin
+from backend.app import db
+from backend.app.models import Admin
 
 class TestAdmin:
     """Test Admin model"""

@@ -1,6 +1,7 @@
 """Test User model"""
 import pytest
-from app import db, User
+from backend.app import db
+from backend.app.models import User
 
 class TestUser:
     """Test User model"""
