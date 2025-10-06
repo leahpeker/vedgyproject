@@ -3,6 +3,7 @@ flask-sqlalchemy==3.1.1
 flask-login==0.6.3
 flask-bcrypt==1.0.1
 flask-wtf==1.2.2
+flask-migrate==4.0.5
 wtforms==3.2.1
 email-validator==2.3.0
 pillow==11.3.0
