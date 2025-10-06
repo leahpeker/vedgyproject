@@ -4,6 +4,7 @@ from flask_login import login_user, current_user
 from ..models import Admin, Listing, ListingStatus
 from ..forms import AdminLoginForm
 from ..utils.decorators import admin_required
+from .. import limiter
 
 # These will be imported from the main app
 db = None
@@ -16,6 +17,7 @@ def init_admin_routes(database):
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 @admin_bp.route('/login', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
 def admin_login():
     """Admin login page"""
     if current_user.is_authenticated and isinstance(current_user, Admin):

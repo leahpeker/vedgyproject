@@ -4,6 +4,8 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -13,6 +15,11 @@ load_dotenv()
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 login_manager = LoginManager()
+limiter = Limiter(
+    get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
 
 def create_app():
     """Create and configure Flask application"""
@@ -25,7 +32,13 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///veglistings.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')
-    app.config['WTF_CSRF_ENABLED'] = False  # Disable CSRF for development
+    app.config['WTF_CSRF_ENABLED'] = True  # Enable CSRF protection
+
+    # Session Security
+    app.config['SESSION_COOKIE_SECURE'] = os.environ.get('RAILWAY_ENVIRONMENT') is not None  # HTTPS only in prod
+    app.config['SESSION_COOKIE_HTTPONLY'] = True  # Prevent JavaScript access
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # CSRF protection
+    app.config['PERMANENT_SESSION_LIFETIME'] = 604800  # 7 days in seconds
     
     # Use Railway volume for persistent storage in production
     if os.environ.get('RAILWAY_ENVIRONMENT'):
@@ -45,6 +58,7 @@ def create_app():
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     login_manager.login_message_category = 'info'
+    limiter.init_app(app)
     
     # Initialize routes with database instance
     from .routes.auth import init_auth_routes
@@ -83,6 +97,23 @@ def create_app():
     @app.template_global()
     def photo_url(filename):
         return get_photo_url(filename)
+
+    # Make csrf_token available in all templates
+    from flask_wtf.csrf import generate_csrf
+    @app.context_processor
+    def inject_csrf_token():
+        return dict(csrf_token=generate_csrf)
+
+    # Add security headers
+    @app.after_request
+    def add_security_headers(response):
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        # CSP - allow Tailwind CDN, Alpine.js, Backblaze B2 for images, and payment providers
+        response.headers['Content-Security-Policy'] = "default-src 'self'; img-src 'self' https://*.backblazeb2.com data:; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://js.stripe.com; frame-src https://js.stripe.com; font-src 'self' https://cdn.jsdelivr.net;"
+        return response
     
     # Initialize database tables on startup
     with app.app_context():

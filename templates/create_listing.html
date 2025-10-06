@@ -5,7 +5,8 @@
     <h1 class="text-2xl font-bold mb-6">{% if edit_mode %}Edit Listing{% else %}Create New Listing{% endif %}</h1>
     
     <form method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded-lg shadow">
-        
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+
         <!-- Basic Information -->
         <div class="mb-8">
             <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Basic Information</h2>

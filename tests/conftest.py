@@ -14,7 +14,7 @@ def client():
     app = create_app()
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     app.config['TESTING'] = True
-    app.config['WTF_CSRF_ENABLED'] = False
+    app.config['WTF_CSRF_ENABLED'] = False  # Disable for tests
     app.config['SECRET_KEY'] = 'test-secret-key'
     
     with app.test_client() as client:

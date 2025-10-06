@@ -3,6 +3,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
 from ..models import User, Admin
 from ..forms import SignupForm, LoginForm, AdminLoginForm
+from ..utils.security import get_safe_redirect
+from .. import limiter
 
 # These will be imported from the main app
 db = None
@@ -33,14 +35,14 @@ def signup():
         # Automatically log in the user after signup
         login_user(user)
         flash(f'Welcome to VegListings, {user.first_name}!', 'success')
-        
-        # Redirect to next page or index
-        next_page = request.args.get('next')
-        return redirect(next_page) if next_page else redirect(url_for('public.index'))
+
+        # Redirect to safe URL or index
+        return redirect(get_safe_redirect(request.args.get('next'), 'public.index'))
     
     return render_template('signup.html', form=form)
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('public.index'))
@@ -50,9 +52,8 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         if user and user.check_password(form.password.data):
             login_user(user)
-            next_page = request.args.get('next')
             flash(f'Welcome back, {user.first_name}!', 'success')
-            return redirect(next_page) if next_page else redirect(url_for('public.index'))
+            return redirect(get_safe_redirect(request.args.get('next'), 'public.index'))
         flash('Invalid email or password', 'danger')
     
     return render_template('login.html', form=form)
