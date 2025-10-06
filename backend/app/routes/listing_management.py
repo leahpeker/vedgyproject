@@ -1,6 +1,7 @@
 """Listing CRUD operations routes"""
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
+from flask_wtf.csrf import generate_csrf
 from datetime import datetime
 from ..models import Listing, ListingStatus, ListingPhoto
 from ..models.base import get_major_cities, ListerRelationship, FurnishedStatus, VeganHouseholdType, NYCBorough
@@ -90,7 +91,8 @@ def create():
                          lister_relationships=ListerRelationship.choices(),
                          furnished_options=FurnishedStatus.choices(),
                          vegan_household_options=VeganHouseholdType.choices(),
-                         nyc_boroughs=NYCBorough.choices())
+                         nyc_boroughs=NYCBorough.choices(),
+                         csrf_token=generate_csrf())
 
 @listing_management_bp.route('/edit/<listing_id>', methods=['GET', 'POST'])
 @login_required
@@ -190,7 +192,7 @@ def edit(listing_id):
         'phone_number': listing.phone_number or '',
         'include_phone': listing.include_phone
     }
-    return render_template('create_listing.html', listing=listing, edit_mode=True, form_data=form_data)
+    return render_template('create_listing.html', listing=listing, edit_mode=True, form_data=form_data, csrf_token=generate_csrf())
 
 @listing_management_bp.route('/preview/<listing_id>')
 @login_required

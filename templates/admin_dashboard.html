@@ -47,14 +47,16 @@
                             Review
                         </a>
                         <form method="POST" action="/admin/approve/{{ listing.id }}" class="inline">
-                            <button type="submit" 
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button type="submit"
                                     class="bg-green-500 text-white px-4 py-2 rounded text-sm hover:bg-green-600"
                                     onclick="return confirm('Approve this listing?')">
                                 Approve
                             </button>
                         </form>
                         <form method="POST" action="/admin/reject/{{ listing.id }}" class="inline">
-                            <button type="submit" 
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button type="submit"
                                     class="bg-red-500 text-white px-4 py-2 rounded text-sm hover:bg-red-600"
                                     onclick="return confirm('Reject this listing?')">
                                 Reject
