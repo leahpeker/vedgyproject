@@ -1,11 +1,12 @@
-django==5.0
+django==5.2.6
 psycopg2-binary==2.9.10
 python-dotenv==1.1.1
 pillow==11.3.0
 boto3==1.40.45
-gunicorn==21.2.0
+gunicorn==23.0.0
 django-ratelimit==4.1.0
 pytest==8.3.4
 pytest-django==4.9.0
 b2sdk==2.6.0
 whitenoise==6.7.0
+dj-database-url==3.0.1
