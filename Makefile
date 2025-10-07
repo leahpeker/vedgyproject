@@ -21,14 +21,14 @@ install:
 	cd backend && venv/bin/pip install -r requirements.txt
 
 run:
-	$(PYTHON) run-django.py
+	cd backend && $(PYTHON) manage.py runserver
 
 down:
 	@lsof -ti:8000 | xargs kill -9 2>/dev/null || echo "No process running on port 8000"
 
 restart: down
 	@sleep 1
-	@$(PYTHON) run-django.py
+	@cd backend && ../$(PYTHON) manage.py runserver
 
 test:
 	cd backend && venv/bin/python -m pytest tests/ -v
