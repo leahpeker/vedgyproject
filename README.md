@@ -10,7 +10,7 @@ VedgyProject is a community-driven platform connecting vegan renters with vegan-
 
 ## 🌟 About VedgyProject
 
-**Live site**: [veglistings.up.railway.app](https://veglistings.up.railway.app/)
+**Live site**: [vedgyproject.up.railway.app](https://vedgyproject.up.railway.app/)
 
 VedgyProject helps vegans find housing in vegan-friendly households. Whether you're looking for a fully vegan house or just a welcoming environment, we connect plant-based renters with like-minded hosts.
 
@@ -48,8 +48,8 @@ VedgyProject helps vegans find housing in vegan-friendly households. Whether you
 2. **Clone your fork locally**
 
    ```bash
-   git clone https://github.com/YOUR-USERNAME/veglistings.git
-   cd veglistings
+   git clone https://github.com/YOUR-USERNAME/vedgyproject.git
+   cd vedgyproject
    ```
 
 3. **Set up development environment**
@@ -102,7 +102,7 @@ VedgyProject helps vegans find housing in vegan-friendly households. Whether you
 
 - **Report bugs** - Found something broken? Open an issue!
 - **Suggest features** - Ideas for improvements? We want to hear them!
-- **Fix bugs** - Check our [Issues](https://github.com/leahpeker/veglistings/issues) for bugs to fix
+- **Fix bugs** - Check our [Issues](https://github.com/leahpeker/vedgyproject/issues) for bugs to fix
 - **Add features** - Pick up a feature request or propose your own
 - **Improve UI/UX** - Help make the site more beautiful and usable
 - **Write tests** - Help us maintain code quality
@@ -130,7 +130,7 @@ VedgyProject helps vegans find housing in vegan-friendly households. Whether you
 - Native mobile apps
 - Advanced search and filtering
 
-See our [Issues](https://github.com/leahpeker/veglistings/issues) for specific tasks!
+See our [Issues](https://github.com/leahpeker/vedgyproject/issues) for specific tasks!
 
 ### 🔧 Development Guidelines
 

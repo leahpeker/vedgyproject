@@ -1,1 +1,1 @@
-web: cd backend && python manage.py migrate && gunicorn veglistings_project.wsgi --log-file -
+web: cd backend && python manage.py migrate && gunicorn config.wsgi --log-file -

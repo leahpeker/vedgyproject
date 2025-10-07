@@ -120,7 +120,7 @@ def get_major_cities():
 app = Flask(__name__)
 
 # Load configuration from environment variables
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///veglistings.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///vedgyproject.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')
 app.config['WTF_CSRF_ENABLED'] = False  # Disable CSRF for development
