@@ -1,62 +1,13 @@
 """Django admin configuration"""
 
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.urls import reverse
 from django.utils.html import format_html
 
-from .models import Listing, ListingPhoto, ListingStatus, User
+from .models import Listing, ListingPhoto, ListingStatus
 
 
-@admin.register(User)
-class UserAdmin(BaseUserAdmin):
-    """Admin interface for User model"""
-
-    list_display = (
-        "email",
-        "first_name",
-        "last_name",
-        "is_staff",
-        "is_active",
-        "created_at",
-    )
-    list_filter = ("is_staff", "is_active", "created_at")
-    search_fields = ("email", "first_name", "last_name")
-    ordering = ("-created_at",)
-
-    fieldsets = (
-        (None, {"fields": ("email", "password")}),
-        ("Personal Info", {"fields": ("first_name", "last_name", "phone")}),
-        (
-            "Permissions",
-            {
-                "fields": (
-                    "is_active",
-                    "is_staff",
-                    "is_superuser",
-                    "groups",
-                    "user_permissions",
-                )
-            },
-        ),
-        ("Important dates", {"fields": ("last_login", "date_joined")}),
-    )
-
-    add_fieldsets = (
-        (
-            None,
-            {
-                "classes": ("wide",),
-                "fields": (
-                    "email",
-                    "first_name",
-                    "last_name",
-                    "password1",
-                    "password2",
-                ),
-            },
-        ),
-    )
+# User admin is now in users/admin.py
 
 
 class ListingPhotoInline(admin.TabularInline):
@@ -103,7 +54,7 @@ class ListingAdmin(admin.ModelAdmin):
         """Display user with link to their profile"""
         return format_html(
             '<a href="{}">{}</a>',
-            reverse("admin:listings_user_change", args=[obj.user.id]),
+            reverse("admin:users_user_change", args=[obj.user.id]),
             obj.user.email,
         )
 

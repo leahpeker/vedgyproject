@@ -4,7 +4,8 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core.exceptions import ValidationError
 
-from .models import Listing, User
+from .models import Listing
+from users.models import User
 
 
 class SignupForm(UserCreationForm):

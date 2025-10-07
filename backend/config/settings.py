@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "users",
     "listings",
 ]
 
@@ -186,7 +187,7 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
 # Custom user model
-AUTH_USER_MODEL = "listings.User"
+AUTH_USER_MODEL = "users.User"
 
 # Email configuration
 EMAIL_BACKEND = os.environ.get(
