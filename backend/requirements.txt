@@ -8,3 +8,4 @@ django-ratelimit==4.1.0
 pytest==8.3.4
 pytest-django==4.9.0
 b2sdk==2.6.0
+whitenoise==6.7.0
