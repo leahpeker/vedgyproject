@@ -57,4 +57,6 @@ Thumbs.db
 * 2.*
 *.bak
 
+# Claude Code
+.claude/
 claude/

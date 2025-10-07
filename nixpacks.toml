@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ['python313']
+
+[phases.install]
+cmds = ['pip install -r backend/requirements.txt']
+
+[phases.build]
+cmds = ['cd backend && python manage.py collectstatic --noinput']
+
+[start]
+cmd = 'cd backend && python manage.py migrate && gunicorn config.wsgi --bind 0.0.0.0:$PORT'
