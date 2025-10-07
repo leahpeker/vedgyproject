@@ -5,7 +5,7 @@ from datetime import date
 import pytest
 from django.test import Client
 
-from listings.models import Admin, Listing, ListingPhoto, ListingStatus, User
+from listings.models import Listing, ListingPhoto, ListingStatus, User
 
 
 @pytest.fixture
@@ -29,10 +29,16 @@ def test_user(db):
 
 @pytest.fixture
 def test_admin(db):
-    """Create a test admin"""
-    admin = Admin.objects.create(email="admin@example.com", name="Test Admin")
-    admin.set_password("adminpass123")
-    admin.save()
+    """Create a test admin (staff user)"""
+    admin = User.objects.create_user(
+        username="admin@example.com",
+        email="admin@example.com",
+        password="adminpass123",
+        first_name="Admin",
+        last_name="User",
+        is_staff=True,
+        is_superuser=True,
+    )
     return admin
 
 
@@ -46,10 +52,7 @@ def logged_in_user(client, test_user):
 @pytest.fixture
 def logged_in_admin(client, test_admin):
     """Admin that's already logged in"""
-    # Set admin session
-    session = client.session
-    session["admin_id"] = str(test_admin.id)
-    session.save()
+    client.login(username="admin@example.com", password="adminpass123")
     return test_admin
 
 
@@ -119,7 +122,7 @@ def active_listing(test_user):
         about_lister="Vegan landlord",
         rental_requirements="Vegan only",
         pet_policy="No pets",
-        furnished="not_furnished",
+        furnished="unfurnished",
         phone_number="(555) 111-2222",
         include_phone=True,
         user=test_user,

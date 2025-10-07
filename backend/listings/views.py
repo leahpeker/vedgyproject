@@ -77,7 +77,7 @@ def browse_listings(request):
         listings = listings.filter(price__lte=max_price)
 
     # If HTMX request, return just the partial
-    if request.headers.get('HX-Request'):
+    if request.headers.get("HX-Request"):
         return render(request, "_listings_partial.html", {"listings": listings})
 
     return render(request, "browse.html", {"listings": listings})
@@ -114,7 +114,7 @@ def listing_detail(request, listing_id):
 
 
 # Auth views
-@ratelimit(key='ip', rate='5/h', method='POST')
+@ratelimit(key="ip", rate="5/h", method="POST")
 def signup(request):
     """User signup"""
     if request.user.is_authenticated:
@@ -133,7 +133,7 @@ def signup(request):
     return render(request, "signup.html", {"form": form})
 
 
-@ratelimit(key='ip', rate='10/h', method='POST')
+@ratelimit(key="ip", rate="10/h", method="POST")
 def user_login(request):
     """User login"""
     if request.user.is_authenticated:
@@ -164,15 +164,16 @@ def user_logout(request):
 
 # Password reset views (using Django's built-in functionality)
 from django.contrib.auth.views import (
-    PasswordResetView,
-    PasswordResetDoneView,
-    PasswordResetConfirmView,
     PasswordResetCompleteView,
+    PasswordResetConfirmView,
+    PasswordResetDoneView,
+    PasswordResetView,
 )
 
 
 class CustomPasswordResetView(PasswordResetView):
     """Custom password reset view with our template"""
+
     template_name = "password_reset.html"
     email_template_name = "password_reset_email.html"
     html_email_template_name = "password_reset_email.html"
@@ -182,17 +183,20 @@ class CustomPasswordResetView(PasswordResetView):
 
 class CustomPasswordResetDoneView(PasswordResetDoneView):
     """Password reset email sent confirmation"""
+
     template_name = "password_reset_done.html"
 
 
 class CustomPasswordResetConfirmView(PasswordResetConfirmView):
     """Password reset form"""
+
     template_name = "password_reset_confirm.html"
     success_url = "/password-reset/complete/"
 
 
 class CustomPasswordResetCompleteView(PasswordResetCompleteView):
     """Password reset complete"""
+
     template_name = "password_reset_complete.html"
 
 
@@ -281,7 +285,11 @@ def edit_listing(request, listing_id):
     else:
         form = ListingForm(instance=listing)
 
-    return render(request, "edit_listing.html", {"form": form, "listing": listing})
+    return render(
+        request,
+        "create_listing.html",
+        {"form": form, "listing": listing, "edit_mode": True},
+    )
 
 
 @login_required
@@ -321,8 +329,6 @@ def deactivate_listing(request, listing_id):
     listing.save()
     messages.success(request, "Listing deactivated.")
     return redirect("dashboard")
-
-
 
 
 @require_http_methods(["POST"])

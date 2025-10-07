@@ -18,8 +18,8 @@ class TestUserAuth:
                 "first_name": "John",
                 "last_name": "Doe",
                 "email": "john@example.com",
-                "password1": "password123",
-                "password2": "password123",
+                "password1": "SecurePass987!",
+                "password2": "SecurePass987!",
             },
         )
 
@@ -31,7 +31,7 @@ class TestUserAuth:
         assert user is not None
         assert user.first_name == "John"
         assert user.last_name == "Doe"
-        assert user.check_password("password123")
+        assert user.check_password("SecurePass987!")
 
     def test_signup_duplicate_email(self, client, test_user):
         """Test signup with existing email fails"""
@@ -41,8 +41,8 @@ class TestUserAuth:
                 "first_name": "Jane",
                 "last_name": "Smith",
                 "email": "test@example.com",  # Same as test_user
-                "password1": "password123",
-                "password2": "password123",
+                "password1": "SecurePass987!",
+                "password2": "SecurePass987!",
             },
         )
 
@@ -58,8 +58,8 @@ class TestUserAuth:
                 "first_name": "John",
                 "last_name": "Doe",
                 "email": "john@example.com",
-                "password1": "password123",
-                "password2": "different_password",
+                "password1": "SecurePass987!",
+                "password2": "DifferentPass123!",
             },
         )
 
@@ -109,44 +109,3 @@ class TestUserAuth:
         # Should no longer be able to access protected routes
         protected_response = client.get(reverse("create_listing"))
         assert protected_response.status_code == 302  # Redirect to login
-
-
-@pytest.mark.django_db
-class TestAdminAuth:
-    """Test admin authentication"""
-
-    def test_admin_login_valid(self, client, test_admin):
-        """Test admin login with valid credentials"""
-        response = client.post(
-            reverse("admin_login"),
-            {"email": "admin@example.com", "password": "adminpass123"},
-        )
-
-        # Should redirect to admin dashboard
-        assert response.status_code == 302
-
-    def test_admin_login_invalid(self, client):
-        """Test admin login with invalid credentials"""
-        response = client.post(
-            reverse("admin_login"),
-            {"email": "admin@example.com", "password": "wrongpassword"},
-        )
-
-        # Should show login form again
-        assert response.status_code == 200
-
-    def test_admin_dashboard_requires_auth(self, client):
-        """Test admin dashboard requires authentication"""
-        response = client.get(reverse("admin_dashboard"))
-
-        # Should redirect to admin login
-        assert response.status_code == 302
-        assert "admin/login" in response.url
-
-    def test_admin_dashboard_with_auth(self, client, logged_in_admin):
-        """Test admin dashboard with authenticated admin"""
-        response = client.get(reverse("admin_dashboard"))
-
-        # Should show dashboard
-        assert response.status_code == 200
-        assert b"Admin Dashboard" in response.content

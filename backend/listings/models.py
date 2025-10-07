@@ -1,10 +1,11 @@
 """Django models for VedgyProject"""
 
 import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 
 
 class ListingStatus:
@@ -54,28 +55,26 @@ class Listing(models.Model):
 
     # Choices
     RENTAL_TYPE_CHOICES = [
-        ('sublet', 'Sublet'),
-        ('new_lease', 'New Lease'),
-        ('month_to_month', 'Month to Month'),
+        ("sublet", "Sublet"),
+        ("new_lease", "New Lease"),
+        ("month_to_month", "Month to Month"),
     ]
 
     ROOM_TYPE_CHOICES = [
-        ('private_room', 'Private Room'),
-        ('shared_room', 'Shared Room'),
-        ('entire_place', 'Entire Place'),
+        ("private_room", "Private Room"),
+        ("shared_room", "Shared Room"),
+        ("entire_place", "Entire Place"),
     ]
 
     VEGAN_HOUSEHOLD_CHOICES = [
-        ('vegan', 'Vegan'),
-        ('vegetarian', 'Vegetarian'),
-        ('vegan_friendly', 'Vegan-Friendly'),
-        ('not_vegan', 'Not Vegan'),
+        ("fully_vegan", "Fully Vegan"),
+        ("mixed_household", "Mixed Household"),
     ]
 
     FURNISHED_CHOICES = [
-        ('furnished', 'Furnished'),
-        ('unfurnished', 'Unfurnished'),
-        ('partially_furnished', 'Partially Furnished'),
+        ("fully_furnished", "Fully Furnished"),
+        ("unfurnished", "Unfurnished"),
+        ("partially_furnished", "Partially Furnished"),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -115,11 +114,12 @@ class Listing(models.Model):
     def activate_listing(self):
         """Activate listing after payment"""
         self.status = ListingStatus.ACTIVE
-        self.expires_at = datetime.now() + timedelta(days=30)
+        self.expires_at = timezone.now() + timedelta(days=30)
         self.save()
 
     def __str__(self):
-        return self.title
+        status_display = dict(ListingStatus.CHOICES).get(self.status, self.status)
+        return f"{self.title} ({status_display})"
 
     class Meta:
         ordering = ["-created_at"]
@@ -136,7 +136,7 @@ class ListingPhoto(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Photo for {self.listing.title}"
+        return f"{self.filename} for {self.listing.title}"
 
     class Meta:
         ordering = ["uploaded_at"]

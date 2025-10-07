@@ -152,10 +152,10 @@
                 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Furnished Status *</label>
-                    <select name="furnished" required 
+                    <select name="furnished" required
                             class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
                         <option value="">Select...</option>
-                        <option value="not_furnished" {% if form.furnished.value == 'not_furnished' %}selected{% endif %}>Not furnished</option>
+                        <option value="unfurnished" {% if form.furnished.value == 'unfurnished' %}selected{% endif %}>Unfurnished</option>
                         <option value="partially_furnished" {% if form.furnished.value == 'partially_furnished' %}selected{% endif %}>Partially furnished</option>
                         <option value="fully_furnished" {% if form.furnished.value == 'fully_furnished' %}selected{% endif %}>Fully furnished</option>
                     </select>
@@ -225,11 +225,11 @@
             <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Photos</h2>
             
             <!-- Show existing photos in edit mode -->
-            {% if edit_mode and listing.photos %}
+            {% if edit_mode and listing.photos.all %}
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Current Photos</label>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {% for photo in listing.photos %}
+                    {% for photo in listing.photos.all %}
                     <div class="relative group">
                         <img src="{{ photo_url}}{{photo.filename }}" 
                              alt="Current photo {{ loop.index }}" 
@@ -246,7 +246,7 @@
                     </div>
                     {% endfor %}
                 </div>
-                <p class="text-sm text-gray-500 mt-1">{{ listing.photos|length }}/10 photos uploaded</p>
+                <p class="text-sm text-gray-500 mt-1">{{ listing.photos.all|length }}/10 photos uploaded</p>
             </div>
             {% endif %}
             

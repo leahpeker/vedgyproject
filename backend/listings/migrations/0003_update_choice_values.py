@@ -5,15 +5,19 @@ from django.db import migrations
 
 def update_choice_values(apps, schema_editor):
     """Update old choice values to new format"""
-    Listing = apps.get_model('listings', 'Listing')
+    Listing = apps.get_model("listings", "Listing")
 
     # Update furnished values
-    Listing.objects.filter(furnished='not_furnished').update(furnished='unfurnished')
-    Listing.objects.filter(furnished='fully_furnished').update(furnished='furnished')
+    Listing.objects.filter(furnished="not_furnished").update(furnished="unfurnished")
+    Listing.objects.filter(furnished="fully_furnished").update(furnished="furnished")
 
     # Update vegan_household values
-    Listing.objects.filter(vegan_household='fully_vegan').update(vegan_household='vegan')
-    Listing.objects.filter(vegan_household='mixed_household').update(vegan_household='vegan_friendly')
+    Listing.objects.filter(vegan_household="fully_vegan").update(
+        vegan_household="vegan"
+    )
+    Listing.objects.filter(vegan_household="mixed_household").update(
+        vegan_household="vegan_friendly"
+    )
 
 
 class Migration(migrations.Migration):

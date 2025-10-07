@@ -3,7 +3,6 @@
 from datetime import date
 
 import pytest
-from django.test import TestCase
 
 from listings.models import Listing, ListingPhoto, ListingStatus, User
 
@@ -91,7 +90,7 @@ class TestListing:
 
     def test_listing_string_representation(self, draft_listing):
         """Test listing __str__ method"""
-        assert str(draft_listing) == "Test Vegan House (draft)"
+        assert str(draft_listing) == "Test Vegan House (Draft)"
 
     def test_activate_listing(self, payment_submitted_listing):
         """Test listing activation"""

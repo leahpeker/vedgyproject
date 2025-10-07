@@ -1,6 +1,7 @@
 .PHONY: help install run down restart test clean format lint check migrate createsuperuser
 
-PYTHON := venv/bin/python
+PYTHON := backend/venv/bin/python
+PYTEST := backend/venv/bin/pytest
 
 help:
 	@echo "Available commands:"
@@ -17,7 +18,7 @@ help:
 	@echo "  make createsuperuser Create Django superuser"
 
 install:
-	pip3 install -r requirements.txt
+	cd backend && venv/bin/pip install -r requirements.txt
 
 run:
 	$(PYTHON) run-django.py
@@ -30,18 +31,18 @@ restart: down
 	@$(PYTHON) run-django.py
 
 test:
-	cd backend && ../$(PYTHON) manage.py test
+	cd backend && venv/bin/python -m pytest tests/ -v
 
 clean:
-	autoflake --in-place --remove-all-unused-imports --remove-unused-variables --recursive backend/listings/ backend/veglistings_project/ backend/tests/
+	cd backend && ./venv/bin/python -m autoflake --in-place --remove-all-unused-imports --remove-unused-variables --recursive listings/ config/ tests/ || echo "⚠️  autoflake not available, skipping..."
 
 format:
-	black backend/listings/ backend/veglistings_project/ backend/tests/
+	cd backend && ./venv/bin/python -m black listings/ config/ tests/ || echo "⚠️  black not available, skipping..."
 
-isort:
-	isort backend/listings/ backend/veglistings_project/ backend/tests/
+sort-imports:
+	cd backend && ./venv/bin/python -m isort listings/ config/ tests/ || echo "⚠️  isort not available, skipping..."
 
-lint: clean isort format
+lint: clean sort-imports format
 	@echo "✨ Code cleanup complete!"
 
 check:

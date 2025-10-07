@@ -2,8 +2,8 @@
 
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from django.utils.html import format_html
 from django.urls import reverse
+from django.utils.html import format_html
 
 from .models import Listing, ListingPhoto, ListingStatus, User
 
@@ -159,14 +159,32 @@ class ListingAdmin(admin.ModelAdmin):
             )
 
         try:
-            available_date = obj.date_available.strftime("%B %d, %Y") if obj.date_available else "Not set"
+            available_date = (
+                obj.date_available.strftime("%B %d, %Y")
+                if obj.date_available
+                else "Not set"
+            )
             location = f"{obj.city}, {obj.borough}" if obj.borough else obj.city
-            description = obj.description[:200] + "..." if obj.description and len(obj.description) > 200 else (obj.description or "No description")
+            description = (
+                obj.description[:200] + "..."
+                if obj.description and len(obj.description) > 200
+                else (obj.description or "No description")
+            )
 
             # Format display values (replace underscores and title case)
-            rental_type = obj.rental_type.replace('_', ' ').title() if obj.rental_type else "Not set"
-            room_type = obj.room_type.replace('_', ' ').title() if obj.room_type else "Not set"
-            vegan_household = obj.vegan_household.replace('_', ' ').title() if obj.vegan_household else "Not set"
+            rental_type = (
+                obj.rental_type.replace("_", " ").title()
+                if obj.rental_type
+                else "Not set"
+            )
+            room_type = (
+                obj.room_type.replace("_", " ").title() if obj.room_type else "Not set"
+            )
+            vegan_household = (
+                obj.vegan_household.replace("_", " ").title()
+                if obj.vegan_household
+                else "Not set"
+            )
 
             return format_html(
                 """
@@ -197,7 +215,9 @@ class ListingAdmin(admin.ModelAdmin):
                 reverse("listing_detail", args=[obj.id]),
             )
         except Exception as e:
-            return format_html('<div style="color: red;">Error rendering preview: {}</div>', str(e))
+            return format_html(
+                '<div style="color: red;">Error rendering preview: {}</div>', str(e)
+            )
 
     listing_preview.short_description = "Listing Preview"
 

@@ -6,7 +6,9 @@
       "Bash(pip install:*)",
       "Bash(django-admin startproject:*)",
       "Bash(chmod:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(venv-django/bin/python -m pytest tests/test_auth.py::TestUserAuth::test_signup_new_user -vv)",
+      "Bash(venv-django/bin/python -m pytest:*)"
     ],
     "deny": [],
     "ask": []

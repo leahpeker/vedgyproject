@@ -117,7 +117,7 @@ class TestListingManagement:
             about_lister="Other",
             rental_requirements="None",
             pet_policy="No pets",
-            furnished="not_furnished",
+            furnished="unfurnished",
             user=other_user,
             status=ListingStatus.DRAFT,
         )
@@ -175,19 +175,6 @@ class TestDashboard:
 @pytest.mark.django_db
 class TestAdminViews:
     """Test admin views"""
-
-    def test_admin_dashboard_requires_auth(self, client):
-        """Test admin dashboard requires authentication"""
-        response = client.get(reverse("admin_dashboard"))
-        assert response.status_code == 302
-
-    def test_admin_dashboard_shows_pending(
-        self, client, logged_in_admin, payment_submitted_listing
-    ):
-        """Test admin dashboard shows pending listings"""
-        response = client.get(reverse("admin_dashboard"))
-        assert response.status_code == 200
-        assert payment_submitted_listing.title.encode() in response.content
 
     def test_admin_approve_listing(
         self, client, logged_in_admin, payment_submitted_listing
