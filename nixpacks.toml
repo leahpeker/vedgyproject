@@ -1,6 +1,6 @@
 # Rebuild trigger
 [phases.setup]
-nixPkgs = ['python312']
+nixPkgs = ['python312Full']
 
 [phases.install]
 cmds = [
