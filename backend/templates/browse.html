@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script>
+let priceValidationTimeout;
+
+function validatePriceRange(minInput, maxInput) {
+    // Clear any existing timeout
+    clearTimeout(priceValidationTimeout);
+
+    // Wait 1 second before validating
+    priceValidationTimeout = setTimeout(() => {
+        const minVal = parseFloat(minInput.value);
+        const maxVal = parseFloat(maxInput.value);
+
+        // If both have values and min > max, update the other field
+        if (minInput.value && maxInput.value && minVal > maxVal) {
+            // If user is typing in min field, update max to match
+            if (document.activeElement === minInput) {
+                maxInput.value = minInput.value;
+                htmx.trigger(maxInput, 'input');
+            }
+            // If user is typing in max field, update min to match
+            else if (document.activeElement === maxInput) {
+                minInput.value = maxInput.value;
+                htmx.trigger(minInput, 'input');
+            }
+        }
+    }, 1000);
+}
+</script>
+
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold">Browse Listings</h1>
+    <a href="{% url 'create_listing' %}" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+        + New Listing
+    </a>
+</div>
+
+<div class="mb-6 bg-white p-4 rounded-lg shadow" x-data="{
+    selectedCity: '{{ request.GET.city }}',
+    get isNYC() { return this.selectedCity === 'New York'; }
+}" x-init="$watch('selectedCity', value => { if (value !== 'New York') { document.querySelector('[name=borough]').value = ''; htmx.trigger('[name=borough]', 'change'); } })">
+    <div class="grid md:grid-cols-4 lg:grid-cols-8 gap-4">
+        <!-- City Filter -->
+        <select name="city" x-model="selectedCity" class="border rounded p-2"
+                hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
+                hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
+            <option value="">All Cities</option>
+            <option value="New York" {% if request.GET.city == "New York" %}selected{% endif %}>New York</option>
+            <option value="Los Angeles" {% if request.GET.city == "Los Angeles" %}selected{% endif %}>Los Angeles</option>
+            <option value="Chicago" {% if request.GET.city == "Chicago" %}selected{% endif %}>Chicago</option>
+        </select>
+
+        <!-- Borough Filter (NYC only) -->
+        <select name="borough" class="border rounded p-2" x-show="isNYC" x-transition
+                hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
+                hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
+            <option value="">All Boroughs</option>
+            <option value="Manhattan" {% if request.GET.borough == "Manhattan" %}selected{% endif %}>Manhattan</option>
+            <option value="Brooklyn" {% if request.GET.borough == "Brooklyn" %}selected{% endif %}>Brooklyn</option>
+            <option value="Queens" {% if request.GET.borough == "Queens" %}selected{% endif %}>Queens</option>
+            <option value="Bronx" {% if request.GET.borough == "Bronx" %}selected{% endif %}>Bronx</option>
+            <option value="Staten Island" {% if request.GET.borough == "Staten Island" %}selected{% endif %}>Staten Island</option>
+        </select>
+
+        <!-- Rental Type -->
+        <select name="rental_type" class="border rounded p-2"
+                hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
+                hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
+            <option value="">All Rental Types</option>
+            <option value="sublet" {% if request.GET.rental_type == "sublet" %}selected{% endif %}>Sublet</option>
+            <option value="new_lease" {% if request.GET.rental_type == "new_lease" %}selected{% endif %}>New Lease</option>
+            <option value="month_to_month" {% if request.GET.rental_type == "month_to_month" %}selected{% endif %}>Month to Month</option>
+        </select>
+
+        <!-- Room Type -->
+        <select name="room_type" class="border rounded p-2"
+                hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
+                hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
+            <option value="">All Room Types</option>
+            <option value="private_room" {% if request.GET.room_type == "private_room" %}selected{% endif %}>Private Room</option>
+            <option value="shared_room" {% if request.GET.room_type == "shared_room" %}selected{% endif %}>Shared Room</option>
+            <option value="entire_place" {% if request.GET.room_type == "entire_place" %}selected{% endif %}>Entire Place</option>
+        </select>
+
+        <!-- Seeking Roommate -->
+        <select name="seeking_roommate" class="border rounded p-2"
+                hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
+                hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
+            <option value="">Any</option>
+            <option value="true" {% if request.GET.seeking_roommate == "true" %}selected{% endif %}>Seeking Roommate</option>
+            <option value="false" {% if request.GET.seeking_roommate == "false" %}selected{% endif %}>Not Seeking Roommate</option>
+        </select>
+
+        <!-- Furnished Status -->
+        <select name="furnished" class="border rounded p-2"
+                hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
+                hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
+            <option value="">Any</option>
+            <option value="furnished" {% if request.GET.furnished == "furnished" %}selected{% endif %}>Furnished</option>
+            <option value="unfurnished" {% if request.GET.furnished == "unfurnished" %}selected{% endif %}>Unfurnished</option>
+            <option value="partially_furnished" {% if request.GET.furnished == "partially_furnished" %}selected{% endif %}>Partially Furnished</option>
+        </select>
+
+        <!-- Vegan Household Type -->
+        <select name="vegan_household" class="border rounded p-2"
+                hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
+                hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
+            <option value="">All Households</option>
+            <option value="vegan" {% if request.GET.vegan_household == "vegan" %}selected{% endif %}>Vegan</option>
+            <option value="vegetarian" {% if request.GET.vegan_household == "vegetarian" %}selected{% endif %}>Vegetarian</option>
+            <option value="vegan_friendly" {% if request.GET.vegan_household == "vegan_friendly" %}selected{% endif %}>Vegan-Friendly</option>
+            <option value="not_vegan" {% if request.GET.vegan_household == "not_vegan" %}selected{% endif %}>Not Vegan</option>
+        </select>
+
+        <!-- Price Range -->
+        <input type="number" name="min_price" placeholder="Min price" class="border rounded p-2"
+               value="{{ request.GET.min_price }}"
+               oninput="validatePriceRange(this, document.querySelector('[name=max_price]'))"
+               hx-get="{% url 'browse' %}" hx-trigger="input changed delay:500ms" hx-target="#listings-container" hx-push-url="true"
+               hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
+
+        <input type="number" name="max_price" placeholder="Max price" class="border rounded p-2"
+               value="{{ request.GET.max_price }}"
+               oninput="validatePriceRange(document.querySelector('[name=min_price]'), this)"
+               hx-get="{% url 'browse' %}" hx-trigger="input changed delay:500ms" hx-target="#listings-container" hx-push-url="true"
+               hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
+        
+        <!-- Clear Filters -->
+        <button type="button" class="border border-gray-300 text-gray-700 rounded p-2 hover:bg-gray-50" 
+                onclick="document.querySelectorAll('select, input').forEach(el => el.value = ''); selectedCity = ''; htmx.trigger('[name=city]', 'change');">
+            Clear All
+        </button>
+    </div>
+</div>
+
+<div id="listings-container">
+    {% include "_listings_partial.html" %}
+</div>
+{% endblock %}

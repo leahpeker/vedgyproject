@@ -522,7 +522,7 @@ def signup():
         
         # Automatically log in the user after signup
         login_user(user)
-        flash(f'Welcome to VegListings, {user.first_name}!', 'success')
+        flash(f'Welcome to VedgyProject, {user.first_name}!', 'success')
         
         # Redirect to next page or index
         next_page = request.args.get('next')
