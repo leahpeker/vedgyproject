@@ -1,12 +1,5 @@
-# Rebuild trigger
 [phases.setup]
 nixPkgs = ['python312Full']
-
-[phases.install]
-cmds = [
-  'pip install -r backend/requirements.txt',
-  'pip freeze'
-]
 
 [phases.build]
 cmds = ['cd backend && python manage.py collectstatic --noinput']
