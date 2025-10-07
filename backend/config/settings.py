@@ -90,14 +90,6 @@ DATABASES = {
     )
 }
 
-# Fall back to SQLite for local development if no Postgres configured
-if not os.environ.get("DB_NAME"):
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
 
 
 # Password validation
