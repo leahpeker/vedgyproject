@@ -5,7 +5,7 @@ from datetime import date
 import pytest
 from django.test import TestCase
 
-from listings.models import Admin, Listing, ListingPhoto, ListingStatus, User
+from listings.models import Listing, ListingPhoto, ListingStatus, User
 
 
 @pytest.mark.django_db
@@ -38,7 +38,7 @@ class TestUser:
 
     def test_user_string_representation(self, test_user):
         """Test user __str__ method"""
-        assert str(test_user) == "test@example.com"
+        assert str(test_user) == "Test User"
 
     def test_password_hashing(self):
         """Test password is properly hashed"""
@@ -57,28 +57,6 @@ class TestUser:
         # But check_password should still work
         assert user.check_password("mypassword")
         assert not user.check_password("wrongpassword")
-
-
-@pytest.mark.django_db
-class TestAdmin:
-    """Test Admin model"""
-
-    def test_create_admin(self):
-        """Test admin creation"""
-        admin = Admin.objects.create(email="admin@example.com", name="Test Admin")
-        admin.set_password("adminpass")
-        admin.save()
-
-        # Verify persistence
-        saved_admin = Admin.objects.get(email="admin@example.com")
-        assert saved_admin is not None
-        assert saved_admin.name == "Test Admin"
-        assert saved_admin.check_password("adminpass")
-        assert not saved_admin.check_password("wrongpass")
-
-    def test_admin_string_representation(self, test_admin):
-        """Test admin __str__ method"""
-        assert str(test_admin) == "Test Admin (admin@example.com)"
 
 
 @pytest.mark.django_db

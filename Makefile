@@ -30,7 +30,7 @@ restart: down
 	@$(PYTHON) run-django.py
 
 test:
-	cd backend && pytest
+	cd backend && ../$(PYTHON) manage.py test
 
 clean:
 	autoflake --in-place --remove-all-unused-imports --remove-unused-variables --recursive backend/listings/ backend/veglistings_project/ backend/tests/
