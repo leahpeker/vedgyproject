@@ -1,8 +1,0 @@
-[phases.setup]
-nixPkgs = ['python312Full']
-
-[phases.build]
-cmds = ['cd backend && python manage.py collectstatic --noinput']
-
-[start]
-cmd = 'cd backend && python manage.py migrate && gunicorn config.wsgi --bind 0.0.0.0:$PORT'
