@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="text-center mb-8">
+        {% if request.GET.renewal == 'true' %}
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">Renew Your Listing</h1>
+        <p class="text-lg text-gray-600 mb-4">Extend your listing for another 30 days - minimum $3</p>
+        {% else %}
+        <h1 class="text-3xl font-bold text-gray-800 mb-4">Complete Your Listing Payment</h1>
+        <p class="text-lg text-gray-600 mb-4">Pay what you can afford - minimum $3</p>
+        {% endif %}
+        
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-md mx-auto mb-6">
+            <h3 class="font-semibold text-yellow-800 mb-2">📝 Your Listing</h3>
+            <p class="text-yellow-700 text-sm font-medium">{{ listing.title }}</p>
+            <p class="text-yellow-600 text-sm">{{ listing.city }}{% if listing.borough %}, {{ listing.borough }}{% endif %} • ${{ listing.price }}/mo</p>
+        </div>
+    </div>
+    
+    <!-- Sliding Scale Guide -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <h2 class="text-xl font-semibold text-center mb-6">💚 Sliding Scale Payment Guide</h2>
+        
+        <div class="space-y-4">
+            <div class="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                <div class="flex-1">
+                    <h3 class="font-semibold text-blue-800">Student / Low Income</h3>
+                    <p class="text-blue-600 text-sm">Limited income, no major assets</p>
+                </div>
+                <div class="text-2xl font-bold text-blue-700">$3</div>
+            </div>
+            
+            <div class="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                <div class="flex-1">
+                    <h3 class="font-semibold text-green-800">Median Income</h3>
+                    <p class="text-green-600 text-sm">Stable income, no major debt</p>
+                </div>
+                <div class="text-2xl font-bold text-green-700">$8</div>
+            </div>
+            
+            <div class="flex items-center justify-between p-4 bg-purple-50 rounded-lg">
+                <div class="flex-1">
+                    <h3 class="font-semibold text-purple-800">High Income / Assets</h3>
+                    <p class="text-purple-600 text-sm">High income or substantial assets</p>
+                </div>
+                <div class="text-2xl font-bold text-purple-700">$15</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment Instructions -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <div class="text-center mb-6">
+            <h2 class="text-xl font-semibold mb-4">💳 How to Pay</h2>
+        </div>
+        
+        <div class="bg-green-50 border border-green-200 rounded-lg p-6 text-center">
+            <h3 class="text-lg font-semibold text-green-800 mb-4">Send payment via Venmo, then come back here to confirm</h3>
+            
+            <div class="mb-4">
+                <a href="https://venmo.com/u/leah-peker" target="_blank" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                    Pay @leah-peker on Venmo
+                </a>
+            </div>
+            
+            <div class="text-sm text-green-700 space-y-2 mb-4">
+                <p><strong>Venmo:</strong> @leah-peker</p>
+                {% if request.GET.renewal == 'true' %}
+                <p><strong>Note:</strong> Include "RENEWAL: {{ listing.title }}" in the payment note</p>
+                {% else %}
+                <p><strong>Note:</strong> Include your listing title in the payment note</p>
+                {% endif %}
+                <p><strong>Amount:</strong> Your choice based on the guide above (minimum $3)</p>
+            </div>
+            
+            <div class="border-t border-green-300 pt-4">
+                <p class="text-sm text-green-700 mb-3">After you've sent the payment:</p>
+                <a href="/listing/{{ listing.id }}?payment=submitted" class="inline-block bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors">
+                    ✓ I've sent payment via Venmo
+                </a>
+            </div>
+        </div>
+        
+        <div class="mt-6 space-y-3">
+            <div class="flex items-center text-sm text-gray-600">
+                <svg class="w-5 h-5 text-green-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                Your listing will be live for 30 days
+            </div>
+            <div class="flex items-center text-sm text-gray-600">
+                <svg class="w-5 h-5 text-green-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                We'll activate your listing within 24 hours of payment
+            </div>
+            <div class="flex items-center text-sm text-gray-600">
+                <svg class="w-5 h-5 text-green-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                </svg>
+                You can renew your listing when it expires
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center">
+        <a href="/preview/{{ listing.id }}" class="text-green-600 hover:text-green-800">← Back to listing preview</a>
+    </div>
+</div>
+{% endblock %}

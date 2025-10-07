@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6">{% if edit_mode %}Edit Listing{% else %}Create New Listing{% endif %}</h1>
+    
+    <form method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded-lg shadow">
+        {% csrf_token %}
+
+        <!-- Basic Information -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Basic Information</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Title *</label>
+                    <input type="text" name="title" required 
+                           class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                           placeholder="Cozy room in vegan-friendly house"
+                           value="{{ form.title.value|default:'' }}">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                    <textarea name="description" required rows="4"
+                              class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                              placeholder="Describe your space, lifestyle, and what you're looking for...">{{ form.description.value|default:'' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location -->
+        <div class="mb-8" x-data="{ 
+            city: '{{ form.city.value|default:'' }}', 
+            borough: '{{ form.borough.value|default:'' }}',
+            get isNYC() { return this.city === 'New York'; },
+            get neighborhoodPlaceholder() {
+                if (this.city === 'New York') return 'e.g. Williamsburg, SoHo, Park Slope';
+                if (this.city === 'Los Angeles') return 'e.g. Venice, Hollywood, Santa Monica';
+                if (this.city === 'Chicago') return 'e.g. Lincoln Park, Wicker Park, River North';
+                return 'e.g. Neighborhood or area';
+            }
+        }" x-init="$watch('city', value => { if (value !== 'New York') borough = ''; })">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Location</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">City *</label>
+                    <select name="city" x-model="city" required 
+                            class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="">Select city...</option>
+                        <option value="New York" {% if form.city.value == 'New York' %}selected{% endif %}>New York</option>
+                        <option value="Los Angeles" {% if form.city.value == 'Los Angeles' %}selected{% endif %}>Los Angeles</option>
+                        <option value="Chicago" {% if form.city.value == 'Chicago' %}selected{% endif %}>Chicago</option>
+                    </select>
+                </div>
+                
+                <div x-show="isNYC" x-transition>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Borough *</label>
+                    <select name="borough" x-model="borough" :required="isNYC"
+                            class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="">Select borough...</option>
+                        <option value="Manhattan" {% if form.borough.value == 'Manhattan' %}selected{% endif %}>Manhattan</option>
+                        <option value="Brooklyn" {% if form.borough.value == 'Brooklyn' %}selected{% endif %}>Brooklyn</option>
+                        <option value="Queens" {% if form.borough.value == 'Queens' %}selected{% endif %}>Queens</option>
+                        <option value="Bronx" {% if form.borough.value == 'Bronx' %}selected{% endif %}>Bronx</option>
+                        <option value="Staten Island" {% if form.borough.value == 'Staten Island' %}selected{% endif %}>Staten Island</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Neighborhood</label>
+                    <input type="text" name="neighborhood" 
+                           :placeholder="neighborhoodPlaceholder"
+                           class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                           value="{{ form.neighborhood.value|default:'' }}">
+                </div>
+            </div>
+        </div>
+
+        <!-- Rental Details -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Rental Details</h2>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Household Type *</label>
+                <select name="vegan_household" required 
+                        class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    <option value="">Select household type...</option>
+                    <option value="fully_vegan" {% if form.vegan_household.value == 'fully_vegan' %}selected{% endif %}>Fully vegan household</option>
+                    <option value="mixed_household" {% if form.vegan_household.value == 'mixed_household' %}selected{% endif %}>Mixed household</option>
+                </select>
+                <p class="text-sm text-gray-500 mt-1">Are all household members vegan?</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Rental Type *</label>
+                    <select name="rental_type" required 
+                            class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="">Select type...</option>
+                        <option value="sublet" {% if form.rental_type.value == 'sublet' %}selected{% endif %}>Sublet</option>
+                        <option value="new_lease" {% if form.rental_type.value == 'new_lease' %}selected{% endif %}>New Lease</option>
+                        <option value="month_to_month" {% if form.rental_type.value == 'month_to_month' %}selected{% endif %}>Month to Month</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Room Type *</label>
+                    <select name="room_type" required 
+                            class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="">Select type...</option>
+                        <option value="private_room" {% if form.room_type.value == 'private_room' %}selected{% endif %}>Private Room</option>
+                        <option value="shared_room" {% if form.room_type.value == 'shared_room' %}selected{% endif %}>Shared Room</option>
+                        <option value="entire_place" {% if form.room_type.value == 'entire_place' %}selected{% endif %}>Entire Place</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Monthly Rent ($) *</label>
+                    <input type="number" name="price" required min="0" step="1"
+                           class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                           placeholder="1200"
+                           value="{{ form.price.value|default:'' }}">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Available Date *</label>
+                    <input type="date" name="date_available" required
+                           class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                           value="{{ form.date_available.value|default:'' }}">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">End Date <span class="text-gray-500">(optional)</span></label>
+                    <input type="date" name="date_until"
+                           class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                           value="{{ form.date_until.value|default:'' }}">
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Size <span class="text-gray-500">(optional)</span></label>
+                    <input type="text" name="size" 
+                           class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                           placeholder="e.g. 12x10 feet, 200 sq ft"
+                           value="{{ form.size.value|default:'' }}">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Furnished Status *</label>
+                    <select name="furnished" required 
+                            class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="">Select...</option>
+                        <option value="not_furnished" {% if form.furnished.value == 'not_furnished' %}selected{% endif %}>Not furnished</option>
+                        <option value="partially_furnished" {% if form.furnished.value == 'partially_furnished' %}selected{% endif %}>Partially furnished</option>
+                        <option value="fully_furnished" {% if form.furnished.value == 'fully_furnished' %}selected{% endif %}>Fully furnished</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Transportation <span class="text-gray-500">(optional)</span></label>
+                    <input type="text" name="transportation" 
+                           class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                           placeholder="e.g. Near L train, Bus route 42"
+                           value="{{ form.transportation.value|default:'' }}">
+                </div>
+            </div>
+        </div>
+
+        <!-- About You -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">About You</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">About You as the Lister *</label>
+                    <textarea name="about_lister" required rows="3"
+                              class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                              placeholder="Tell potential tenants about yourself, your lifestyle, interests, etc.">{{ form.about_lister.value|default:'' }}</textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Your Relationship to This Space *</label>
+                    <select name="lister_relationship" required 
+                            class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <option value="">Select...</option>
+                        <option value="owner" {% if form.lister_relationship.value == 'owner' %}selected{% endif %}>I own the space</option>
+                        <option value="manager" {% if form.lister_relationship.value == 'manager' %}selected{% endif %}>I manage the space</option>
+                        <option value="tenant" {% if form.lister_relationship.value == 'tenant' %}selected{% endif %}>I am the current tenant</option>
+                        <option value="roommate" {% if form.lister_relationship.value == 'roommate' %}selected{% endif %}>I am a current roommate</option>
+                        <option value="agent" {% if form.lister_relationship.value == 'agent' %}selected{% endif %}>I am a rental agent/broker</option>
+                        <option value="other" {% if form.lister_relationship.value == 'other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Requirements -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Rental Requirements</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Requirements for Potential Tenants *</label>
+                    <textarea name="rental_requirements" required rows="4"
+                              class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                              placeholder="What are you looking for in a tenant? Any specific requirements, preferences, or deal-breakers?">{{ form.rental_requirements.value|default:'' }}</textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pet Policy *</label>
+                    <textarea name="pet_policy" required rows="2"
+                              class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                              placeholder="e.g. No pets allowed, Cats ok, Dogs with approval, etc.">{{ form.pet_policy.value|default:'' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Photos -->
+        <div class="mb-8">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Photos</h2>
+            
+            <!-- Show existing photos in edit mode -->
+            {% if edit_mode and listing.photos %}
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Current Photos</label>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {% for photo in listing.photos %}
+                    <div class="relative group">
+                        <img src="{{ photo_url}}{{photo.filename }}" 
+                             alt="Current photo {{ loop.index }}" 
+                             class="w-full h-24 object-cover rounded border">
+                        {% if photo.is_primary %}
+                        <span class="absolute top-1 left-1 bg-green-600 text-white text-xs px-1 rounded">Main</span>
+                        {% endif %}
+                        <div class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button type="button" onclick="deletePhoto('{{ photo.id }}')" 
+                                    class="bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-700">
+                                ×
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <p class="text-sm text-gray-500 mt-1">{{ listing.photos|length }}/10 photos uploaded</p>
+            </div>
+            {% endif %}
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{% if edit_mode %}Add More Photos{% else %}Photos{% endif %}</label>
+                <input type="file" name="photos" multiple accept="image/*"
+                       class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                <p class="text-sm text-gray-500 mt-1">
+                    {% if edit_mode and listing.photos.all %}
+                        Upload additional photos. First photo will be the main photo.
+                    {% else %}
+                        Upload up to 10 photos. First photo will be the main photo.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <!-- Options -->
+        <div class="mb-8" x-data="{ includePhone: {% if form.include_phone.value %}true{% else %}false{% endif %} }">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Additional Options</h2>
+            
+            <div class="space-y-4">
+                <div class="flex items-center">
+                    <input type="checkbox" name="seeking_roommate" id="seeking_roommate" 
+                           class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                           {% if form.seeking_roommate.value %}checked{% endif %}>
+                    <label for="seeking_roommate" class="ml-2 block text-sm text-gray-700">
+                        I am seeking a roommate (not just a tenant)
+                    </label>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="bg-blue-50 border border-blue-200 rounded p-3 mb-4">
+                        <h4 class="font-medium text-blue-800 mb-2">📞 Contact Information</h4>
+                        <p class="text-sm text-blue-700">
+                            Your email address will always be visible to logged-in users. You can optionally include your phone number for additional contact options.
+                        </p>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <input type="checkbox" name="include_phone" id="include_phone" x-model="includePhone"
+                               class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                               {% if form.include_phone.value %}checked{% endif %}>
+                        <label for="include_phone" class="ml-2 block text-sm text-gray-700">
+                            Also include my phone number in contact information
+                        </label>
+                    </div>
+                    
+                    <div x-show="includePhone" x-transition class="ml-6" x-data="{ phone: '{{ form.phone_number.value|default:'' }}' }">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                        <input type="tel" name="phone_number" :required="includePhone"
+                               pattern="^\(\d{3}\) \d{3}-\d{4}$"
+                               title="Please enter a valid US phone number in format: (555) 123-4567"
+                               class="w-full border border-gray-300 rounded p-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                               placeholder="(555) 123-4567"
+                               x-model="phone"
+                               @input="phone = formatPhoneNumber($event.target.value)"
+                               maxlength="14">
+                        <p class="text-sm text-gray-500 mt-1">Format: (555) 123-4567</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payment Info -->
+        <div class="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h2 class="text-lg font-semibold mb-4 text-blue-800">💳 Payment Information</h2>
+            
+            <div class="space-y-3 mb-4">
+                <p class="text-blue-700">
+                    <strong>After creating your listing, you'll choose your payment amount to make it live for 30 days.</strong>
+                </p>
+                <p class="text-blue-600 text-sm">
+                    Sliding scale pricing - pay what works for your budget!
+                </p>
+            </div>
+            
+            <div x-data="{ showInfo: false }" class="space-y-3">
+                <button type="button" @click="showInfo = !showInfo" 
+                        class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
+                    <span x-text="showInfo ? 'Hide info' : 'Why do we charge for listings?'" class="mr-1"></span>
+                    <svg class="w-4 h-4 transition-transform" :class="showInfo ? 'rotate-180' : ''" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+                
+                <div x-show="showInfo" x-transition class="bg-white border border-blue-200 rounded p-4 text-sm text-blue-700">
+                    <p class="mb-2">
+                        <strong>🛡️ Prevent scammers:</strong> A small payment helps keep fake and spam listings off the platform.
+                    </p>
+                    <p class="mb-2">
+                        <strong>🌱 Support our mission:</strong> Your payment helps us maintain and improve this vegan-focused platform.
+                    </p>
+                    <p>
+                        <strong>🔧 Keep building:</strong> Funds go toward server costs, new features, and keeping VedgyProject free from ads.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex space-x-4">
+            <button type="submit"
+                    class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+                Preview Listing
+            </button>
+            <a href="{% url 'browse' %}"
+               class="border border-gray-300 text-gray-700 px-6 py-2 rounded hover:bg-gray-50">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+function formatPhoneNumber(value) {
+    // Remove all non-digits
+    const phoneNumber = value.replace(/\D/g, '');
+    
+    // Don't format if empty
+    if (!phoneNumber) return '';
+    
+    // Limit to 10 digits
+    const limitedNumber = phoneNumber.slice(0, 10);
+    
+    // Format as (XXX) XXX-XXXX
+    if (limitedNumber.length <= 3) {
+        return limitedNumber;
+    } else if (limitedNumber.length <= 6) {
+        return `(${limitedNumber.slice(0, 3)}) ${limitedNumber.slice(3)}`;
+    } else {
+        return `(${limitedNumber.slice(0, 3)}) ${limitedNumber.slice(3, 6)}-${limitedNumber.slice(6)}`;
+    }
+}
+
+// Make function globally available for Alpine.js
+window.formatPhoneNumber = formatPhoneNumber;
+
+// Delete photo function
+function deletePhoto(photoId) {
+    if (confirm('Are you sure you want to delete this photo?')) {
+        fetch(`/delete-photo/${photoId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Reload to update the form
+            } else {
+                alert('Error deleting photo');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error deleting photo');
+        });
+    }
+}
+</script>
+
+{% endblock %}

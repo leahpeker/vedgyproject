@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-center py-12">
+    <h1 class="text-4xl font-bold text-gray-800 mb-4">Find Your Perfect Vegan-Friendly Home</h1>
+    <p class="text-lg text-gray-600 mb-8">Connect with like-minded people for housing that aligns with your values</p>
+    
+    <div class="space-x-4">
+        <a href="{% url 'browse' %}" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 inline-block">
+            Browse Listings
+        </a>
+        <a href="{% url 'create_listing' %}" class="border border-green-600 text-green-600 px-6 py-3 rounded-lg hover:bg-green-50 inline-block">
+            Post a Listing
+        </a>
+    </div>
+</div>
+
+<div class="grid md:grid-cols-3 gap-6 mt-12">
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="font-bold text-lg mb-2">🏠 Vegan-Friendly Homes</h3>
+        <p class="text-gray-600">Find roommates who share your lifestyle and values</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="font-bold text-lg mb-2">🤝 Like-Minded Community</h3>
+        <p class="text-gray-600">Connect with people who understand your choices</p>
+    </div>
+    <div class="bg-white p-6 rounded-lg shadow">
+        <h3 class="font-bold text-lg mb-2">🌱 Sustainable Living</h3>
+        <p class="text-gray-600">Create spaces that reflect your environmental values</p>
+    </div>
+</div>
+{% endblock %}
