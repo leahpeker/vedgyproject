@@ -53,4 +53,8 @@ uploads/
 .DS_Store
 Thumbs.db
 
+# Backup files
+* 2.*
+*.bak
+
 claude/
