@@ -3,7 +3,10 @@
 nixPkgs = ['python313']
 
 [phases.install]
-cmds = ['pip install -r backend/requirements.txt']
+cmds = [
+  'pip install -r backend/requirements.txt',
+  'pip freeze'
+]
 
 [phases.build]
 cmds = ['cd backend && python manage.py collectstatic --noinput']
