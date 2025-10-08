@@ -2,8 +2,30 @@
 
 import uuid
 
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager as BaseUserManager
 from django.db import models
+
+
+class UserManager(BaseUserManager):
+    """Custom user manager that uses email instead of username"""
+
+    def create_user(self, email, password=None, **extra_fields):
+        """Create and save a regular user"""
+        if not email:
+            raise ValueError("Email is required")
+        email = self.normalize_email(email)
+        extra_fields.setdefault("username", email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        """Create and save a superuser"""
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("username", email)
+        return self.create_user(email, password, **extra_fields)
 
 
 class User(AbstractUser):
@@ -21,6 +43,8 @@ class User(AbstractUser):
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
+
+    objects = UserManager()
 
     def save(self, *args, **kwargs):
         """Auto-set username to email"""
