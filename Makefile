@@ -18,7 +18,7 @@ help:
 	@echo "  make createsuperuser Create Django superuser"
 
 install:
-	cd backend && venv/bin/pip install -r requirements.txt
+	cd backend && venv/bin/pip install -r ../requirements.txt
 
 run:
 	cd backend && $(PYTHON) manage.py runserver

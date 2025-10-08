@@ -6,6 +6,10 @@ import secrets
 
 from django.conf import settings
 from PIL import Image
+from pillow_heif import register_heif_opener
+
+# Enable HEIC support
+register_heif_opener()
 
 # Try to import B2 SDK
 try:
