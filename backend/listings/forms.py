@@ -91,7 +91,8 @@ class ListingForm(forms.ModelForm):
             "city",
             "borough",
             "price",
-            "date_available",
+            "start_date",
+            "end_date",
             "rental_type",
             "room_type",
             "vegan_household",
@@ -119,11 +120,19 @@ class ListingForm(forms.ModelForm):
             "price": forms.NumberInput(
                 attrs={"class": "w-full border border-gray-300 rounded p-2"}
             ),
-            "date_available": forms.DateInput(
+            "start_date": forms.DateInput(
                 attrs={
                     "class": "w-full border border-gray-300 rounded p-2",
                     "type": "date",
-                }
+                },
+                format="%Y-%m-%d",
+            ),
+            "end_date": forms.DateInput(
+                attrs={
+                    "class": "w-full border border-gray-300 rounded p-2",
+                    "type": "date",
+                },
+                format="%Y-%m-%d",
             ),
             "rental_type": forms.Select(
                 attrs={"class": "w-full border border-gray-300 rounded p-2"}

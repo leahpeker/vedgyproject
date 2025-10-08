@@ -110,7 +110,7 @@ class TestListingManagement:
             description="Not yours",
             city="New York",
             price=1000,
-            date_available="2024-02-01",
+            start_date="2024-02-01",
             rental_type="sublet",
             room_type="private_room",
             vegan_household="fully_vegan",

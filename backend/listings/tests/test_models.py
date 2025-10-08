@@ -70,7 +70,7 @@ class TestListing:
             description="A nice vegan place",
             city="New York",
             price=1500,
-            date_available=date(2024, 2, 1),
+            start_date=date(2024, 2, 1),
             rental_type="sublet",
             room_type="private_room",
             vegan_household="fully_vegan",

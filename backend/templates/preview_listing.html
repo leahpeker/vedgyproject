@@ -194,7 +194,10 @@
                         <div class="space-y-2 text-sm">
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Available:</span>
-                                <span class="font-medium">{{ listing.date_available|date:'F d, Y' }}</span>
+                                <span class="font-medium">{{ listing.start_date|date:'F d, Y' }}</span>
+                                {% if listing.end_date %}
+                                    <span class="text-gray-600"> - {{ listing.end_date|date:'F d, Y' }}</span>
+                                {% endif %}
                             </div>
                             {% if listing.date_until %}
                             <div class="flex justify-between">

@@ -111,8 +111,8 @@ class ListingAdmin(admin.ModelAdmin):
 
         try:
             available_date = (
-                obj.date_available.strftime("%B %d, %Y")
-                if obj.date_available
+                obj.start_date.strftime("%B %d, %Y")
+                if obj.start_date
                 else "Not set"
             )
             location = f"{obj.city}, {obj.borough}" if obj.borough else obj.city
@@ -184,7 +184,7 @@ class ListingAdmin(admin.ModelAdmin):
                     "rental_type",
                     "room_type",
                     "price",
-                    "date_available",
+                    "start_date",
                     "furnished",
                     "vegan_household",
                 )

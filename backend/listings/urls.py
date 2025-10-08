@@ -50,6 +50,7 @@ urlpatterns = [
         views.deactivate_listing,
         name="deactivate_listing",
     ),
+    path("photo/delete/<uuid:photo_id>/", views.delete_photo, name="delete_photo"),
     # Admin actions (for staff users)
     path(
         "approve/<uuid:listing_id>/",

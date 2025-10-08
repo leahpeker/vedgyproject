@@ -9,7 +9,7 @@ from django_ratelimit.decorators import ratelimit
 
 from .forms import ListingForm, LoginForm, SignupForm
 from .models import Listing, ListingPhoto, ListingStatus
-from .utils import save_picture
+from .utils import delete_photo_file, save_picture
 
 
 # Public views
@@ -318,6 +318,30 @@ def delete_listing(request, listing_id):
     listing.delete()
     messages.success(request, "Listing deleted.")
     return redirect("dashboard")
+
+
+@login_required
+@require_http_methods(["POST"])
+def delete_photo(request, photo_id):
+    """Delete a photo from a listing"""
+    photo = get_object_or_404(ListingPhoto, id=photo_id)
+
+    # Check that user owns the listing
+    if photo.listing.user != request.user:
+        messages.error(request, "You don't have permission to delete this photo.")
+        return redirect("dashboard")
+
+    listing_id = photo.listing.id
+    filename = photo.filename
+
+    # Delete from database
+    photo.delete()
+
+    # Delete from B2 or local storage
+    delete_photo_file(filename)
+
+    messages.success(request, "Photo deleted successfully.")
+    return redirect("edit_listing", listing_id=listing_id)
 
 
 @login_required

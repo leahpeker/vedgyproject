@@ -73,7 +73,8 @@ class Listing(models.Model):
     price = models.IntegerField()  # Monthly rent
 
     # Availability
-    date_available = models.DateField()
+    start_date = models.DateField()
+    end_date = models.DateField(blank=True, null=True)
     furnished = models.CharField(max_length=30, choices=FURNISHED_CHOICES)
 
     # Household info
