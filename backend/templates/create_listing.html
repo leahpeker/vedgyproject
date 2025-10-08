@@ -384,6 +384,77 @@ function formatPhoneNumber(value) {
 // Make function globally available for Alpine.js
 window.formatPhoneNumber = formatPhoneNumber;
 
+// Auto-save form data to localStorage every 5 seconds
+const AUTOSAVE_KEY = 'listing_draft_{{ listing.id|default:"new" }}';
+const AUTOSAVE_INTERVAL = 5000; // 5 seconds
+
+function autoSaveForm() {
+    const form = document.querySelector('form');
+    const formData = new FormData(form);
+    const data = {};
+
+    // Save all form fields except files
+    for (let [key, value] of formData.entries()) {
+        if (key !== 'photos' && key !== 'csrfmiddlewaretoken') {
+            data[key] = value;
+        }
+    }
+
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({
+        data: data,
+        timestamp: new Date().toISOString()
+    }));
+
+    console.log('Form auto-saved');
+}
+
+function restoreForm() {
+    const saved = localStorage.getItem(AUTOSAVE_KEY);
+    if (!saved) return;
+
+    try {
+        const { data, timestamp } = JSON.parse(saved);
+        const savedDate = new Date(timestamp);
+        const hoursSince = (new Date() - savedDate) / (1000 * 60 * 60);
+
+        // Only restore if saved within last 24 hours
+        if (hoursSince > 24) {
+            localStorage.removeItem(AUTOSAVE_KEY);
+            return;
+        }
+
+        // Ask user if they want to restore
+        if (confirm(`Found auto-saved draft from ${savedDate.toLocaleString()}. Restore it?`)) {
+            for (let [key, value] of Object.entries(data)) {
+                const input = document.querySelector(`[name="${key}"]`);
+                if (input) {
+                    input.value = value;
+                }
+            }
+            console.log('Draft restored');
+        }
+    } catch (e) {
+        console.error('Error restoring draft:', e);
+        localStorage.removeItem(AUTOSAVE_KEY);
+    }
+}
+
+// Start auto-save when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Restore draft if exists (only on create page, not edit)
+    {% if not edit_mode %}
+        restoreForm();
+    {% endif %}
+
+    // Start auto-save interval
+    setInterval(autoSaveForm, AUTOSAVE_INTERVAL);
+});
+
+// Clear saved draft on successful form submission
+document.querySelector('form').addEventListener('submit', function() {
+    localStorage.removeItem(AUTOSAVE_KEY);
+});
+
 // Delete photo function
 function deletePhoto(photoId) {
     if (confirm('Are you sure you want to delete this photo?')) {
