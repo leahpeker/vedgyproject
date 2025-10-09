@@ -81,6 +81,7 @@ class Listing(models.Model):
     vegan_household = models.CharField(max_length=30, choices=VEGAN_HOUSEHOLD_CHOICES)
     about_lister = models.TextField()
     lister_relationship = models.CharField(max_length=30, choices=LISTER_RELATIONSHIP_CHOICES)
+    seeking_roommate = models.BooleanField(default=False)
     rental_requirements = models.TextField(blank=True, null=True)
     pet_policy = models.CharField(max_length=200, blank=True, null=True)
     phone_number = models.CharField(max_length=20, blank=True, null=True)

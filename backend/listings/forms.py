@@ -97,6 +97,7 @@ class ListingForm(forms.ModelForm):
             "room_type",
             "vegan_household",
             "lister_relationship",
+            "seeking_roommate",
             "about_lister",
             "rental_requirements",
             "pet_policy",
