@@ -62,25 +62,25 @@ class Listing(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.CharField(max_length=200)
-    description = models.TextField()
-    city = models.CharField(max_length=100)
+    title = models.CharField(max_length=200, blank=True, default="")
+    description = models.TextField(blank=True, default="")
+    city = models.CharField(max_length=100, blank=True, default="")
     borough = models.CharField(max_length=50, blank=True, null=True)
 
     # Rental details
-    rental_type = models.CharField(max_length=20, choices=RENTAL_TYPE_CHOICES)
-    room_type = models.CharField(max_length=20, choices=ROOM_TYPE_CHOICES)
-    price = models.IntegerField()  # Monthly rent
+    rental_type = models.CharField(max_length=20, choices=RENTAL_TYPE_CHOICES, blank=True, default="")
+    room_type = models.CharField(max_length=20, choices=ROOM_TYPE_CHOICES, blank=True, default="")
+    price = models.IntegerField(null=True, blank=True)  # Monthly rent
 
     # Availability
-    start_date = models.DateField()
+    start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(blank=True, null=True)
-    furnished = models.CharField(max_length=30, choices=FURNISHED_CHOICES)
+    furnished = models.CharField(max_length=30, choices=FURNISHED_CHOICES, blank=True, default="")
 
     # Household info
-    vegan_household = models.CharField(max_length=30, choices=VEGAN_HOUSEHOLD_CHOICES)
-    about_lister = models.TextField()
-    lister_relationship = models.CharField(max_length=30, choices=LISTER_RELATIONSHIP_CHOICES)
+    vegan_household = models.CharField(max_length=30, choices=VEGAN_HOUSEHOLD_CHOICES, blank=True, default="")
+    about_lister = models.TextField(blank=True, default="")
+    lister_relationship = models.CharField(max_length=30, choices=LISTER_RELATIONSHIP_CHOICES, blank=True, default="")
     seeking_roommate = models.BooleanField(default=False)
     rental_requirements = models.TextField(blank=True, null=True)
     pet_policy = models.CharField(max_length=200, blank=True, null=True)

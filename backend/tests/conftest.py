@@ -5,7 +5,8 @@ from datetime import date
 import pytest
 from django.test import Client
 
-from listings.models import Listing, ListingPhoto, ListingStatus, User
+from listings.models import Listing, ListingPhoto, ListingStatus
+from users.models import User
 
 
 @pytest.fixture
@@ -64,7 +65,7 @@ def draft_listing(test_user):
         description="A lovely vegan household",
         city="New York",
         price=1500,
-        date_available=date(2024, 2, 1),
+        start_date=date(2024, 2, 1),
         rental_type="sublet",
         room_type="private_room",
         vegan_household="fully_vegan",
@@ -89,7 +90,7 @@ def payment_submitted_listing(test_user):
         description="Waiting for admin approval",
         city="Los Angeles",
         price=2000,
-        date_available=date(2024, 3, 1),
+        start_date=date(2024, 3, 1),
         rental_type="new_lease",
         room_type="shared_room",
         vegan_household="mixed_household",
@@ -114,7 +115,7 @@ def active_listing(test_user):
         description="Currently available",
         city="Chicago",
         price=1200,
-        date_available=date(2024, 1, 15),
+        start_date=date(2024, 1, 15),
         rental_type="sublet",
         room_type="private_room",
         vegan_household="fully_vegan",
@@ -147,7 +148,7 @@ def sample_listing_data():
         "description": "A great vegan space",
         "city": "New York",
         "price": 1500,
-        "date_available": "2024-02-01",
+        "start_date": "2024-02-01",
         "rental_type": "sublet",
         "room_type": "private_room",
         "vegan_household": "fully_vegan",

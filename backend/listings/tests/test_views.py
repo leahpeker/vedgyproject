@@ -207,3 +207,116 @@ class TestAdminViews:
         # Listing should be back to draft
         payment_submitted_listing.refresh_from_db()
         assert payment_submitted_listing.status == ListingStatus.DRAFT
+
+
+@pytest.mark.django_db
+class TestDraftAutoSave:
+    """Test draft auto-save functionality"""
+
+    def test_save_new_draft_creates_listing(self, client, logged_in_user):
+        """Test saving a new draft creates a listing"""
+        response = client.post(
+            reverse("save_draft"),
+            {
+                "title": "My Draft",
+                "description": "Just starting",
+                "city": "Boston",
+            },
+        )
+
+        # Should return success
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert data["listing_id"] is not None
+
+        # Listing should exist in database
+        assert logged_in_user.listings.count() == 1
+        listing = logged_in_user.listings.first()
+        assert listing.title == "My Draft"
+        assert listing.status == ListingStatus.DRAFT
+
+    def test_save_draft_with_partial_data(self, client, logged_in_user):
+        """Test saving draft with only some fields works"""
+        response = client.post(
+            reverse("save_draft"),
+            {
+                "title": "Incomplete",
+                # No other required fields
+            },
+        )
+
+        # Should still succeed with partial data
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+
+        # Listing created with partial data
+        listing = logged_in_user.listings.first()
+        assert listing.title == "Incomplete"
+        assert listing.description == ""  # Default empty
+        assert listing.price is None
+
+    def test_update_existing_draft(self, client, logged_in_user, draft_listing):
+        """Test updating an existing draft"""
+        original_title = draft_listing.title
+
+        response = client.post(
+            reverse("save_draft_update", args=[draft_listing.id]),
+            {
+                "title": "Updated Title",
+                "description": "Updated description",
+            },
+        )
+
+        # Should return success
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+        assert data["listing_id"] == str(draft_listing.id)
+
+        # Listing should be updated
+        draft_listing.refresh_from_db()
+        assert draft_listing.title == "Updated Title"
+        assert draft_listing.description == "Updated description"
+
+    def test_save_draft_requires_login(self, client):
+        """Test save draft requires authentication"""
+        response = client.post(
+            reverse("save_draft"),
+            {"title": "No auth"},
+        )
+
+        # Should redirect to login
+        assert response.status_code == 302
+
+    def test_cannot_update_others_draft(self, client, logged_in_user, db):
+        """Test cannot update another user's draft"""
+        from listings.models import Listing
+        from users.models import User
+
+        # Create another user and their draft
+        other_user = User.objects.create_user(
+            username="other@test.com",
+            email="other@test.com",
+            password="pass",
+            first_name="Other",
+            last_name="User",
+        )
+        other_draft = Listing.objects.create(
+            title="Others Draft",
+            user=other_user,
+            status=ListingStatus.DRAFT,
+        )
+
+        response = client.post(
+            reverse("save_draft_update", args=[other_draft.id]),
+            {"title": "Hacked!"},
+        )
+
+        # Should get 404 (not found)
+        assert response.status_code == 404
+
+        # Draft should be unchanged
+        other_draft.refresh_from_db()
+        assert other_draft.title == "Others Draft"

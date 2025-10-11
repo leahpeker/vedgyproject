@@ -1,14 +1,19 @@
 """Django views for VedgyProject"""
 
+import json
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 from django_ratelimit.decorators import ratelimit
+from pydantic import ValidationError
 
 from .forms import ListingForm, LoginForm, SignupForm
 from .models import Listing, ListingPhoto, ListingStatus
+from .schemas import ListingDraftSchema
 from .utils import delete_photo_file, save_picture
 
 
@@ -342,6 +347,55 @@ def delete_photo(request, photo_id):
 
     messages.success(request, "Photo deleted successfully.")
     return redirect("edit_listing", listing_id=listing_id)
+
+
+@login_required
+@require_http_methods(["POST"])
+def save_listing_draft(request, listing_id=None):
+    """Auto-save listing draft (AJAX endpoint)"""
+    # Get or create listing (do this first so 404 is raised before try block)
+    if listing_id:
+        listing = get_object_or_404(Listing, id=listing_id, user=request.user)
+    else:
+        listing = Listing(user=request.user, status=ListingStatus.DRAFT)
+
+    try:
+        # Prepare data from POST, converting checkbox values
+        data = {}
+        for key, value in request.POST.items():
+            if key == "csrfmiddlewaretoken":
+                continue
+            # Convert checkbox values from "on" to boolean
+            if key in ["seeking_roommate", "include_phone"]:
+                data[key] = value == "on"
+            else:
+                data[key] = value if value else None
+
+        # Validate with Pydantic (allows partial data)
+        draft_data = ListingDraftSchema(**data)
+
+        # Update listing with validated data (only non-None values)
+        for field, value in draft_data.model_dump(exclude_none=True).items():
+            setattr(listing, field, value)
+
+        listing.save()
+
+        return JsonResponse({
+            "success": True,
+            "listing_id": str(listing.id),
+            "message": "Draft saved"
+        })
+    except ValidationError as e:
+        return JsonResponse({
+            "success": False,
+            "error": "Validation error",
+            "details": e.errors()
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            "success": False,
+            "error": str(e)
+        }, status=400)
 
 
 @login_required

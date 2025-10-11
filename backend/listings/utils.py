@@ -68,6 +68,13 @@ def save_picture_to_b2(form_picture):
         # Resize and optimize image in memory
         img = Image.open(form_picture)
 
+        # Apply EXIF orientation to prevent rotation issues
+        try:
+            from PIL import ImageOps
+            img = ImageOps.exif_transpose(img)
+        except Exception:
+            pass  # If EXIF orientation fails, continue without it
+
         # Convert to RGB if necessary (for JPEG)
         if img.mode in ("RGBA", "LA", "P"):
             img = img.convert("RGB")
@@ -110,6 +117,13 @@ def save_picture(form_picture):
 
     # Resize and optimize image
     img = Image.open(form_picture)
+
+    # Apply EXIF orientation to prevent rotation issues
+    try:
+        from PIL import ImageOps
+        img = ImageOps.exif_transpose(img)
+    except Exception:
+        pass  # If EXIF orientation fails, continue without it
 
     # Convert to RGB if necessary (for JPEG)
     if img.mode in ("RGBA", "LA", "P"):

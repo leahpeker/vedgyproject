@@ -51,6 +51,13 @@ urlpatterns = [
         name="deactivate_listing",
     ),
     path("photo/delete/<uuid:photo_id>/", views.delete_photo, name="delete_photo"),
+    # Draft auto-save (AJAX endpoints)
+    path("listings/save-draft/", views.save_listing_draft, name="save_draft"),
+    path(
+        "listings/save-draft/<uuid:listing_id>/",
+        views.save_listing_draft,
+        name="save_draft_update",
+    ),
     # Admin actions (for staff users)
     path(
         "approve/<uuid:listing_id>/",

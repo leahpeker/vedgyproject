@@ -22,6 +22,29 @@ def test_user(db):
 
 
 @pytest.fixture
+def logged_in_user(client, test_user):
+    """User that's already logged in"""
+    client.force_login(test_user)
+    return test_user
+
+
+@pytest.fixture
+def logged_in_admin(client, db):
+    """Admin that's already logged in"""
+    admin = User.objects.create_user(
+        username="admin@example.com",
+        email="admin@example.com",
+        password="adminpass123",
+        first_name="Admin",
+        last_name="User",
+        is_staff=True,
+        is_superuser=True,
+    )
+    client.force_login(admin)
+    return admin
+
+
+@pytest.fixture
 def draft_listing(test_user):
     """Create a draft listing"""
     listing = Listing.objects.create(
