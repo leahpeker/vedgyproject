@@ -7,6 +7,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods
 from django_ratelimit.decorators import ratelimit
 from pydantic import ValidationError
@@ -131,7 +132,16 @@ def signup(request):
             user = form.save()
             login(request, user)
             messages.success(request, f"Welcome to VedgyProject, {user.first_name}!")
-            return redirect(request.GET.get("next", "index"))
+
+            # Validate next parameter to prevent open redirects
+            next_url = request.GET.get("next", "index")
+            if url_has_allowed_host_and_scheme(
+                url=next_url,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure()
+            ):
+                return redirect(next_url)
+            return redirect("index")
     else:
         form = SignupForm()
 
@@ -153,7 +163,16 @@ def user_login(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, f"Welcome back, {user.first_name}!")
-                return redirect(request.GET.get("next", "index"))
+
+                # Validate next parameter to prevent open redirects
+                next_url = request.GET.get("next", "index")
+                if url_has_allowed_host_and_scheme(
+                    url=next_url,
+                    allowed_hosts={request.get_host()},
+                    require_https=request.is_secure()
+                ):
+                    return redirect(next_url)
+                return redirect("index")
     else:
         form = LoginForm()
 
@@ -409,12 +428,13 @@ def deactivate_listing(request, listing_id):
     return redirect("dashboard")
 
 
+@login_required
 @require_http_methods(["POST"])
 def admin_approve_listing(request, listing_id):
     """Approve listing"""
     if not request.user.is_staff:
         messages.error(request, "You must be an admin to approve listings.")
-        return redirect("login")
+        return redirect("dashboard")
 
     listing = get_object_or_404(Listing, id=listing_id)
     listing.activate_listing()
@@ -422,12 +442,13 @@ def admin_approve_listing(request, listing_id):
     return redirect("listing_detail", listing_id=listing_id)
 
 
+@login_required
 @require_http_methods(["POST"])
 def admin_reject_listing(request, listing_id):
     """Reject listing"""
     if not request.user.is_staff:
         messages.error(request, "You must be an admin to reject listings.")
-        return redirect("login")
+        return redirect("dashboard")
 
     listing = get_object_or_404(Listing, id=listing_id)
     listing.status = ListingStatus.DRAFT

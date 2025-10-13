@@ -5,11 +5,16 @@ import os
 import secrets
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from PIL import Image
 from pillow_heif import register_heif_opener
 
 # Enable HEIC support
 register_heif_opener()
+
+# File upload security settings
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'heic', 'heif'}
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 # Try to import B2 SDK
 try:
@@ -18,6 +23,33 @@ try:
     B2_AVAILABLE = True
 except ImportError:
     B2_AVAILABLE = False
+
+
+def validate_image_file(file):
+    """Validate uploaded image file for security"""
+    # Check file size
+    if file.size > MAX_FILE_SIZE:
+        raise ValidationError("File too large. Maximum size is 10MB.")
+
+    # Check file extension
+    file_ext = file.name.lower().split('.')[-1]
+    if file_ext not in ALLOWED_EXTENSIONS:
+        raise ValidationError(
+            f"Invalid file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}"
+        )
+
+    # Verify the file is actually an image by trying to open it with PIL
+    # Note: We just try to open it, not verify(), since verify() consumes the file
+    # and makes it unusable for subsequent operations
+    try:
+        file.seek(0)
+        img = Image.open(file)
+        img.load()  # Force loading to check if it's a valid image
+        file.seek(0)  # Reset for subsequent use
+    except Exception as e:
+        raise ValidationError(f"File is not a valid image: {str(e)}")
+
+    return True
 
 
 def get_photo_url(filename):
@@ -55,6 +87,9 @@ def get_b2_api():
 def save_picture_to_b2(form_picture):
     """Save picture to Backblaze B2 storage"""
     try:
+        # Validate file first
+        validate_image_file(form_picture)
+
         b2_api = get_b2_api()
         if not b2_api:
             return None
@@ -94,13 +129,23 @@ def save_picture_to_b2(form_picture):
         )
 
         return picture_fn
+    except ValidationError as e:
+        print(f"File validation error: {e}")
+        return None
     except Exception as e:
-        print(f"B2 upload error: {e}")
+        print(f"B2 upload error: {type(e).__name__}")
         return None
 
 
 def save_picture(form_picture):
     """Save picture to B2 if configured, otherwise save locally"""
+    # Validate file first
+    try:
+        validate_image_file(form_picture)
+    except ValidationError as e:
+        print(f"File validation error: {e}")
+        return None
+
     # Try B2 first if configured and available
     if B2_AVAILABLE and settings.B2_KEY_ID:
         b2_filename = save_picture_to_b2(form_picture)
@@ -164,6 +209,11 @@ def delete_photo_from_b2(filename):
 
 def delete_photo_file(filename):
     """Delete photo from B2 if configured, otherwise delete locally"""
+    # Validate filename doesn't contain path traversal
+    if '..' in filename or filename.startswith('/'):
+        print(f"Invalid filename detected: {filename}")
+        return
+
     if B2_AVAILABLE and settings.B2_KEY_ID:
         # Try to delete from B2
         success = delete_photo_from_b2(filename)
@@ -172,7 +222,18 @@ def delete_photo_file(filename):
 
     # Fallback: delete local file
     try:
-        photo_path = os.path.join(settings.MEDIA_ROOT, filename)
+        # Use basename to ensure no directory traversal
+        safe_filename = os.path.basename(filename)
+        photo_path = os.path.join(settings.MEDIA_ROOT, safe_filename)
+
+        # Ensure the resolved path is within MEDIA_ROOT
+        real_path = os.path.realpath(photo_path)
+        real_media_root = os.path.realpath(settings.MEDIA_ROOT)
+
+        if not real_path.startswith(real_media_root):
+            print(f"Path traversal detected: {filename}")
+            return
+
         if os.path.exists(photo_path):
             os.remove(photo_path)
             print(f"Deleted local file: {filename}")
