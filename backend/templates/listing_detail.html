@@ -44,8 +44,20 @@
             <div class="flex justify-between items-start mb-4">
                 <h1 class="text-3xl font-bold text-gray-800">{{ listing.title }}</h1>
                 <div class="text-right">
-                    <div class="text-3xl font-bold text-green-600">${{ listing.price }}/mo</div>
-                    <div class="text-sm text-gray-500">Monthly rent</div>
+                    <div class="text-3xl font-bold text-green-600">
+                        {% if listing.price_period == 'free' %}
+                            Free
+                        {% else %}
+                            ${{ listing.price }} {{ listing.get_price_period_display }}
+                        {% endif %}
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        {% if listing.price_period == 'free' %}
+                            House Sit/Exchange
+                        {% else %}
+                            {{ listing.get_price_period_display }}
+                        {% endif %}
+                    </div>
                 </div>
             </div>
             

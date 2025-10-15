@@ -133,7 +133,7 @@ def save_picture_to_b2(form_picture):
         print(f"File validation error: {e}")
         return None
     except Exception as e:
-        print(f"B2 upload error: {type(e).__name__}")
+        print(f"B2 upload error: {type(e).__name__}: {str(e)}")
         return None
 
 

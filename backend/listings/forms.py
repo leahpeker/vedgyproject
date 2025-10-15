@@ -4,7 +4,7 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core.exceptions import ValidationError
 
-from .models import Listing
+from .models import Listing, PricePeriod
 from users.models import User
 
 
@@ -91,6 +91,7 @@ class ListingForm(forms.ModelForm):
             "city",
             "borough",
             "price",
+            "price_period",
             "start_date",
             "end_date",
             "rental_type",
@@ -119,6 +120,9 @@ class ListingForm(forms.ModelForm):
                 attrs={"class": "w-full border border-gray-300 rounded p-2"}
             ),
             "price": forms.NumberInput(
+                attrs={"class": "w-full border border-gray-300 rounded p-2"}
+            ),
+            "price_period": forms.Select(
                 attrs={"class": "w-full border border-gray-300 rounded p-2"}
             ),
             "start_date": forms.DateInput(

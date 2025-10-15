@@ -13,7 +13,7 @@ from django_ratelimit.decorators import ratelimit
 from pydantic import ValidationError
 
 from .forms import ListingForm, LoginForm, SignupForm
-from .models import Listing, ListingPhoto, ListingStatus
+from .models import Listing, ListingPhoto, ListingStatus, PricePeriod
 from .schemas import ListingDraftSchema
 from .utils import delete_photo_file, save_picture
 
@@ -41,52 +41,65 @@ def browse_listings(request):
     if borough:
         listings = listings.filter(borough=borough)
 
-    rental_type = request.GET.get("rental_type")
-    if rental_type:
-        listings = listings.filter(rental_type=rental_type)
+    rental_types = request.GET.getlist("rental_type")
+    if rental_types:
+        listings = listings.filter(rental_type__in=rental_types)
 
-    room_type = request.GET.get("room_type")
-    if room_type:
-        listings = listings.filter(room_type=room_type)
+    room_types = request.GET.getlist("room_type")
+    if room_types:
+        listings = listings.filter(room_type__in=room_types)
 
-    vegan_household = request.GET.get("vegan_household")
-    if vegan_household:
-        listings = listings.filter(vegan_household=vegan_household)
+    vegan_households = request.GET.getlist("vegan_household")
+    if vegan_households:
+        listings = listings.filter(vegan_household__in=vegan_households)
 
-    furnished = request.GET.get("furnished")
-    if furnished:
-        listings = listings.filter(furnished=furnished)
+    furnished_options = request.GET.getlist("furnished")
+    if furnished_options:
+        listings = listings.filter(furnished__in=furnished_options)
 
     seeking_roommate = request.GET.get("seeking_roommate")
     if seeking_roommate == "true":
         listings = listings.filter(seeking_roommate=True)
+    elif seeking_roommate == "false":
+        listings = listings.filter(seeking_roommate=False)
 
+    # Get user's preferred price view for filtering (default: per_month)
+    price_view = request.GET.get("price_view", PricePeriod.PER_MONTH)
     min_price = request.GET.get("min_price")
     max_price = request.GET.get("max_price")
 
-    # Validate price range
-    if min_price and max_price:
-        try:
-            min_val = int(min_price)
-            max_val = int(max_price)
-            if min_val > max_val:
-                # Swap if min is greater than max
-                min_price, max_price = max_price, min_price
-        except ValueError:
-            # Invalid price values, ignore them
-            min_price = None
-            max_price = None
+    # Filter using converted equivalents based on selected view
+    if price_view == PricePeriod.PER_NIGHT:
+        if min_price:
+            listings = listings.filter(price_per_night__gte=min_price)
+        if max_price:
+            listings = listings.filter(price_per_night__lte=max_price)
+    elif price_view == PricePeriod.PER_WEEK:
+        if min_price:
+            listings = listings.filter(price_per_week__gte=min_price)
+        if max_price:
+            listings = listings.filter(price_per_week__lte=max_price)
+    else:  # PricePeriod.PER_MONTH (default)
+        if min_price:
+            listings = listings.filter(price_per_month__gte=min_price)
+        if max_price:
+            listings = listings.filter(price_per_month__lte=max_price)
 
-    if min_price:
-        listings = listings.filter(price__gte=min_price)
-    if max_price:
-        listings = listings.filter(price__lte=max_price)
+    # Prepare context with choices for filters
+    context = {
+        "listings": listings,
+        "price_view": price_view,
+        "rental_type_choices": Listing.RENTAL_TYPE_CHOICES,
+        "room_type_choices": Listing.ROOM_TYPE_CHOICES,
+        "furnished_choices": Listing.FURNISHED_CHOICES,
+        "vegan_household_choices": Listing.VEGAN_HOUSEHOLD_CHOICES,
+    }
 
     # If HTMX request, return just the partial
     if request.headers.get("HX-Request"):
-        return render(request, "_listings_partial.html", {"listings": listings})
+        return render(request, "_listings_partial.html", {"listings": listings, "price_view": price_view})
 
-    return render(request, "browse.html", {"listings": listings})
+    return render(request, "browse.html", context)
 
 
 def listing_detail(request, listing_id):

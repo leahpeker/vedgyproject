@@ -13,7 +13,13 @@
                 <div class="flex-1 p-6">
                     <div class="flex justify-between items-start mb-3">
                         <h3 class="text-xl font-semibold">{{ listing.title }}</h3>
-                        <span class="text-2xl font-bold text-green-600">${{ listing.price }}/mo</span>
+                        <span class="text-2xl font-bold text-green-600">
+                            {% if listing.price_period == 'free' %}
+                                Free
+                            {% else %}
+                                ${{ listing.price }}/{{ listing.get_price_period_display|lower }}
+                            {% endif %}
+                        </span>
                     </div>
             
             <div class="flex flex-wrap gap-2 mb-3">
@@ -22,7 +28,7 @@
                 <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded text-sm">{{ listing.get_furnished_display }}</span>
                 <span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-sm">{{ listing.get_vegan_household_display }}</span>
                 {% if listing.seeking_roommate %}
-                <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-sm">Seeking Roommate</span>
+                <span class="bg-pink-100 text-pink-800 px-2 py-1 rounded text-sm">Seeking Roommate</span>
                 {% endif %}
             </div>
             

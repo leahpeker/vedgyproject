@@ -26,6 +26,22 @@ class ListingStatus:
     ]
 
 
+class PricePeriod:
+    """Price period choices"""
+
+    PER_NIGHT = "per_night"
+    PER_WEEK = "per_week"
+    PER_MONTH = "per_month"
+    FREE = "free"
+
+    CHOICES = [
+        (PER_NIGHT, "Per Night"),
+        (PER_WEEK, "Per Week"),
+        (PER_MONTH, "Per Month"),
+        (FREE, "Free/Trade"),
+    ]
+
+
 class Listing(models.Model):
     """Rental listing model"""
 
@@ -34,7 +50,8 @@ class Listing(models.Model):
         ("sublet", "Sublet"),
         ("new_lease", "New Lease"),
         ("month_to_month", "Month to Month"),
-        ("short_term", "Short Term")
+        ("short_term", "Short Term"),
+        ("house_sit", "House Sit/Exchange"),
     ]
 
     ROOM_TYPE_CHOICES = [
@@ -70,7 +87,15 @@ class Listing(models.Model):
     # Rental details
     rental_type = models.CharField(max_length=20, choices=RENTAL_TYPE_CHOICES, blank=True, default="")
     room_type = models.CharField(max_length=20, choices=ROOM_TYPE_CHOICES, blank=True, default="")
-    price = models.IntegerField(null=True, blank=True)  # Monthly rent
+
+    # Pricing (as entered by lister)
+    price = models.IntegerField(null=True, blank=True)
+    price_period = models.CharField(max_length=20, choices=PricePeriod.CHOICES, default=PricePeriod.PER_MONTH)
+
+    # Auto-calculated price equivalents for filtering (never displayed to users)
+    price_per_night = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, db_index=True)
+    price_per_week = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, db_index=True)
+    price_per_month = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, db_index=True)
 
     # Availability
     start_date = models.DateField(null=True, blank=True)
@@ -96,6 +121,31 @@ class Listing(models.Model):
     # Relationships
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="listings")
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        """Auto-calculate price equivalents for filtering"""
+        from decimal import Decimal
+
+        if self.price and self.price_period != PricePeriod.FREE:
+            if self.price_period == PricePeriod.PER_NIGHT:
+                self.price_per_night = self.price
+                self.price_per_week = self.price * Decimal('7')
+                self.price_per_month = self.price * Decimal('30')
+            elif self.price_period == PricePeriod.PER_WEEK:
+                self.price_per_night = self.price / Decimal('7')
+                self.price_per_week = self.price
+                self.price_per_month = self.price * Decimal('4.33')
+            elif self.price_period == PricePeriod.PER_MONTH:
+                self.price_per_night = self.price / Decimal('30')
+                self.price_per_week = self.price / Decimal('4.33')
+                self.price_per_month = self.price
+        else:
+            # Free listings
+            self.price_per_night = Decimal('0')
+            self.price_per_week = Decimal('0')
+            self.price_per_month = Decimal('0')
+
+        super().save(*args, **kwargs)
 
     def activate_listing(self):
         """Activate listing after payment"""

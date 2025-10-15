@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
 
-from .models import Listing, ListingPhoto, ListingStatus
+from .models import Listing, ListingPhoto, ListingStatus, PricePeriod
 
 
 # User admin is now in users/admin.py
@@ -26,7 +26,7 @@ class ListingAdmin(admin.ModelAdmin):
         "title",
         "user_info",
         "city",
-        "price",
+        "price_display",
         "status",
         "created_at",
         "preview_link",
@@ -35,6 +35,7 @@ class ListingAdmin(admin.ModelAdmin):
         "status",
         "city",
         "rental_type",
+        "price_period",
         "room_type",
         "vegan_household",
         "created_at",
@@ -59,6 +60,18 @@ class ListingAdmin(admin.ModelAdmin):
         )
 
     user_info.short_description = "User"
+
+    def price_display(self, obj):
+        """Display price with period"""
+        if obj.price_period == PricePeriod.FREE:
+            return "Free"
+        if not obj.price:
+            return "Not set"
+        period_display = dict(PricePeriod.CHOICES)[obj.price_period]
+        return f"${obj.price}/{period_display}"
+
+    price_display.short_description = "Price"
+    price_display.admin_order_field = "price"
 
     def preview_link(self, obj):
         """Link to view listing on site"""
@@ -160,7 +173,7 @@ class ListingAdmin(admin.ModelAdmin):
                 room_type,
                 vegan_household,
                 location,
-                obj.price or 0,
+                f"${obj.price}/{dict(PricePeriod.CHOICES)[obj.price_period]}" if obj.price_period != PricePeriod.FREE else "Free",
                 available_date,
                 description,
                 reverse("listing_detail", args=[obj.id]),
@@ -183,7 +196,7 @@ class ListingAdmin(admin.ModelAdmin):
                 "fields": (
                     "rental_type",
                     "room_type",
-                    "price",
+                    ("price", "price_period"),
                     "start_date",
                     "furnished",
                     "vegan_household",

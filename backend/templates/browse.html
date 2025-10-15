@@ -43,9 +43,9 @@ function validatePriceRange(minInput, maxInput) {
 }" x-init="$watch('selectedCity', value => { if (value !== 'New York') { document.querySelector('[name=borough]').value = ''; htmx.trigger('[name=borough]', 'change'); } })">
     <div class="grid md:grid-cols-4 lg:grid-cols-8 gap-4">
         <!-- City Filter -->
-        <select name="city" x-model="selectedCity" class="border rounded p-2"
+        <select name="city" x-model="selectedCity" class="border rounded p-2 bg-white"
                 hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
-                hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
+                hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price'], [name='price_view']">
             <option value="">All Cities</option>
             <option value="New York" {% if request.GET.city == "New York" %}selected{% endif %}>New York</option>
             <option value="Los Angeles" {% if request.GET.city == "Los Angeles" %}selected{% endif %}>Los Angeles</option>
@@ -53,9 +53,9 @@ function validatePriceRange(minInput, maxInput) {
         </select>
 
         <!-- Borough Filter (NYC only) -->
-        <select name="borough" class="border rounded p-2" x-show="isNYC" x-transition
+        <select name="borough" class="border rounded p-2 bg-white" x-show="isNYC" x-transition
                 hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
-                hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
+                hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price'], [name='price_view']">
             <option value="">All Boroughs</option>
             <option value="Manhattan" {% if request.GET.borough == "Manhattan" %}selected{% endif %}>Manhattan</option>
             <option value="Brooklyn" {% if request.GET.borough == "Brooklyn" %}selected{% endif %}>Brooklyn</option>
@@ -65,67 +65,131 @@ function validatePriceRange(minInput, maxInput) {
         </select>
 
         <!-- Rental Type -->
-        <select name="rental_type" class="border rounded p-2"
-                hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
-                hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
-            <option value="">All Rental Types</option>
-            <option value="sublet" {% if request.GET.rental_type == "sublet" %}selected{% endif %}>Sublet</option>
-            <option value="new_lease" {% if request.GET.rental_type == "new_lease" %}selected{% endif %}>New Lease</option>
-            <option value="month_to_month" {% if request.GET.rental_type == "month_to_month" %}selected{% endif %}>Month to Month</option>
-        </select>
+        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+            <button type="button" @click="open = !open" class="w-full border rounded p-2 bg-white text-left flex justify-between items-center">
+                <span class="text-sm">Rental Type</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div x-show="open" x-transition class="absolute z-10 mt-1 w-full bg-white border rounded shadow-lg p-3">
+                <div class="space-y-2">
+                    {% for value, label in rental_type_choices %}
+                    <label class="flex items-center">
+                        <input type="checkbox" name="rental_type" value="{{ value }}"
+                               {% if value in request.GET.getlist.rental_type %}checked{% endif %}
+                               class="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                               hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
+                               hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price'], [name='price_view']">
+                        <span class="ml-2 text-sm">{{ label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
 
         <!-- Room Type -->
-        <select name="room_type" class="border rounded p-2"
-                hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
-                hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
-            <option value="">All Room Types</option>
-            <option value="private_room" {% if request.GET.room_type == "private_room" %}selected{% endif %}>Private Room</option>
-            <option value="shared_room" {% if request.GET.room_type == "shared_room" %}selected{% endif %}>Shared Room</option>
-            <option value="entire_place" {% if request.GET.room_type == "entire_place" %}selected{% endif %}>Entire Place</option>
-        </select>
+        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+            <button type="button" @click="open = !open" class="w-full border rounded p-2 bg-white text-left flex justify-between items-center">
+                <span class="text-sm">Room Type</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div x-show="open" x-transition class="absolute z-10 mt-1 w-full bg-white border rounded shadow-lg p-3">
+                <div class="space-y-2">
+                    {% for value, label in room_type_choices %}
+                    <label class="flex items-center">
+                        <input type="checkbox" name="room_type" value="{{ value }}"
+                               {% if value in request.GET.getlist.room_type %}checked{% endif %}
+                               class="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                               hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
+                               hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price'], [name='price_view']">
+                        <span class="ml-2 text-sm">{{ label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
 
         <!-- Seeking Roommate -->
-        <select name="seeking_roommate" class="border rounded p-2"
+        <select name="seeking_roommate" class="border rounded p-2 bg-white"
                 hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
-                hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
+                hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price'], [name='price_view']">
             <option value="">Any</option>
             <option value="true" {% if request.GET.seeking_roommate == "true" %}selected{% endif %}>Seeking Roommate</option>
             <option value="false" {% if request.GET.seeking_roommate == "false" %}selected{% endif %}>Not Seeking Roommate</option>
         </select>
 
         <!-- Furnished Status -->
-        <select name="furnished" class="border rounded p-2"
-                hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
-                hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
-            <option value="">Any</option>
-            <option value="furnished" {% if request.GET.furnished == "furnished" %}selected{% endif %}>Furnished</option>
-            <option value="unfurnished" {% if request.GET.furnished == "unfurnished" %}selected{% endif %}>Unfurnished</option>
-            <option value="partially_furnished" {% if request.GET.furnished == "partially_furnished" %}selected{% endif %}>Partially Furnished</option>
-        </select>
+        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+            <button type="button" @click="open = !open" class="w-full border rounded p-2 bg-white text-left flex justify-between items-center">
+                <span class="text-sm">Furnished</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div x-show="open" x-transition class="absolute z-10 mt-1 w-full bg-white border rounded shadow-lg p-3">
+                <div class="space-y-2">
+                    {% for value, label in furnished_choices %}
+                    <label class="flex items-center">
+                        <input type="checkbox" name="furnished" value="{{ value }}"
+                               {% if value in request.GET.getlist.furnished %}checked{% endif %}
+                               class="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                               hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
+                               hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price'], [name='price_view']">
+                        <span class="ml-2 text-sm">{{ label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
 
         <!-- Vegan Household Type -->
-        <select name="vegan_household" class="border rounded p-2"
-                hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
-                hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
-            <option value="">All Households</option>
-            <option value="vegan" {% if request.GET.vegan_household == "vegan" %}selected{% endif %}>Vegan</option>
-            <option value="vegetarian" {% if request.GET.vegan_household == "vegetarian" %}selected{% endif %}>Vegetarian</option>
-            <option value="vegan_friendly" {% if request.GET.vegan_household == "vegan_friendly" %}selected{% endif %}>Vegan-Friendly</option>
-            <option value="not_vegan" {% if request.GET.vegan_household == "not_vegan" %}selected{% endif %}>Not Vegan</option>
-        </select>
+        <div class="relative" x-data="{ open: false }" @click.away="open = false">
+            <button type="button" @click="open = !open" class="w-full border rounded p-2 bg-white text-left flex justify-between items-center">
+                <span class="text-sm">Household</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div x-show="open" x-transition class="absolute z-10 mt-1 w-full bg-white border rounded shadow-lg p-3">
+                <div class="space-y-2">
+                    {% for value, label in vegan_household_choices %}
+                    <label class="flex items-center">
+                        <input type="checkbox" name="vegan_household" value="{{ value }}"
+                               {% if value in request.GET.getlist.vegan_household %}checked{% endif %}
+                               class="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                               hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
+                               hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price'], [name='price_view']">
+                        <span class="ml-2 text-sm">{{ label }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
 
         <!-- Price Range -->
-        <input type="number" name="min_price" placeholder="Min price" class="border rounded p-2"
+        <input type="number" name="min_price" placeholder="Min price" class="border rounded p-2 bg-white"
                value="{{ request.GET.min_price }}"
                oninput="validatePriceRange(this, document.querySelector('[name=max_price]'))"
                hx-get="{% url 'browse' %}" hx-trigger="input changed delay:500ms" hx-target="#listings-container" hx-push-url="true"
-               hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
+               hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price'], [name='price_view']">
 
-        <input type="number" name="max_price" placeholder="Max price" class="border rounded p-2"
+        <input type="number" name="max_price" placeholder="Max price" class="border rounded p-2 bg-white"
                value="{{ request.GET.max_price }}"
                oninput="validatePriceRange(document.querySelector('[name=min_price]'), this)"
                hx-get="{% url 'browse' %}" hx-trigger="input changed delay:500ms" hx-target="#listings-container" hx-push-url="true"
-               hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
+               hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price'], [name='price_view']">
+
+        <!-- Price View Selector -->
+        <select name="price_view" class="border rounded p-2 bg-white"
+                hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
+                hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price'], [name='price_view']">
+            <option value="per_night" {% if request.GET.price_view == "per_night" %}selected{% endif %}>Per Night</option>
+            <option value="per_week" {% if request.GET.price_view == "per_week" %}selected{% endif %}>Per Week</option>
+            <option value="per_month" {% if request.GET.price_view == "per_month" or not request.GET.price_view %}selected{% endif %}>Per Month</option>
+        </select>
         
         <!-- Clear Filters -->
         <button type="button" class="border border-gray-300 text-gray-700 rounded p-2 hover:bg-gray-50" 
