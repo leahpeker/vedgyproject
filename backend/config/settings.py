@@ -59,6 +59,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",  # Serve static files
+    "config.middleware.DatabaseHealthCheckMiddleware",  # Database health check with retry
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -96,8 +97,13 @@ DATABASES = {
     "default": dj_database_url.config(
         default=os.environ.get("DATABASE_URL"),
         conn_max_age=600,
+        conn_health_checks=True,  # Enable connection health checks
     )
 }
+
+# Database connection retry settings (exponential backoff: 1s, 2s, 4s)
+DATABASE_RETRY_ATTEMPTS = 3
+DATABASE_RETRY_DELAYS = [1, 2, 4]  # Exponential backoff in seconds
 
 
 

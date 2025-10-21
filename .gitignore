@@ -43,6 +43,12 @@ uploads/
 .env
 .flaskenv
 
+# Test scripts
+test_upload.py
+test_b2_connection.py
+diagnose_ssl.py
+test_b2_insecure.py
+
 # IDE
 .vscode/
 .idea/

@@ -1,4 +1,4 @@
-.PHONY: help install run down restart test clean format lint check migrate createsuperuser
+.PHONY: help install run down restart test clean format lint check migrate createsuperuser shell
 
 PYTHON := backend/venv/bin/python
 PYTEST := backend/venv/bin/pytest
@@ -16,6 +16,7 @@ help:
 	@echo "  make check           Run Django system checks"
 	@echo "  make migrate         Run database migrations"
 	@echo "  make createsuperuser Create Django superuser"
+	@echo "  make shell           Open Django shell"
 
 install:
 	cd backend && venv/bin/pip install -r ../requirements.txt
@@ -54,3 +55,6 @@ migrate:
 
 createsuperuser:
 	cd backend && ../$(PYTHON) manage.py createsuperuser
+
+shell:
+	cd backend && ../$(PYTHON) manage.py shell
