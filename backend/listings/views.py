@@ -157,22 +157,20 @@ def user_login(request):
     if request.method == "POST":
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
-            email = form.cleaned_data.get("username")
-            password = form.cleaned_data.get("password")
-            user = authenticate(request, username=email, password=password)
-            if user is not None:
-                login(request, user)
-                messages.success(request, f"Welcome back, {user.first_name}!")
+            # AuthenticationForm validates credentials automatically
+            user = form.get_user()
+            login(request, user)
+            messages.success(request, f"Welcome back, {user.first_name}!")
 
-                # Validate next parameter to prevent open redirects
-                next_url = request.GET.get("next", "index")
-                if url_has_allowed_host_and_scheme(
-                    url=next_url,
-                    allowed_hosts={request.get_host()},
-                    require_https=request.is_secure()
-                ):
-                    return redirect(next_url)
-                return redirect("index")
+            # Validate next parameter to prevent open redirects
+            next_url = request.GET.get("next", "index")
+            if url_has_allowed_host_and_scheme(
+                url=next_url,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure()
+            ):
+                return redirect(next_url)
+            return redirect("index")
     else:
         form = LoginForm()
 

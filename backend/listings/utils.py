@@ -138,7 +138,7 @@ def save_picture_to_b2(form_picture):
 
 
 def save_picture(form_picture):
-    """Save picture to B2 if configured, otherwise save locally"""
+    """Save picture to B2 storage only - no local fallback"""
     # Validate file first
     try:
         validate_image_file(form_picture)
@@ -146,41 +146,14 @@ def save_picture(form_picture):
         print(f"File validation error: {e}")
         return None
 
-    # Try B2 first if configured and available
-    if B2_AVAILABLE and settings.B2_KEY_ID:
-        b2_filename = save_picture_to_b2(form_picture)
-        if b2_filename:
-            return b2_filename
+    # B2 is required - fail if not configured
+    if not B2_AVAILABLE or not settings.B2_KEY_ID:
+        print("ERROR: B2 storage not configured")
+        return None
 
-    # Fallback to local storage
-    random_hex = secrets.token_hex(8)
-    picture_fn = f"{random_hex}.jpg"  # Always save as .jpg for smaller files
-    picture_path = os.path.join(settings.MEDIA_ROOT, picture_fn)
-
-    # Create upload directory if it doesn't exist
-    os.makedirs(os.path.dirname(picture_path), exist_ok=True)
-
-    # Resize and optimize image
-    img = Image.open(form_picture)
-
-    # Apply EXIF orientation to prevent rotation issues
-    try:
-        from PIL import ImageOps
-        img = ImageOps.exif_transpose(img)
-    except Exception:
-        pass  # If EXIF orientation fails, continue without it
-
-    # Convert to RGB if necessary (for JPEG)
-    if img.mode in ("RGBA", "LA", "P"):
-        img = img.convert("RGB")
-
-    # Resize to max 800x600 while maintaining aspect ratio
-    img.thumbnail((800, 600), Image.Resampling.LANCZOS)
-
-    # Save as optimized JPEG
-    img.save(picture_path, format="JPEG", quality=85, optimize=True)
-
-    return picture_fn
+    # Upload to B2 - fail if it doesn't work
+    b2_filename = save_picture_to_b2(form_picture)
+    return b2_filename  # Will be None if upload failed
 
 
 def delete_photo_from_b2(filename):
