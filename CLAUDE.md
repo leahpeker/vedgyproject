@@ -82,3 +82,4 @@ All routes live at the root level (no `/api/` prefix). `config/urls.py` includes
 - Open redirect prevention in login/signup views
 - Path traversal protection in photo deletion
 - File upload validation: type checking, size limits (10MB), PIL image verification
+Use 'bd' for task tracking
