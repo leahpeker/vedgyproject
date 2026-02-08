@@ -52,51 +52,48 @@ VedgyProject helps vegans find housing in vegan-friendly households. Whether you
    cd vedgyproject
    ```
 
-3. **Set up development environment**
+3. **Set up environment config**
 
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # Windows: venv\Scripts\activate
-   pip install -r backend/requirements-django.txt
+   cp .env.example .env
    ```
 
-4. **Run database migrations**
+   The defaults in `.env.example` are pre-configured to work with the local Docker PostgreSQL container.
+
+4. **Start local PostgreSQL** (requires [Docker](https://docs.docker.com/get-docker/))
 
    ```bash
-   cd backend
-   python manage.py migrate
+   make db-start
    ```
 
-5. **Create a feature branch from development**
+5. **Install dependencies and run migrations** (requires [uv](https://docs.astral.sh/uv/))
 
    ```bash
-   git checkout development
-   git checkout -b feature/your-feature-name
+   make install
+   make migrate
    ```
 
 6. **Run locally**
 
    ```bash
-   # From project root
-   python run-django.py
-
-   # Or from backend directory
-   cd backend
-   python manage.py runserver
+   make run
    ```
 
    Visit http://127.0.0.1:8000
 
-   _No additional configuration needed for local development! Uses SQLite by default._
-
 7. **Run tests**
 
    ```bash
-   cd backend
-   pytest
+   make test
    ```
 
-8. **Make your changes and submit a PR to the development branch!**
+8. **Create a feature branch and submit a PR**
+
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+   When finished, open a Pull Request to the `development` branch.
 
 ### 🐛 Ways to Contribute
 
