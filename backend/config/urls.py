@@ -19,9 +19,22 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from ninja import NinjaAPI
+
+from listings.api import router as listings_router
+from users.api import router as auth_router
+
+api = NinjaAPI(
+    title="Vedgy API",
+    version="1.0.0",
+)
+
+api.add_router("/auth/", auth_router, tags=["auth"])
+api.add_router("/listings/", listings_router, tags=["listings"])
 
 urlpatterns = [
     path("admin/", admin.site.urls),  # Django admin panel
+    path("api/", api.urls),  # API endpoints
     path("", include("listings.urls")),  # All app routes at root
 ]
 
