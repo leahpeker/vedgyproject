@@ -18,7 +18,7 @@ class _FilterPanelState extends ConsumerState<FilterPanel> {
   final _priceMaxController = TextEditingController();
   Timer? _debounce;
 
-  static const _cities = ['New York City', 'Los Angeles', 'Chicago', 'Other'];
+  static const _cities = ['New York', 'Los Angeles', 'Chicago', 'Other'];
   static const _boroughs = ['Manhattan', 'Brooklyn', 'Queens', 'The Bronx', 'Staten Island'];
   static const _rentalTypes = ['Long-term', 'Short-term', 'Both'];
   static const _roomTypes = ['Entire place', 'Private room', 'Shared room'];
@@ -61,7 +61,7 @@ class _FilterPanelState extends ConsumerState<FilterPanel> {
   @override
   Widget build(BuildContext context) {
     final filters = ref.watch(browseFiltersProvider);
-    final isNyc = filters.city == 'New York City';
+    final isNyc = filters.city == 'New York';
 
     return Card(
       child: Padding(

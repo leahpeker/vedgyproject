@@ -53,7 +53,7 @@ final _testListing = Listing(
   id: 'test-id-123',
   title: 'Cozy vegan flat in Brooklyn',
   description: 'A beautiful plant-based home with lots of natural light.',
-  city: 'New York City',
+  city: 'New York',
   neighborhood: 'Williamsburg',
   price: 1800,
   rentalType: 'Long-term',
@@ -102,7 +102,7 @@ void main() {
 
       expect(find.text('Cozy vegan flat in Brooklyn'), findsOneWidget);
       expect(find.text('\$1800/mo'), findsOneWidget);
-      expect(find.text('New York City, Williamsburg'), findsOneWidget);
+      expect(find.text('New York, Williamsburg'), findsOneWidget);
       expect(find.text('Posted by Alice Green'), findsOneWidget);
     });
 
