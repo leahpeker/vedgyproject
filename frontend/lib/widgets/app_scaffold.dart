@@ -221,6 +221,8 @@ class _VedgyDrawer extends ConsumerWidget {
               ListTile(
                 leading: const Icon(Icons.add_home_outlined),
                 title: const Text('Post a listing'),
+                // Router guard redirects to /login?redirect=%2Fcreate for
+                // unauthenticated users, preserving the intended destination.
                 onTap: () => nav('/create'),
               ),
               const Divider(),

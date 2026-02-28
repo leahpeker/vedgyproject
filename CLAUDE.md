@@ -80,7 +80,7 @@ Photos are handled in `listings/utils.py`. They are validated (type, size, PIL v
 
 ### URL Routing
 
-All routes live at the root level (no `/api/` prefix). `config/urls.py` includes `listings/urls.py` which defines all paths: `/`, `/browse/`, `/listing/<id>/`, `/create/`, `/edit/<id>/`, `/dashboard/`, auth routes, etc.
+Django server-rendered routes live at the root level. `config/urls.py` includes `listings/urls.py` which defines: `/`, `/browse/`, `/listing/<id>/`, `/create/`, `/edit/<id>/`, `/dashboard/`, auth routes, etc. The REST API routes are mounted under `/api/` via Django Ninja (see the architecture description above).
 
 ## Environment & Deployment
 
