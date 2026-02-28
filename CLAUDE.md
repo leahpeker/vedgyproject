@@ -21,6 +21,8 @@ make migrate          # makemigrations + migrate
 make createsuperuser  # Create Django admin user
 make check            # Django system checks
 make ci               # Run all pre-commit checks (lint, check, test, frontend-test)
+make seed             # Seed DB with test users + listings (skips existing)
+make seed-reset       # Delete and re-create all seed data
 ```
 
 ## Pre-commit Requirement

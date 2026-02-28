@@ -1,5 +1,5 @@
-.PHONY: help install run down restart test clean format lint check migrate createsuperuser db-start db-stop \
-        frontend-install frontend-run frontend-build frontend-codegen frontend-test dev ci
+.PHONY: help install run down restart test clean format lint check migrate createsuperuser seed seed-reset \
+        db-start db-stop frontend-install frontend-run frontend-build frontend-codegen frontend-test dev ci
 
 help:
 	@echo "Backend commands:"
@@ -12,6 +12,8 @@ help:
 	@echo "  make check            Run Django system checks"
 	@echo "  make migrate          makemigrations + migrate"
 	@echo "  make createsuperuser  Create Django admin user"
+	@echo "  make seed             Seed DB with test users + listings (skip existing)"
+	@echo "  make seed-reset       Delete and re-create all seed data"
 	@echo "  make db-start         Start local PostgreSQL (Docker)"
 	@echo "  make db-stop          Stop local PostgreSQL (Docker)"
 	@echo ""
@@ -63,6 +65,12 @@ migrate:
 
 createsuperuser:
 	cd backend && uv run python manage.py createsuperuser
+
+seed:
+	cd backend && uv run python manage.py seed
+
+seed-reset:
+	cd backend && uv run python manage.py seed --reset
 
 db-start:
 	docker compose up -d db

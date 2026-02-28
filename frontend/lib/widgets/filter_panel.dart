@@ -85,80 +85,99 @@ class _FilterPanelState extends ConsumerState<FilterPanel> {
               ],
             ),
             const SizedBox(height: 12),
-            Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: [
-                _FilterDropdown(
-                  label: 'City',
-                  value: filters.city,
-                  items: _cities,
-                  onChanged: (v) => _updateFilter((f) => f.copyWith(city: v, borough: null)),
-                ),
-                if (isNyc)
-                  _FilterDropdown(
-                    label: 'Borough',
-                    value: filters.borough,
-                    items: _boroughs,
-                    onChanged: (v) => _updateFilter((f) => f.copyWith(borough: v)),
-                  ),
-                _FilterDropdown(
-                  label: 'Rental type',
-                  value: filters.rentalType,
-                  items: _rentalTypes,
-                  onChanged: (v) => _updateFilter((f) => f.copyWith(rentalType: v)),
-                ),
-                _FilterDropdown(
-                  label: 'Room type',
-                  value: filters.roomType,
-                  items: _roomTypes,
-                  onChanged: (v) => _updateFilter((f) => f.copyWith(roomType: v)),
-                ),
-                _FilterDropdown(
-                  label: 'Vegan household',
-                  value: filters.veganHousehold,
-                  items: _veganHouseholds,
-                  onChanged: (v) => _updateFilter((f) => f.copyWith(veganHousehold: v)),
-                ),
-                _FilterDropdown(
-                  label: 'Furnished',
-                  value: filters.furnished,
-                  items: _furnishedOptions,
-                  onChanged: (v) => _updateFilter((f) => f.copyWith(furnished: v)),
-                ),
-                _SeeingRoommateToggle(
-                  value: filters.seekingRoommate,
-                  onChanged: (v) => _updateFilter((f) => f.copyWith(seekingRoommate: v)),
-                ),
-                SizedBox(
-                  width: 120,
-                  child: TextField(
-                    controller: _priceMinController,
-                    decoration: const InputDecoration(
-                      labelText: 'Min price',
-                      prefixText: '\$',
-                      isDense: true,
-                      border: OutlineInputBorder(),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                // Compute item width so items never overflow: fit 3 cols on
+                // wide screens, 2 on medium, 1 on narrow. The 12px spacing
+                // between items is subtracted before dividing.
+                final w = constraints.maxWidth;
+                final cols = w >= 580 ? 3 : w >= 360 ? 2 : 1;
+                final itemW = (w - 12 * (cols - 1)) / cols;
+                final priceW = (itemW).clamp(80.0, 160.0);
+
+                return Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    _FilterDropdown(
+                      width: itemW,
+                      label: 'City',
+                      value: filters.city,
+                      items: _cities,
+                      onChanged: (v) => _updateFilter((f) => f.copyWith(city: v, borough: null)),
                     ),
-                    keyboardType: TextInputType.number,
-                    onChanged: (_) => _onPriceChanged(),
-                  ),
-                ),
-                SizedBox(
-                  width: 120,
-                  child: TextField(
-                    controller: _priceMaxController,
-                    decoration: const InputDecoration(
-                      labelText: 'Max price',
-                      prefixText: '\$',
-                      isDense: true,
-                      border: OutlineInputBorder(),
+                    if (isNyc)
+                      _FilterDropdown(
+                        width: itemW,
+                        label: 'Borough',
+                        value: filters.borough,
+                        items: _boroughs,
+                        onChanged: (v) => _updateFilter((f) => f.copyWith(borough: v)),
+                      ),
+                    _FilterDropdown(
+                      width: itemW,
+                      label: 'Rental type',
+                      value: filters.rentalType,
+                      items: _rentalTypes,
+                      onChanged: (v) => _updateFilter((f) => f.copyWith(rentalType: v)),
                     ),
-                    keyboardType: TextInputType.number,
-                    onChanged: (_) => _onPriceChanged(),
-                  ),
-                ),
-              ],
+                    _FilterDropdown(
+                      width: itemW,
+                      label: 'Room type',
+                      value: filters.roomType,
+                      items: _roomTypes,
+                      onChanged: (v) => _updateFilter((f) => f.copyWith(roomType: v)),
+                    ),
+                    _FilterDropdown(
+                      width: itemW,
+                      label: 'Vegan household',
+                      value: filters.veganHousehold,
+                      items: _veganHouseholds,
+                      onChanged: (v) => _updateFilter((f) => f.copyWith(veganHousehold: v)),
+                    ),
+                    _FilterDropdown(
+                      width: itemW,
+                      label: 'Furnished',
+                      value: filters.furnished,
+                      items: _furnishedOptions,
+                      onChanged: (v) => _updateFilter((f) => f.copyWith(furnished: v)),
+                    ),
+                    _SeeingRoommateToggle(
+                      width: itemW,
+                      value: filters.seekingRoommate,
+                      onChanged: (v) => _updateFilter((f) => f.copyWith(seekingRoommate: v)),
+                    ),
+                    SizedBox(
+                      width: priceW,
+                      child: TextField(
+                        controller: _priceMinController,
+                        decoration: const InputDecoration(
+                          labelText: 'Min price',
+                          prefixText: '\$',
+                          isDense: true,
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                        onChanged: (_) => _onPriceChanged(),
+                      ),
+                    ),
+                    SizedBox(
+                      width: priceW,
+                      child: TextField(
+                        controller: _priceMaxController,
+                        decoration: const InputDecoration(
+                          labelText: 'Max price',
+                          prefixText: '\$',
+                          isDense: true,
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                        onChanged: (_) => _onPriceChanged(),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ],
         ),
@@ -169,12 +188,14 @@ class _FilterPanelState extends ConsumerState<FilterPanel> {
 
 class _FilterDropdown extends StatelessWidget {
   const _FilterDropdown({
+    required this.width,
     required this.label,
     required this.value,
     required this.items,
     required this.onChanged,
   });
 
+  final double width;
   final String label;
   final String? value;
   final List<String> items;
@@ -183,7 +204,7 @@ class _FilterDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 180,
+      width: width,
       child: DropdownButtonFormField<String>(
         key: ValueKey(value),
         initialValue: value,
@@ -204,15 +225,16 @@ class _FilterDropdown extends StatelessWidget {
 }
 
 class _SeeingRoommateToggle extends StatelessWidget {
-  const _SeeingRoommateToggle({required this.value, required this.onChanged});
+  const _SeeingRoommateToggle({required this.width, required this.value, required this.onChanged});
 
+  final double width;
   final bool? value;
   final void Function(bool?) onChanged;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 180,
+      width: width,
       child: DropdownButtonFormField<bool?>(
         key: ValueKey(value),
         initialValue: value,
