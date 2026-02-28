@@ -51,15 +51,9 @@ class HomeScreen extends ConsumerWidget {
                       onPressed: () => context.go('/browse'),
                       child: const Text('Browse listings'),
                     ),
-                    authState.maybeWhen(
-                      unauthenticated: () => OutlinedButton(
-                        onPressed: () => context.go('/signup'),
-                        child: const Text('Post a listing'),
-                      ),
-                      orElse: () => OutlinedButton(
-                        onPressed: () => context.go('/create'),
-                        child: const Text('Post a listing'),
-                      ),
+                    OutlinedButton(
+                      onPressed: () => context.go('/create'),
+                      child: const Text('Post a listing'),
                     ),
                   ],
                 ),

@@ -24,6 +24,20 @@ make check            # Django system checks
 
 Local dev setup: `cp .env.example .env`, then `make install && make db-start && make migrate && make run`.
 
+### Flutter frontend commands
+
+```bash
+make frontend-install   # flutter pub get
+make frontend-run       # Run Flutter dev server with hot reload (localhost:3000, any browser)
+make frontend-build     # Build Flutter web release (requires API_URL env var)
+make frontend-codegen   # Regenerate freezed/riverpod/json code after model changes
+make frontend-test      # Run Flutter test suite
+make dev                # Run Django backend + Flutter frontend concurrently
+```
+
+Flutter setup: `make frontend-install`, then `API_URL=http://localhost:8000 make frontend-build` or `make frontend-run`.
+After editing any `@freezed` or `@riverpod` annotated file, run `make frontend-codegen` to regenerate the `.freezed.dart` and `.g.dart` files.
+
 To run a single test file or test function:
 ```bash
 cd backend && uv run python -m pytest tests/test_views.py
@@ -45,7 +59,7 @@ backend/
 └── tests/           # Integration tests (conftest.py has shared fixtures)
 ```
 
-There is no REST API. This is a monolithic server-rendered app. The only JSON endpoint is the draft auto-save (`/listings/save-draft/`), which uses Pydantic for partial validation.
+The Django backend is both a server-rendered app and a REST API. The REST API (Django Ninja) lives under `/api/` and provides auth and listings endpoints consumed by the Flutter web frontend. The legacy HTMX/server-rendered views are still active under the root URL patterns. The only non-API JSON endpoint is the draft auto-save (`/listings/save-draft/`), which uses Pydantic for partial validation.
 
 ### Key Models
 
