@@ -25,11 +25,11 @@ class _FakeAuth extends Auth {
 Widget _wrap(Widget screen) {
   final router = GoRouter(
     routes: [
-      GoRoute(path: '/', builder: (_, __) => screen),
-      GoRoute(path: '/browse', builder: (_, __) => const Scaffold(body: Text('browse'))),
-      GoRoute(path: '/create', builder: (_, __) => const Scaffold(body: Text('create'))),
-      GoRoute(path: '/login', builder: (_, __) => const Scaffold(body: Text('login'))),
-      GoRoute(path: '/listing/:id', builder: (_, __) => const Scaffold(body: Text('detail'))),
+      GoRoute(path: '/', builder: (ctx, st) => screen),
+      GoRoute(path: '/browse', builder: (ctx, st) => const Scaffold(body: Text('browse'))),
+      GoRoute(path: '/create', builder: (ctx, st) => const Scaffold(body: Text('create'))),
+      GoRoute(path: '/login', builder: (ctx, st) => const Scaffold(body: Text('login'))),
+      GoRoute(path: '/listing/:id', builder: (ctx, st) => const Scaffold(body: Text('detail'))),
     ],
   );
 

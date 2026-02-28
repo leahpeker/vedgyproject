@@ -1,12 +1,16 @@
-"""Tests for the Django Ninja API endpoints (Phase 1)."""
+"""Tests for the Django Ninja API endpoints (Phase 1 + Phase 4)."""
 
+import io
 import json
+from unittest.mock import patch
 
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
 from ninja_jwt.tokens import RefreshToken
+from PIL import Image
 
-from listings.models import Listing, ListingStatus
+from listings.models import Listing, ListingPhoto, ListingStatus
 from users.models import User
 
 
@@ -37,6 +41,33 @@ def other_user(db):
 def other_auth_headers(other_user):
     refresh = RefreshToken.for_user(other_user)
     return {"HTTP_AUTHORIZATION": f"Bearer {refresh.access_token}"}
+
+
+@pytest.fixture
+def staff_user(db):
+    """A staff user for admin-only endpoint tests."""
+    return User.objects.create_user(
+        email="staff@example.com",
+        password="staffpass123",
+        first_name="Staff",
+        last_name="User",
+        is_staff=True,
+    )
+
+
+@pytest.fixture
+def staff_auth_headers(staff_user):
+    refresh = RefreshToken.for_user(staff_user)
+    return {"HTTP_AUTHORIZATION": f"Bearer {refresh.access_token}"}
+
+
+def _make_test_image(fmt="JPEG", size=(20, 20)):
+    """Return a SimpleUploadedFile containing a minimal valid image."""
+    buf = io.BytesIO()
+    Image.new("RGB", size, color=(100, 150, 200)).save(buf, format=fmt)
+    buf.seek(0)
+    ext = "jpg" if fmt == "JPEG" else fmt.lower()
+    return SimpleUploadedFile(f"test.{ext}", buf.read(), content_type=f"image/{ext}")
 
 
 # =============================================================================
@@ -409,3 +440,407 @@ class TestOpenAPIDocs:
         assert data["info"]["title"] == "Vedgy API"
         assert "/api/auth/login/" in data["paths"]
         assert "/api/listings/" in data["paths"]
+
+
+# =============================================================================
+# Listing CRUD API tests (Phase 4)
+# =============================================================================
+
+
+class TestCreateListing:
+    @pytest.mark.django_db
+    def test_create_requires_auth(self, api_client):
+        response = api_client.post(
+            "/api/listings/",
+            data=json.dumps({"title": "My Listing", "city": "Chicago"}),
+            content_type="application/json",
+        )
+        assert response.status_code == 401
+
+    @pytest.mark.django_db
+    def test_create_draft(self, api_client, auth_headers, test_user):
+        response = api_client.post(
+            "/api/listings/",
+            data=json.dumps({"title": "My New Listing", "city": "Chicago"}),
+            content_type="application/json",
+            **auth_headers,
+        )
+        assert response.status_code == 201
+        data = response.json()
+        assert data["title"] == "My New Listing"
+        assert data["city"] == "Chicago"
+        assert data["status"] == "draft"
+        assert Listing.objects.filter(user=test_user, status=ListingStatus.DRAFT).count() == 1
+
+    @pytest.mark.django_db
+    def test_create_empty_draft(self, api_client, auth_headers, test_user):
+        """All fields are optional — can create a completely empty draft."""
+        response = api_client.post(
+            "/api/listings/",
+            data=json.dumps({}),
+            content_type="application/json",
+            **auth_headers,
+        )
+        assert response.status_code == 201
+        assert response.json()["title"] == ""
+        assert response.json()["status"] == "draft"
+
+    @pytest.mark.django_db
+    def test_create_sets_owner(self, api_client, auth_headers, test_user):
+        response = api_client.post(
+            "/api/listings/",
+            data=json.dumps({"title": "Owner Check"}),
+            content_type="application/json",
+            **auth_headers,
+        )
+        assert response.status_code == 201
+        listing_id = response.json()["id"]
+        listing = Listing.objects.get(id=listing_id)
+        assert listing.user_id == test_user.id
+
+
+class TestUpdateListing:
+    @pytest.mark.django_db
+    def test_update_own_listing(self, api_client, auth_headers, draft_listing):
+        response = api_client.patch(
+            f"/api/listings/{draft_listing.id}/",
+            data=json.dumps({"title": "Updated Title", "city": "Boston"}),
+            content_type="application/json",
+            **auth_headers,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["title"] == "Updated Title"
+        assert data["city"] == "Boston"
+        # Unchanged field is preserved
+        assert data["price"] == 1500
+
+    @pytest.mark.django_db
+    def test_update_requires_auth(self, api_client, draft_listing):
+        response = api_client.patch(
+            f"/api/listings/{draft_listing.id}/",
+            data=json.dumps({"title": "Hacked"}),
+            content_type="application/json",
+        )
+        assert response.status_code == 401
+
+    @pytest.mark.django_db
+    def test_update_other_user_forbidden(
+        self, api_client, other_auth_headers, draft_listing
+    ):
+        response = api_client.patch(
+            f"/api/listings/{draft_listing.id}/",
+            data=json.dumps({"title": "Stolen"}),
+            content_type="application/json",
+            **other_auth_headers,
+        )
+        assert response.status_code == 403
+        # Title is unchanged
+        draft_listing.refresh_from_db()
+        assert draft_listing.title == "Test Vegan House"
+
+    @pytest.mark.django_db
+    def test_update_partial_fields_only(self, api_client, auth_headers, draft_listing):
+        """Only the supplied fields are changed; others stay the same."""
+        response = api_client.patch(
+            f"/api/listings/{draft_listing.id}/",
+            data=json.dumps({"price": 2000}),
+            content_type="application/json",
+            **auth_headers,
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["price"] == 2000
+        assert data["title"] == "Test Vegan House"
+
+
+class TestDeleteListing:
+    @pytest.mark.django_db
+    def test_delete_own_listing(self, api_client, auth_headers, draft_listing):
+        listing_id = draft_listing.id
+        with patch("listings.api.delete_photo_file"):
+            response = api_client.delete(
+                f"/api/listings/{listing_id}/", **auth_headers
+            )
+        assert response.status_code == 204
+        assert not Listing.objects.filter(id=listing_id).exists()
+
+    @pytest.mark.django_db
+    def test_delete_requires_auth(self, api_client, draft_listing):
+        response = api_client.delete(f"/api/listings/{draft_listing.id}/")
+        assert response.status_code == 401
+        assert Listing.objects.filter(id=draft_listing.id).exists()
+
+    @pytest.mark.django_db
+    def test_delete_other_user_forbidden(
+        self, api_client, other_auth_headers, draft_listing
+    ):
+        response = api_client.delete(
+            f"/api/listings/{draft_listing.id}/", **other_auth_headers
+        )
+        assert response.status_code == 403
+        assert Listing.objects.filter(id=draft_listing.id).exists()
+
+    @pytest.mark.django_db
+    def test_delete_cleans_up_photos(
+        self, api_client, auth_headers, listing_with_photos
+    ):
+        listing_id = listing_with_photos.id
+        photo_count = listing_with_photos.photos.count()
+        assert photo_count == 2
+
+        with patch("listings.api.delete_photo_file") as mock_delete:
+            response = api_client.delete(
+                f"/api/listings/{listing_id}/", **auth_headers
+            )
+        assert response.status_code == 204
+        assert mock_delete.call_count == 2
+        assert not ListingPhoto.objects.filter(listing_id=listing_id).exists()
+
+
+class TestPhotoUpload:
+    @pytest.mark.django_db
+    def test_upload_photo(self, api_client, auth_headers, draft_listing):
+        with patch("listings.api.save_picture", return_value="saved_abc123.jpg"):
+            response = api_client.post(
+                f"/api/listings/{draft_listing.id}/photos/",
+                data={"photo": _make_test_image()},
+                **auth_headers,
+            )
+        assert response.status_code == 201
+        data = response.json()
+        assert data["filename"] == "saved_abc123.jpg"
+        assert "url" in data
+        assert ListingPhoto.objects.filter(listing=draft_listing).count() == 1
+
+    @pytest.mark.django_db
+    def test_upload_requires_auth(self, api_client, draft_listing):
+        response = api_client.post(
+            f"/api/listings/{draft_listing.id}/photos/",
+            data={"photo": _make_test_image()},
+        )
+        assert response.status_code == 401
+
+    @pytest.mark.django_db
+    def test_upload_other_user_forbidden(
+        self, api_client, other_auth_headers, draft_listing
+    ):
+        response = api_client.post(
+            f"/api/listings/{draft_listing.id}/photos/",
+            data={"photo": _make_test_image()},
+            **other_auth_headers,
+        )
+        assert response.status_code == 403
+
+    @pytest.mark.django_db
+    def test_upload_invalid_file_returns_400(
+        self, api_client, auth_headers, draft_listing
+    ):
+        with patch("listings.api.save_picture", return_value=None):
+            bad_file = SimpleUploadedFile("not_an_image.txt", b"not an image", content_type="text/plain")
+            response = api_client.post(
+                f"/api/listings/{draft_listing.id}/photos/",
+                data={"photo": bad_file},
+                **auth_headers,
+            )
+        assert response.status_code == 400
+        assert "Invalid image" in response.json()["detail"]
+
+    @pytest.mark.django_db
+    def test_upload_exceeds_10_photos(self, api_client, auth_headers, draft_listing):
+        """11th photo upload is rejected with 400."""
+        for i in range(10):
+            ListingPhoto.objects.create(listing=draft_listing, filename=f"photo{i}.jpg")
+
+        with patch("listings.api.save_picture", return_value="would_be_11th.jpg"):
+            response = api_client.post(
+                f"/api/listings/{draft_listing.id}/photos/",
+                data={"photo": _make_test_image()},
+                **auth_headers,
+            )
+        assert response.status_code == 400
+        assert "Maximum of 10 photos" in response.json()["detail"]
+        assert ListingPhoto.objects.filter(listing=draft_listing).count() == 10
+
+
+class TestPhotoDelete:
+    @pytest.mark.django_db
+    def test_delete_own_photo(self, api_client, auth_headers, listing_with_photos):
+        photo = listing_with_photos.photos.first()
+        with patch("listings.api.delete_photo_file"):
+            response = api_client.delete(
+                f"/api/listings/photos/{photo.id}/", **auth_headers
+            )
+        assert response.status_code == 204
+        assert not ListingPhoto.objects.filter(id=photo.id).exists()
+
+    @pytest.mark.django_db
+    def test_delete_photo_requires_auth(self, api_client, listing_with_photos):
+        photo = listing_with_photos.photos.first()
+        response = api_client.delete(f"/api/listings/photos/{photo.id}/")
+        assert response.status_code == 401
+        assert ListingPhoto.objects.filter(id=photo.id).exists()
+
+    @pytest.mark.django_db
+    def test_delete_photo_other_user_forbidden(
+        self, api_client, other_auth_headers, listing_with_photos
+    ):
+        photo = listing_with_photos.photos.first()
+        response = api_client.delete(
+            f"/api/listings/photos/{photo.id}/", **other_auth_headers
+        )
+        assert response.status_code == 403
+        assert ListingPhoto.objects.filter(id=photo.id).exists()
+
+    @pytest.mark.django_db
+    def test_delete_nonexistent_photo_404(self, api_client, auth_headers):
+        response = api_client.delete(
+            "/api/listings/photos/00000000-0000-0000-0000-000000000000/",
+            **auth_headers,
+        )
+        assert response.status_code == 404
+
+
+class TestDeactivateListing:
+    @pytest.mark.django_db
+    def test_deactivate_own_listing(self, api_client, auth_headers, active_listing):
+        response = api_client.post(
+            f"/api/listings/{active_listing.id}/deactivate/",
+            content_type="application/json",
+            **auth_headers,
+        )
+        assert response.status_code == 200
+        assert response.json()["status"] == "deactivated"
+        active_listing.refresh_from_db()
+        assert active_listing.status == ListingStatus.DEACTIVATED
+
+    @pytest.mark.django_db
+    def test_deactivate_requires_auth(self, api_client, active_listing):
+        response = api_client.post(
+            f"/api/listings/{active_listing.id}/deactivate/",
+            content_type="application/json",
+        )
+        assert response.status_code == 401
+
+    @pytest.mark.django_db
+    def test_deactivate_other_user_forbidden(
+        self, api_client, other_auth_headers, active_listing
+    ):
+        response = api_client.post(
+            f"/api/listings/{active_listing.id}/deactivate/",
+            content_type="application/json",
+            **other_auth_headers,
+        )
+        assert response.status_code == 403
+        active_listing.refresh_from_db()
+        assert active_listing.status == ListingStatus.ACTIVE
+
+
+class TestSubmitListing:
+    @pytest.mark.django_db
+    def test_submit_own_listing(self, api_client, auth_headers, draft_listing):
+        response = api_client.post(
+            f"/api/listings/{draft_listing.id}/submit/",
+            content_type="application/json",
+            **auth_headers,
+        )
+        assert response.status_code == 200
+        assert response.json()["status"] == "payment_submitted"
+        draft_listing.refresh_from_db()
+        assert draft_listing.status == ListingStatus.PAYMENT_SUBMITTED
+
+    @pytest.mark.django_db
+    def test_submit_requires_auth(self, api_client, draft_listing):
+        response = api_client.post(
+            f"/api/listings/{draft_listing.id}/submit/",
+            content_type="application/json",
+        )
+        assert response.status_code == 401
+
+    @pytest.mark.django_db
+    def test_submit_other_user_forbidden(
+        self, api_client, other_auth_headers, draft_listing
+    ):
+        response = api_client.post(
+            f"/api/listings/{draft_listing.id}/submit/",
+            content_type="application/json",
+            **other_auth_headers,
+        )
+        assert response.status_code == 403
+        draft_listing.refresh_from_db()
+        assert draft_listing.status == ListingStatus.DRAFT
+
+
+class TestApproveListing:
+    @pytest.mark.django_db
+    def test_approve_as_staff(
+        self, api_client, staff_auth_headers, payment_submitted_listing
+    ):
+        response = api_client.post(
+            f"/api/listings/{payment_submitted_listing.id}/approve/",
+            content_type="application/json",
+            **staff_auth_headers,
+        )
+        assert response.status_code == 200
+        assert response.json()["status"] == "active"
+        payment_submitted_listing.refresh_from_db()
+        assert payment_submitted_listing.status == ListingStatus.ACTIVE
+        assert payment_submitted_listing.expires_at is not None
+
+    @pytest.mark.django_db
+    def test_approve_as_regular_user_forbidden(
+        self, api_client, auth_headers, payment_submitted_listing
+    ):
+        response = api_client.post(
+            f"/api/listings/{payment_submitted_listing.id}/approve/",
+            content_type="application/json",
+            **auth_headers,
+        )
+        assert response.status_code == 403
+        payment_submitted_listing.refresh_from_db()
+        assert payment_submitted_listing.status == ListingStatus.PAYMENT_SUBMITTED
+
+    @pytest.mark.django_db
+    def test_approve_requires_auth(self, api_client, payment_submitted_listing):
+        response = api_client.post(
+            f"/api/listings/{payment_submitted_listing.id}/approve/",
+            content_type="application/json",
+        )
+        assert response.status_code == 401
+
+
+class TestRejectListing:
+    @pytest.mark.django_db
+    def test_reject_as_staff(
+        self, api_client, staff_auth_headers, payment_submitted_listing
+    ):
+        response = api_client.post(
+            f"/api/listings/{payment_submitted_listing.id}/reject/",
+            content_type="application/json",
+            **staff_auth_headers,
+        )
+        assert response.status_code == 200
+        assert response.json()["status"] == "draft"
+        payment_submitted_listing.refresh_from_db()
+        assert payment_submitted_listing.status == ListingStatus.DRAFT
+
+    @pytest.mark.django_db
+    def test_reject_as_regular_user_forbidden(
+        self, api_client, auth_headers, payment_submitted_listing
+    ):
+        response = api_client.post(
+            f"/api/listings/{payment_submitted_listing.id}/reject/",
+            content_type="application/json",
+            **auth_headers,
+        )
+        assert response.status_code == 403
+        payment_submitted_listing.refresh_from_db()
+        assert payment_submitted_listing.status == ListingStatus.PAYMENT_SUBMITTED
+
+    @pytest.mark.django_db
+    def test_reject_requires_auth(self, api_client, payment_submitted_listing):
+        response = api_client.post(
+            f"/api/listings/{payment_submitted_listing.id}/reject/",
+            content_type="application/json",
+        )
+        assert response.status_code == 401

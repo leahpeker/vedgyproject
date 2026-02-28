@@ -8,6 +8,9 @@ import '../screens/auth/login_screen.dart';
 import '../screens/auth/signup_screen.dart';
 import '../screens/browse_screen.dart';
 import '../screens/create_listing_screen.dart';
+import '../screens/edit_listing_screen.dart';
+import '../screens/pay_screen.dart';
+import '../screens/preview_screen.dart';
 import '../screens/dashboard_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/listing_detail_screen.dart';
@@ -99,6 +102,21 @@ GoRouter appRouter(Ref ref) {
           GoRoute(
             path: '/create',
             builder: (context, state) => const CreateListingScreen(),
+          ),
+          GoRoute(
+            path: '/edit/:id',
+            builder: (context, state) =>
+                EditListingScreen(id: state.pathParameters['id']!),
+          ),
+          GoRoute(
+            path: '/preview/:id',
+            builder: (context, state) =>
+                PreviewScreen(id: state.pathParameters['id']!),
+          ),
+          GoRoute(
+            path: '/pay/:id',
+            builder: (context, state) =>
+                PayScreen(id: state.pathParameters['id']!),
           ),
           GoRoute(
             path: '/listing/:id',

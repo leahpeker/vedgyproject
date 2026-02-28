@@ -120,6 +120,27 @@ class ListingOut(Schema):
         )
 
 
+class ListingIn(Schema):
+    title: str | None = None
+    description: str | None = None
+    city: str | None = None
+    borough: str | None = None
+    price: int | None = None
+    start_date: date | None = None
+    end_date: date | None = None
+    rental_type: str | None = None
+    room_type: str | None = None
+    vegan_household: str | None = None
+    furnished: str | None = None
+    lister_relationship: str | None = None
+    seeking_roommate: bool = False
+    about_lister: str | None = None
+    rental_requirements: str | None = None
+    pet_policy: str | None = None
+    phone_number: str | None = None
+    include_phone: bool = False
+
+
 class ListingFilters(Schema):
     city: str | None = None
     borough: str | None = None
