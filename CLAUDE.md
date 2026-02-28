@@ -48,7 +48,7 @@ Pytest config is in `pyproject.toml`. Tests use `reuse-db` and the `django_db` m
 
 ## Architecture
 
-### Django Project Layout
+### Project Layout
 
 ```
 backend/
@@ -57,6 +57,8 @@ backend/
 ├── users/           # Custom User model (email-based auth, UUID PKs)
 ├── templates/       # All HTML templates (Django template engine)
 └── tests/           # Integration tests (conftest.py has shared fixtures)
+frontend/
+└── lib/             # Flutter web app (Riverpod + GoRouter + Dio)
 ```
 
 The Django backend is both a server-rendered app and a REST API. The REST API (Django Ninja) lives under `/api/` and provides auth and listings endpoints consumed by the Flutter web frontend. The legacy HTMX/server-rendered views are still active under the root URL patterns. The only non-API JSON endpoint is the draft auto-save (`/listings/save-draft/`), which uses Pydantic for partial validation.

@@ -106,16 +106,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           labelText: 'Email',
                           border: OutlineInputBorder(),
                         ),
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) {
-                            return 'Email is required';
-                          }
-                          if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
-                              .hasMatch(v.trim())) {
-                            return 'Enter a valid email address';
-                          }
-                          return null;
-                        },
+                        validator: validateEmail,
                       ),
                       const SizedBox(height: 16),
 

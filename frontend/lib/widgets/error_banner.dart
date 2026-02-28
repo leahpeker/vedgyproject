@@ -1,5 +1,14 @@
 import 'package:flutter/material.dart';
 
+/// Validates an email field value. Returns an error string or null.
+String? validateEmail(String? v) {
+  if (v == null || v.trim().isEmpty) return 'Email is required';
+  if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v.trim())) {
+    return 'Enter a valid email address';
+  }
+  return null;
+}
+
 /// Parses a raw Django Ninja auth error response body into a user-facing
 /// message. Handles both `{"detail": "..."}` and list-format validation
 /// responses. Returns [fallback] when the body does not match either shape.
