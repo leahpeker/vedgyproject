@@ -15,7 +15,7 @@ part 'auth_provider.g.dart';
 // ---------------------------------------------------------------------------
 
 @freezed
-class AuthState with _$AuthState {
+abstract class AuthState with _$AuthState {
   const factory AuthState.initial() = _Initial;
   const factory AuthState.authenticated(User user, String accessToken) =
       _Authenticated;

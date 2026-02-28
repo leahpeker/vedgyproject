@@ -6,7 +6,7 @@ part 'listing.freezed.dart';
 part 'listing.g.dart';
 
 @freezed
-class ListingUser with _$ListingUser {
+abstract class ListingUser with _$ListingUser {
   const factory ListingUser({
     required String id,
     required String firstName,
@@ -18,7 +18,7 @@ class ListingUser with _$ListingUser {
 }
 
 @freezed
-class ListingPhoto with _$ListingPhoto {
+abstract class ListingPhoto with _$ListingPhoto {
   const factory ListingPhoto({
     required String id,
     required String filename,
@@ -30,7 +30,7 @@ class ListingPhoto with _$ListingPhoto {
 }
 
 @freezed
-class Listing with _$Listing {
+abstract class Listing with _$Listing {
   const factory Listing({
     required String id,
     required String title,
@@ -64,7 +64,7 @@ class Listing with _$Listing {
 }
 
 @freezed
-class PaginatedListings with _$PaginatedListings {
+abstract class PaginatedListings with _$PaginatedListings {
   const factory PaginatedListings({
     required List<Listing> items,
     required int count,
@@ -77,7 +77,7 @@ class PaginatedListings with _$PaginatedListings {
 }
 
 @freezed
-class DashboardOut with _$DashboardOut {
+abstract class DashboardOut with _$DashboardOut {
   const factory DashboardOut({
     required List<Listing> drafts,
     @JsonKey(name: 'payment_submitted') required List<Listing> paymentSubmitted,

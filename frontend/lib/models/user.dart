@@ -4,7 +4,7 @@ part 'user.freezed.dart';
 part 'user.g.dart';
 
 @freezed
-class User with _$User {
+abstract class User with _$User {
   const factory User({
     required String id,
     required String email,
@@ -17,7 +17,7 @@ class User with _$User {
 }
 
 @freezed
-class LoginRequest with _$LoginRequest {
+abstract class LoginRequest with _$LoginRequest {
   const factory LoginRequest({
     required String email,
     required String password,
@@ -28,7 +28,7 @@ class LoginRequest with _$LoginRequest {
 }
 
 @freezed
-class SignupRequest with _$SignupRequest {
+abstract class SignupRequest with _$SignupRequest {
   const factory SignupRequest({
     required String email,
     required String firstName,

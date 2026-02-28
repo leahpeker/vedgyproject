@@ -17,7 +17,7 @@ help:
 	@echo ""
 	@echo "Frontend commands:"
 	@echo "  make frontend-install   flutter pub get"
-	@echo "  make frontend-run       Run Flutter on Chrome (localhost:3000)"
+	@echo "  make frontend-run       Run Flutter web server (localhost:3000)"
 	@echo "  make frontend-build     Build Flutter web release"
 	@echo "  make frontend-codegen   Regenerate freezed/riverpod/json code"
 	@echo "  make frontend-test      Run Flutter test suite"
@@ -77,7 +77,7 @@ frontend-install:
 	cd frontend && flutter pub get
 
 frontend-run:
-	cd frontend && flutter run -d chrome --web-port 3000
+	cd frontend && flutter run -d web-server --web-port 3000
 
 frontend-build:
 	cd frontend && flutter build web --dart-define=API_URL=$$API_URL
