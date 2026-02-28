@@ -77,6 +77,22 @@ abstract class PaginatedListings with _$PaginatedListings {
 }
 
 @freezed
+abstract class ListingFilters with _$ListingFilters {
+  const factory ListingFilters({
+    String? city,
+    String? borough,
+    String? rentalType,
+    String? roomType,
+    String? veganHousehold,
+    String? furnished,
+    bool? seekingRoommate,
+    int? priceMin,
+    int? priceMax,
+    @Default(1) int page,
+  }) = _ListingFilters;
+}
+
+@freezed
 abstract class DashboardOut with _$DashboardOut {
   const factory DashboardOut({
     required List<Listing> drafts,

@@ -1186,6 +1186,290 @@ as int,
 
 }
 
+/// @nodoc
+mixin _$ListingFilters {
+
+ String? get city; String? get borough; String? get rentalType; String? get roomType; String? get veganHousehold; String? get furnished; bool? get seekingRoommate; int? get priceMin; int? get priceMax; int get page;
+/// Create a copy of ListingFilters
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$ListingFiltersCopyWith<ListingFilters> get copyWith => _$ListingFiltersCopyWithImpl<ListingFilters>(this as ListingFilters, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ListingFilters&&(identical(other.city, city) || other.city == city)&&(identical(other.borough, borough) || other.borough == borough)&&(identical(other.rentalType, rentalType) || other.rentalType == rentalType)&&(identical(other.roomType, roomType) || other.roomType == roomType)&&(identical(other.veganHousehold, veganHousehold) || other.veganHousehold == veganHousehold)&&(identical(other.furnished, furnished) || other.furnished == furnished)&&(identical(other.seekingRoommate, seekingRoommate) || other.seekingRoommate == seekingRoommate)&&(identical(other.priceMin, priceMin) || other.priceMin == priceMin)&&(identical(other.priceMax, priceMax) || other.priceMax == priceMax)&&(identical(other.page, page) || other.page == page));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,city,borough,rentalType,roomType,veganHousehold,furnished,seekingRoommate,priceMin,priceMax,page);
+
+@override
+String toString() {
+  return 'ListingFilters(city: $city, borough: $borough, rentalType: $rentalType, roomType: $roomType, veganHousehold: $veganHousehold, furnished: $furnished, seekingRoommate: $seekingRoommate, priceMin: $priceMin, priceMax: $priceMax, page: $page)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $ListingFiltersCopyWith<$Res>  {
+  factory $ListingFiltersCopyWith(ListingFilters value, $Res Function(ListingFilters) _then) = _$ListingFiltersCopyWithImpl;
+@useResult
+$Res call({
+ String? city, String? borough, String? rentalType, String? roomType, String? veganHousehold, String? furnished, bool? seekingRoommate, int? priceMin, int? priceMax, int page
+});
+
+
+
+
+}
+/// @nodoc
+class _$ListingFiltersCopyWithImpl<$Res>
+    implements $ListingFiltersCopyWith<$Res> {
+  _$ListingFiltersCopyWithImpl(this._self, this._then);
+
+  final ListingFilters _self;
+  final $Res Function(ListingFilters) _then;
+
+/// Create a copy of ListingFilters
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? city = freezed,Object? borough = freezed,Object? rentalType = freezed,Object? roomType = freezed,Object? veganHousehold = freezed,Object? furnished = freezed,Object? seekingRoommate = freezed,Object? priceMin = freezed,Object? priceMax = freezed,Object? page = null,}) {
+  return _then(_self.copyWith(
+city: freezed == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
+as String?,borough: freezed == borough ? _self.borough : borough // ignore: cast_nullable_to_non_nullable
+as String?,rentalType: freezed == rentalType ? _self.rentalType : rentalType // ignore: cast_nullable_to_non_nullable
+as String?,roomType: freezed == roomType ? _self.roomType : roomType // ignore: cast_nullable_to_non_nullable
+as String?,veganHousehold: freezed == veganHousehold ? _self.veganHousehold : veganHousehold // ignore: cast_nullable_to_non_nullable
+as String?,furnished: freezed == furnished ? _self.furnished : furnished // ignore: cast_nullable_to_non_nullable
+as String?,seekingRoommate: freezed == seekingRoommate ? _self.seekingRoommate : seekingRoommate // ignore: cast_nullable_to_non_nullable
+as bool?,priceMin: freezed == priceMin ? _self.priceMin : priceMin // ignore: cast_nullable_to_non_nullable
+as int?,priceMax: freezed == priceMax ? _self.priceMax : priceMax // ignore: cast_nullable_to_non_nullable
+as int?,page: null == page ? _self.page : page // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [ListingFilters].
+extension ListingFiltersPatterns on ListingFilters {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _ListingFilters value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _ListingFilters() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _ListingFilters value)  $default,){
+final _that = this;
+switch (_that) {
+case _ListingFilters():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _ListingFilters value)?  $default,){
+final _that = this;
+switch (_that) {
+case _ListingFilters() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String? city,  String? borough,  String? rentalType,  String? roomType,  String? veganHousehold,  String? furnished,  bool? seekingRoommate,  int? priceMin,  int? priceMax,  int page)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _ListingFilters() when $default != null:
+return $default(_that.city,_that.borough,_that.rentalType,_that.roomType,_that.veganHousehold,_that.furnished,_that.seekingRoommate,_that.priceMin,_that.priceMax,_that.page);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String? city,  String? borough,  String? rentalType,  String? roomType,  String? veganHousehold,  String? furnished,  bool? seekingRoommate,  int? priceMin,  int? priceMax,  int page)  $default,) {final _that = this;
+switch (_that) {
+case _ListingFilters():
+return $default(_that.city,_that.borough,_that.rentalType,_that.roomType,_that.veganHousehold,_that.furnished,_that.seekingRoommate,_that.priceMin,_that.priceMax,_that.page);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String? city,  String? borough,  String? rentalType,  String? roomType,  String? veganHousehold,  String? furnished,  bool? seekingRoommate,  int? priceMin,  int? priceMax,  int page)?  $default,) {final _that = this;
+switch (_that) {
+case _ListingFilters() when $default != null:
+return $default(_that.city,_that.borough,_that.rentalType,_that.roomType,_that.veganHousehold,_that.furnished,_that.seekingRoommate,_that.priceMin,_that.priceMax,_that.page);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class _ListingFilters implements ListingFilters {
+  const _ListingFilters({this.city, this.borough, this.rentalType, this.roomType, this.veganHousehold, this.furnished, this.seekingRoommate, this.priceMin, this.priceMax, this.page = 1});
+  
+
+@override final  String? city;
+@override final  String? borough;
+@override final  String? rentalType;
+@override final  String? roomType;
+@override final  String? veganHousehold;
+@override final  String? furnished;
+@override final  bool? seekingRoommate;
+@override final  int? priceMin;
+@override final  int? priceMax;
+@override@JsonKey() final  int page;
+
+/// Create a copy of ListingFilters
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$ListingFiltersCopyWith<_ListingFilters> get copyWith => __$ListingFiltersCopyWithImpl<_ListingFilters>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ListingFilters&&(identical(other.city, city) || other.city == city)&&(identical(other.borough, borough) || other.borough == borough)&&(identical(other.rentalType, rentalType) || other.rentalType == rentalType)&&(identical(other.roomType, roomType) || other.roomType == roomType)&&(identical(other.veganHousehold, veganHousehold) || other.veganHousehold == veganHousehold)&&(identical(other.furnished, furnished) || other.furnished == furnished)&&(identical(other.seekingRoommate, seekingRoommate) || other.seekingRoommate == seekingRoommate)&&(identical(other.priceMin, priceMin) || other.priceMin == priceMin)&&(identical(other.priceMax, priceMax) || other.priceMax == priceMax)&&(identical(other.page, page) || other.page == page));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,city,borough,rentalType,roomType,veganHousehold,furnished,seekingRoommate,priceMin,priceMax,page);
+
+@override
+String toString() {
+  return 'ListingFilters(city: $city, borough: $borough, rentalType: $rentalType, roomType: $roomType, veganHousehold: $veganHousehold, furnished: $furnished, seekingRoommate: $seekingRoommate, priceMin: $priceMin, priceMax: $priceMax, page: $page)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$ListingFiltersCopyWith<$Res> implements $ListingFiltersCopyWith<$Res> {
+  factory _$ListingFiltersCopyWith(_ListingFilters value, $Res Function(_ListingFilters) _then) = __$ListingFiltersCopyWithImpl;
+@override @useResult
+$Res call({
+ String? city, String? borough, String? rentalType, String? roomType, String? veganHousehold, String? furnished, bool? seekingRoommate, int? priceMin, int? priceMax, int page
+});
+
+
+
+
+}
+/// @nodoc
+class __$ListingFiltersCopyWithImpl<$Res>
+    implements _$ListingFiltersCopyWith<$Res> {
+  __$ListingFiltersCopyWithImpl(this._self, this._then);
+
+  final _ListingFilters _self;
+  final $Res Function(_ListingFilters) _then;
+
+/// Create a copy of ListingFilters
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? city = freezed,Object? borough = freezed,Object? rentalType = freezed,Object? roomType = freezed,Object? veganHousehold = freezed,Object? furnished = freezed,Object? seekingRoommate = freezed,Object? priceMin = freezed,Object? priceMax = freezed,Object? page = null,}) {
+  return _then(_ListingFilters(
+city: freezed == city ? _self.city : city // ignore: cast_nullable_to_non_nullable
+as String?,borough: freezed == borough ? _self.borough : borough // ignore: cast_nullable_to_non_nullable
+as String?,rentalType: freezed == rentalType ? _self.rentalType : rentalType // ignore: cast_nullable_to_non_nullable
+as String?,roomType: freezed == roomType ? _self.roomType : roomType // ignore: cast_nullable_to_non_nullable
+as String?,veganHousehold: freezed == veganHousehold ? _self.veganHousehold : veganHousehold // ignore: cast_nullable_to_non_nullable
+as String?,furnished: freezed == furnished ? _self.furnished : furnished // ignore: cast_nullable_to_non_nullable
+as String?,seekingRoommate: freezed == seekingRoommate ? _self.seekingRoommate : seekingRoommate // ignore: cast_nullable_to_non_nullable
+as bool?,priceMin: freezed == priceMin ? _self.priceMin : priceMin // ignore: cast_nullable_to_non_nullable
+as int?,priceMax: freezed == priceMax ? _self.priceMax : priceMax // ignore: cast_nullable_to_non_nullable
+as int?,page: null == page ? _self.page : page // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
 
 /// @nodoc
 mixin _$DashboardOut {

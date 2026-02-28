@@ -1,5 +1,5 @@
 .PHONY: help install run down restart test clean format lint check migrate createsuperuser db-start db-stop \
-        frontend-install frontend-run frontend-build frontend-codegen frontend-test dev
+        frontend-install frontend-run frontend-build frontend-codegen frontend-test dev ci
 
 help:
 	@echo "Backend commands:"
@@ -23,6 +23,8 @@ help:
 	@echo "  make frontend-test      Run Flutter test suite"
 	@echo ""
 	@echo "  make dev                Run Django + Flutter concurrently"
+	@echo ""
+	@echo "  make ci                 Run all pre-commit checks (lint, check, test, frontend-test)"
 
 install:
 	uv sync
@@ -87,6 +89,10 @@ frontend-codegen:
 
 frontend-test:
 	cd frontend && flutter test
+
+# Run all pre-commit checks in sequence. Fix any failures before committing.
+ci: lint check test frontend-test
+	@echo "All checks passed!"
 
 # Run Django backend and Flutter web app concurrently.
 # Ctrl-C stops both.

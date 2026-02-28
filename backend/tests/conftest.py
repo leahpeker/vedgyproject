@@ -5,6 +5,21 @@ from datetime import date
 import pytest
 from django.test import Client
 
+
+@pytest.fixture(autouse=True)
+def use_plain_staticfiles(settings):
+    """Swap CompressedManifestStaticFilesStorage for plain StaticFilesStorage.
+
+    ManifestStaticFilesStorage requires a staticfiles.json manifest produced
+    by collectstatic, which doesn't exist in the test environment.
+    """
+    settings.STORAGES = {
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        }
+    }
+
+
 from listings.models import Listing, ListingPhoto, ListingStatus
 from users.models import User
 

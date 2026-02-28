@@ -20,7 +20,14 @@ make lint             # Run autoflake + isort + black (clean, sort-imports, form
 make migrate          # makemigrations + migrate
 make createsuperuser  # Create Django admin user
 make check            # Django system checks
+make ci               # Run all pre-commit checks (lint, check, test, frontend-test)
 ```
+
+## Pre-commit Requirement
+
+**Always run `make ci` before committing and fix any failures before proceeding.**
+
+`make ci` runs in sequence: `lint` → `check` → `test` → `frontend-test`. All must pass.
 
 Local dev setup: `cp .env.example .env`, then `make install && make db-start && make migrate && make run`.
 
