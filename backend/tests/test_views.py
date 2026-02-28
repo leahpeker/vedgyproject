@@ -3,7 +3,7 @@
 import pytest
 from django.urls import reverse
 
-from listings.models import ListingStatus, Listing
+from listings.models import Listing, ListingStatus
 from users.models import User
 
 
@@ -96,7 +96,6 @@ class TestListingManagement:
     def test_edit_listing_not_owner(self, client, logged_in_user, db):
         """Test cannot edit someone else's listing"""
         # Create another user and their listing
-        
 
         other_user = User.objects.create_user(
             username="other@example.com",

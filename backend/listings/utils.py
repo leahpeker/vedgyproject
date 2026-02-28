@@ -13,7 +13,7 @@ from pillow_heif import register_heif_opener
 register_heif_opener()
 
 # File upload security settings
-ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'heic', 'heif'}
+ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "heic", "heif"}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 # Try to import B2 SDK
@@ -32,7 +32,7 @@ def validate_image_file(file):
         raise ValidationError("File too large. Maximum size is 10MB.")
 
     # Check file extension
-    file_ext = file.name.lower().split('.')[-1]
+    file_ext = file.name.lower().split(".")[-1]
     if file_ext not in ALLOWED_EXTENSIONS:
         raise ValidationError(
             f"Invalid file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}"
@@ -106,6 +106,7 @@ def save_picture_to_b2(form_picture):
         # Apply EXIF orientation to prevent rotation issues
         try:
             from PIL import ImageOps
+
             img = ImageOps.exif_transpose(img)
         except Exception:
             pass  # If EXIF orientation fails, continue without it
@@ -166,6 +167,7 @@ def save_picture(form_picture):
     # Apply EXIF orientation to prevent rotation issues
     try:
         from PIL import ImageOps
+
         img = ImageOps.exif_transpose(img)
     except Exception:
         pass  # If EXIF orientation fails, continue without it
@@ -210,7 +212,7 @@ def delete_photo_from_b2(filename):
 def delete_photo_file(filename):
     """Delete photo from B2 if configured, otherwise delete locally"""
     # Validate filename doesn't contain path traversal
-    if '..' in filename or filename.startswith('/'):
+    if ".." in filename or filename.startswith("/"):
         print(f"Invalid filename detected: {filename}")
         return
 

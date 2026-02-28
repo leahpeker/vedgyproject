@@ -259,7 +259,7 @@ class TestDraftAutoSave:
 
     def test_update_existing_draft(self, client, logged_in_user, draft_listing):
         """Test updating an existing draft"""
-        original_title = draft_listing.title
+        draft_listing.title
 
         response = client.post(
             reverse("save_draft_update", args=[draft_listing.id]),

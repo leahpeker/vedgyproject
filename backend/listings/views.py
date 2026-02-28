@@ -1,7 +1,5 @@
 """Django views for VedgyProject"""
 
-import json
-
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -138,7 +136,7 @@ def signup(request):
             if url_has_allowed_host_and_scheme(
                 url=next_url,
                 allowed_hosts={request.get_host()},
-                require_https=request.is_secure()
+                require_https=request.is_secure(),
             ):
                 return redirect(next_url)
             return redirect("index")
@@ -169,7 +167,7 @@ def user_login(request):
                 if url_has_allowed_host_and_scheme(
                     url=next_url,
                     allowed_hosts={request.get_host()},
-                    require_https=request.is_secure()
+                    require_https=request.is_secure(),
                 ):
                     return redirect(next_url)
                 return redirect("index")
@@ -399,22 +397,16 @@ def save_listing_draft(request, listing_id=None):
 
         listing.save()
 
-        return JsonResponse({
-            "success": True,
-            "listing_id": str(listing.id),
-            "message": "Draft saved"
-        })
+        return JsonResponse(
+            {"success": True, "listing_id": str(listing.id), "message": "Draft saved"}
+        )
     except ValidationError as e:
-        return JsonResponse({
-            "success": False,
-            "error": "Validation error",
-            "details": e.errors()
-        }, status=400)
+        return JsonResponse(
+            {"success": False, "error": "Validation error", "details": e.errors()},
+            status=400,
+        )
     except Exception as e:
-        return JsonResponse({
-            "success": False,
-            "error": str(e)
-        }, status=400)
+        return JsonResponse({"success": False, "error": str(e)}, status=400)
 
 
 @login_required

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('listings', '0003_rename_date_available_listing_start_date_and_more'),
+        ("listings", "0003_rename_date_available_listing_start_date_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='listing',
-            name='seeking_roommate',
+            model_name="listing",
+            name="seeking_roommate",
             field=models.BooleanField(default=False),
         ),
     ]

@@ -6,7 +6,7 @@ import pytest
 from django.test import Client
 from ninja_jwt.tokens import RefreshToken
 
-from listings.models import Listing, ListingPhoto, ListingStatus
+from listings.models import Listing, ListingStatus
 from users.models import User
 
 
@@ -49,13 +49,15 @@ class TestSignup:
     def test_signup_success(self, api_client):
         response = api_client.post(
             "/api/auth/signup/",
-            data=json.dumps({
-                "email": "new@example.com",
-                "first_name": "New",
-                "last_name": "User",
-                "password1": "strongpass123!",
-                "password2": "strongpass123!",
-            }),
+            data=json.dumps(
+                {
+                    "email": "new@example.com",
+                    "first_name": "New",
+                    "last_name": "User",
+                    "password1": "strongpass123!",
+                    "password2": "strongpass123!",
+                }
+            ),
             content_type="application/json",
         )
         assert response.status_code == 201
@@ -68,13 +70,15 @@ class TestSignup:
     def test_signup_duplicate_email(self, api_client, test_user):
         response = api_client.post(
             "/api/auth/signup/",
-            data=json.dumps({
-                "email": "test@example.com",
-                "first_name": "Dup",
-                "last_name": "User",
-                "password1": "strongpass123!",
-                "password2": "strongpass123!",
-            }),
+            data=json.dumps(
+                {
+                    "email": "test@example.com",
+                    "first_name": "Dup",
+                    "last_name": "User",
+                    "password1": "strongpass123!",
+                    "password2": "strongpass123!",
+                }
+            ),
             content_type="application/json",
         )
         assert response.status_code == 400
@@ -84,13 +88,15 @@ class TestSignup:
     def test_signup_password_mismatch(self, api_client):
         response = api_client.post(
             "/api/auth/signup/",
-            data=json.dumps({
-                "email": "new@example.com",
-                "first_name": "New",
-                "last_name": "User",
-                "password1": "strongpass123!",
-                "password2": "differentpass456!",
-            }),
+            data=json.dumps(
+                {
+                    "email": "new@example.com",
+                    "first_name": "New",
+                    "last_name": "User",
+                    "password1": "strongpass123!",
+                    "password2": "differentpass456!",
+                }
+            ),
             content_type="application/json",
         )
         assert response.status_code == 400
@@ -100,13 +106,15 @@ class TestSignup:
     def test_signup_weak_password(self, api_client):
         response = api_client.post(
             "/api/auth/signup/",
-            data=json.dumps({
-                "email": "new@example.com",
-                "first_name": "New",
-                "last_name": "User",
-                "password1": "123",
-                "password2": "123",
-            }),
+            data=json.dumps(
+                {
+                    "email": "new@example.com",
+                    "first_name": "New",
+                    "last_name": "User",
+                    "password1": "123",
+                    "password2": "123",
+                }
+            ),
             content_type="application/json",
         )
         assert response.status_code == 400
@@ -117,10 +125,12 @@ class TestLogin:
     def test_login_success(self, api_client, test_user):
         response = api_client.post(
             "/api/auth/login/",
-            data=json.dumps({
-                "email": "test@example.com",
-                "password": "testpass123",
-            }),
+            data=json.dumps(
+                {
+                    "email": "test@example.com",
+                    "password": "testpass123",
+                }
+            ),
             content_type="application/json",
         )
         assert response.status_code == 200
@@ -132,10 +142,12 @@ class TestLogin:
     def test_login_wrong_password(self, api_client, test_user):
         response = api_client.post(
             "/api/auth/login/",
-            data=json.dumps({
-                "email": "test@example.com",
-                "password": "wrongpassword",
-            }),
+            data=json.dumps(
+                {
+                    "email": "test@example.com",
+                    "password": "wrongpassword",
+                }
+            ),
             content_type="application/json",
         )
         assert response.status_code == 401
@@ -145,10 +157,12 @@ class TestLogin:
     def test_login_nonexistent_email(self, api_client):
         response = api_client.post(
             "/api/auth/login/",
-            data=json.dumps({
-                "email": "nobody@example.com",
-                "password": "anything",
-            }),
+            data=json.dumps(
+                {
+                    "email": "nobody@example.com",
+                    "password": "anything",
+                }
+            ),
             content_type="application/json",
         )
         assert response.status_code == 401
@@ -232,7 +246,9 @@ class TestBrowseListings:
         assert data["items"] == []
 
     @pytest.mark.django_db
-    def test_browse_returns_active_only(self, api_client, active_listing, draft_listing):
+    def test_browse_returns_active_only(
+        self, api_client, active_listing, draft_listing
+    ):
         response = api_client.get("/api/listings/")
         data = response.json()
         assert data["count"] == 1
@@ -319,10 +335,10 @@ class TestListingDetail:
         assert response.status_code == 403
 
     @pytest.mark.django_db
-    def test_draft_listing_visible_to_owner(self, api_client, draft_listing, auth_headers):
-        response = api_client.get(
-            f"/api/listings/{draft_listing.id}/", **auth_headers
-        )
+    def test_draft_listing_visible_to_owner(
+        self, api_client, draft_listing, auth_headers
+    ):
+        response = api_client.get(f"/api/listings/{draft_listing.id}/", **auth_headers)
         assert response.status_code == 200
 
     @pytest.mark.django_db
@@ -336,9 +352,7 @@ class TestListingDetail:
 
     @pytest.mark.django_db
     def test_nonexistent_listing_404(self, api_client):
-        response = api_client.get(
-            "/api/listings/00000000-0000-0000-0000-000000000000/"
-        )
+        response = api_client.get("/api/listings/00000000-0000-0000-0000-000000000000/")
         assert response.status_code == 404
 
 
@@ -350,7 +364,12 @@ class TestDashboard:
 
     @pytest.mark.django_db
     def test_dashboard_groups_by_status(
-        self, api_client, auth_headers, draft_listing, active_listing, payment_submitted_listing
+        self,
+        api_client,
+        auth_headers,
+        draft_listing,
+        active_listing,
+        payment_submitted_listing,
     ):
         response = api_client.get("/api/listings/dashboard/", **auth_headers)
         assert response.status_code == 200

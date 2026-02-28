@@ -4,8 +4,8 @@ from datetime import date
 
 import pytest
 
-from users.models import User
 from listings.models import Listing, ListingPhoto, ListingStatus
+from users.models import User
 
 
 @pytest.mark.django_db

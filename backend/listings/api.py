@@ -8,12 +8,7 @@ from ninja_jwt.authentication import JWTAuth
 from ninja_jwt.tokens import AccessToken
 
 from .models import Listing, ListingStatus
-from .schemas import (
-    DashboardOut,
-    ListingFilters,
-    ListingOut,
-    PaginatedListings,
-)
+from .schemas import DashboardOut, ListingFilters, ListingOut, PaginatedListings
 
 router = Router()
 
