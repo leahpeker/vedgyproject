@@ -10,6 +10,10 @@ import '../screens/browse_screen.dart';
 import '../screens/create_listing_screen.dart';
 import '../screens/dashboard_screen.dart';
 import '../screens/home_screen.dart';
+import '../screens/listing_detail_screen.dart';
+import '../screens/static/contact_screen.dart';
+import '../screens/static/privacy_screen.dart';
+import '../screens/static/terms_screen.dart';
 import '../widgets/app_scaffold.dart';
 
 part 'app_router.g.dart';
@@ -97,8 +101,25 @@ GoRouter appRouter(Ref ref) {
             builder: (context, state) => const CreateListingScreen(),
           ),
           GoRoute(
+            path: '/listing/:id',
+            builder: (context, state) =>
+                ListingDetailScreen(id: state.pathParameters['id']!),
+          ),
+          GoRoute(
             path: '/about',
             builder: (context, state) => const AboutScreen(),
+          ),
+          GoRoute(
+            path: '/privacy',
+            builder: (context, state) => const PrivacyScreen(),
+          ),
+          GoRoute(
+            path: '/contact',
+            builder: (context, state) => const ContactScreen(),
+          ),
+          GoRoute(
+            path: '/terms',
+            builder: (context, state) => const TermsScreen(),
           ),
         ],
       ),
