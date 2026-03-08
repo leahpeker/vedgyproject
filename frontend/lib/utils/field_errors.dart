@@ -1,16 +1,3 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'field_errors.freezed.dart';
-
-/// Represents validation errors for a single field.
-@freezed
-class FieldError with _$FieldError {
-  const factory FieldError({
-    required String fieldName,
-    required String message,
-  }) = _FieldError;
-}
-
 /// Parses Django Ninja validation error responses.
 ///
 /// Handles the standard Pydantic validation error format:
@@ -48,9 +35,4 @@ Map<String, String> parseFieldErrors(dynamic data) {
   }
 
   return errors;
-}
-
-/// Gets the error message for a specific field, or null if no error.
-String? getFieldError(Map<String, String> fieldErrors, String fieldName) {
-  return fieldErrors[fieldName];
 }
