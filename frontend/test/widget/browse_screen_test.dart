@@ -6,8 +6,8 @@
 //
 // The four async states are exercised:
 //   - loading  → _SkeletonGrid (skeleton Card boxes, no CircularProgressIndicator)
-//   - error    → "Failed to load listings" text + "Try again" TextButton
-//   - data / empty  → "No listings found" + "Try adjusting your filters"
+//   - error    → "Something went wrong" text + "Try again" TextButton
+//   - data / empty  → "No listings match your filters." + "Try adjusting your search."
 //   - data / items  → ListingCard widgets with listing titles visible
 //
 // Filter UI tests verify that the FilterPanel (with its "Filters" label,
@@ -209,7 +209,7 @@ void main() {
     });
 
     // -----------------------------------------------------------------------
-    // 4. Empty state: "No listings found" message is shown
+    // 4. Empty state: "No listings match your filters." message is shown
     // -----------------------------------------------------------------------
     testWidgets('shows No listings found when provider returns empty list',
         (tester) async {
@@ -219,14 +219,14 @@ void main() {
           _buildApp(listingsOverride: _emptyListingsOverride));
       await tester.pumpAndSettle();
 
-      expect(find.text('No listings found'), findsOneWidget);
-      expect(find.text('Try adjusting your filters'), findsOneWidget);
+      expect(find.text('No listings match your filters.'), findsOneWidget);
+      expect(find.text('Try adjusting your search.'), findsOneWidget);
 
       // No listing cards shown.
       expect(find.text('Cozy Vegan Room'), findsNothing);
 
       // No error content shown.
-      expect(find.text('Failed to load listings'), findsNothing);
+      expect(find.textContaining('Something went wrong'), findsNothing);
     });
 
     // -----------------------------------------------------------------------
@@ -248,7 +248,7 @@ void main() {
     });
 
     // -----------------------------------------------------------------------
-    // 6. Error state: "Failed to load listings" text and Try again button
+    // 6. Error state: error message text and Try again button
     // -----------------------------------------------------------------------
     testWidgets('shows error message and Try again button when provider fails',
         (tester) async {
@@ -257,12 +257,12 @@ void main() {
       await tester.pumpWidget(_buildApp(listingsOverride: _errorOverride));
       await tester.pumpAndSettle();
 
-      expect(find.text('Failed to load listings'), findsOneWidget);
+      expect(find.textContaining('Something went wrong'), findsOneWidget);
       expect(find.widgetWithText(TextButton, 'Try again'), findsOneWidget);
 
       // No listing content in error state.
       expect(find.text('Cozy Vegan Room'), findsNothing);
-      expect(find.text('No listings found'), findsNothing);
+      expect(find.textContaining('No listings match'), findsNothing);
     });
 
     // -----------------------------------------------------------------------
