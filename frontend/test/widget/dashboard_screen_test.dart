@@ -6,7 +6,7 @@
 // The three async states are exercised:
 //   - loading  → _SkeletonDashboard (no CircularProgressIndicator;
 //                a custom skeleton using Container boxes)
-//   - error    → "Failed to load dashboard: ..." + Retry button
+//   - error    → "Something went wrong. Please try again." + Retry button
 //   - data     → sections for Active, Drafts, Under Review, Expired,
 //                Deactivated with empty-state text when lists are empty,
 //                and listing titles/cards when lists are populated.
@@ -198,7 +198,7 @@ void main() {
 
       // No data content visible while loading.
       expect(find.text('My Listings'), findsNothing);
-      expect(find.textContaining('Failed to load dashboard'), findsNothing);
+      expect(find.textContaining('Something went wrong'), findsNothing);
 
       // The Scaffold is always rendered.
       expect(find.byType(Scaffold), findsOneWidget);
@@ -337,7 +337,7 @@ void main() {
     // -----------------------------------------------------------------------
     // 7. Error state: error message text contains the provider error
     // -----------------------------------------------------------------------
-    testWidgets('shows Failed to load dashboard text when provider fails',
+    testWidgets('shows error message text when provider fails',
         (tester) async {
       _configureView(tester);
 
@@ -347,8 +347,9 @@ void main() {
 
       await tester.pumpAndSettle();
 
+      // The error state now shows a user-friendly message (not the raw exception).
       expect(
-        find.textContaining('Failed to load dashboard'),
+        find.textContaining('Something went wrong'),
         findsOneWidget,
       );
     });
