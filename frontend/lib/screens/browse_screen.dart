@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -89,29 +90,45 @@ class BrowseScreen extends ConsumerWidget {
           child: _SkeletonGrid(),
         ),
       ),
-      error: (err, _) => SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                const SizedBox(height: 12),
-                Text(
-                  'Failed to load listings',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: () => ref.invalidate(browseListingsProvider),
-                  child: const Text('Try again'),
-                ),
-              ],
+      error: (err, _) {
+        String errorMessage = 'Something went wrong';
+        if (err is DioException) {
+          if (err.type == DioExceptionType.connectionTimeout ||
+              err.type == DioExceptionType.receiveTimeout ||
+              err.type == DioExceptionType.sendTimeout ||
+              err.type == DioExceptionType.connectionError) {
+            errorMessage = 'Unable to connect. Check your connection and try again.';
+          } else if (err.response?.statusCode == 404) {
+            errorMessage = 'Listings not found';
+          } else if (err.response?.statusCode == 403) {
+            errorMessage = 'You don\'t have permission to view this';
+          }
+        }
+        return SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                  const SizedBox(height: 12),
+                  Text(
+                    errorMessage,
+                    style: Theme.of(context).textTheme.titleMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: () => ref.invalidate(browseListingsProvider),
+                    child: const Text('Try again'),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
       data: (paginated) => paginated.items.isEmpty
           ? SliverToBoxAdapter(
               child: Padding(
@@ -130,11 +147,11 @@ class BrowseScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'No listings found',
+                        'No listings match your filters.',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 8),
-                      const Text('Try adjusting your filters'),
+                      const Text('Try adjusting your search.'),
                     ],
                   ),
                 ),

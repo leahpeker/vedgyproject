@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,21 +18,43 @@ class DashboardScreen extends ConsumerWidget {
     return Scaffold(
       body: async.when(
         loading: () => const _SkeletonDashboard(),
-        error: (e, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.error_outline, size: 48),
-              const SizedBox(height: 12),
-              Text('Failed to load dashboard: $e'),
-              const SizedBox(height: 16),
-              FilledButton(
-                onPressed: () => ref.invalidate(dashboardProvider),
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
-        ),
+        error: (e, _) {
+          String errorMessage = 'Something went wrong. Please try again.';
+          if (e is DioException) {
+            if (e.type == DioExceptionType.connectionTimeout ||
+                e.type == DioExceptionType.receiveTimeout ||
+                e.type == DioExceptionType.sendTimeout ||
+                e.type == DioExceptionType.connectionError) {
+              errorMessage = 'Unable to connect. Check your connection and try again.';
+            } else if (e.response?.statusCode == 404) {
+              errorMessage = 'Dashboard not found';
+            } else if (e.response?.statusCode == 403) {
+              errorMessage = 'You don\'t have permission to view your dashboard';
+            }
+          }
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, size: 48),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    errorMessage,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: () => ref.invalidate(dashboardProvider),
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          );
+        },
         data: (dashboard) => SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(

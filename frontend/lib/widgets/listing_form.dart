@@ -271,6 +271,18 @@ class _ListingFormState extends ConsumerState<ListingForm> {
         errors.add('Price must be a positive whole number.');
       }
     }
+    // Validate start date before end date if both are provided
+    if (_startDate.text.isNotEmpty && _endDate.text.isNotEmpty) {
+      try {
+        final startDate = DateTime.parse(_startDate.text);
+        final endDate = DateTime.parse(_endDate.text);
+        if (startDate.isAfter(endDate)) {
+          errors.add('Start date must be before end date.');
+        }
+      } catch (_) {
+        // If date parsing fails, let the API validation handle it
+      }
+    }
     return errors;
   }
 
