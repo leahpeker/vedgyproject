@@ -12,7 +12,7 @@ part 'photo_provider.g.dart';
 // Photo operations — upload and delete, with cache invalidation
 // ---------------------------------------------------------------------------
 
-@riverpod
+@Riverpod(keepAlive: true)
 PhotoActions photoActions(Ref ref) => PhotoActions(ref);
 
 class PhotoActions {

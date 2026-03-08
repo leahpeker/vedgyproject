@@ -245,8 +245,12 @@ class _ListingFormState extends ConsumerState<ListingForm> {
       final msg = inner is ApiException
           ? inner.detail
           : 'Upload failed. Please try again.';
+      // ignore: avoid_print
+      print('[photo upload] DioException: ${e.type} | response: ${e.response?.statusCode} ${e.response?.data} | inner: $inner');
       ref.read(notificationQueueProvider.notifier).showError(msg);
-    } catch (_) {
+    } catch (e, st) {
+      // ignore: avoid_print
+      print('[photo upload] unexpected error: $e\n$st');
       ref.read(notificationQueueProvider.notifier)
           .showError('Upload failed. Please try again.');
     } finally {

@@ -21,7 +21,7 @@ final class PhotoActionsProvider
         argument: null,
         retry: null,
         name: r'photoActionsProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -48,4 +48,4 @@ final class PhotoActionsProvider
   }
 }
 
-String _$photoActionsHash() => r'a9c71ade7c4064c95fc4d1acb2b262b5a6460eeb';
+String _$photoActionsHash() => r'981cfd214799e697b125fb7c7e965fc1636d352a';
