@@ -2,7 +2,7 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "RAILPACK",
-    "buildCommand": "cd frontend && flutter build web --release && cp -r build/web/ ../backend/staticfiles/flutter/ && cd ../backend && python manage.py collectstatic --noinput"
+    "buildCommand": "cd frontend && flutter build web --release --dart-define=API_URL=/api && cp -r build/web/ ../backend/staticfiles/flutter/ && cd ../backend && python manage.py collectstatic --noinput"
   },
   "deploy": {
     "startCommand": "cd backend && python manage.py migrate && gunicorn config.wsgi --bind 0.0.0.0:$PORT",

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../models/user.dart';
 import '../../providers/auth_provider.dart';
+import '../../utils/field_errors.dart';
 import '../../widgets/error_banner.dart';
 
 class SignupScreen extends ConsumerStatefulWidget {
@@ -26,6 +27,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   String? _error;
+  Map<String, String> _fieldErrors = {};
 
   @override
   void dispose() {
@@ -42,6 +44,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     setState(() {
       _loading = true;
       _error = null;
+      _fieldErrors = {};
     });
 
     try {
@@ -59,10 +62,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       // parameter is respected there so users land at their intended destination.
     } on DioException catch (e) {
       // _authDio bypasses _ErrorInterceptor — parse the raw response.
-      setState(() => _error = parseAuthError(
-            e.response?.data,
-            fallback: 'Sign up failed. Please try again.',
-          ));
+      final fieldErrors = parseFieldErrors(e.response?.data);
+      final errorMessage = fieldErrors.isEmpty
+          ? parseAuthError(
+              e.response?.data,
+              fallback: 'Sign up failed. Please try again.',
+            )
+          : 'Please fix the errors below.';
+      setState(() {
+        _error = errorMessage;
+        _fieldErrors = fieldErrors;
+      });
     } catch (_) {
       setState(() => _error = 'An unexpected error occurred. Please try again.');
     } finally {
@@ -170,7 +180,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                         decoration: InputDecoration(
                           labelText: 'Password',
                           border: const OutlineInputBorder(),
-                          helperText: 'At least 8 characters',
+                          helperText: _fieldErrors.containsKey('password1')
+                              ? _fieldErrors['password1']
+                              : 'At least 8 characters',
+                          helperMaxLines: 3,
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
