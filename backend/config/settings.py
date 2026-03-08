@@ -155,6 +155,10 @@ STORAGES = {
 # Media files (user uploads)
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+# Base URL of the Django server — used to build absolute photo URLs when B2
+# is not configured (local dev only). Flutter runs on a different port, so
+# relative media/ URLs would resolve against the wrong origin.
+SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000")
 
 # Backblaze B2 Configuration
 B2_KEY_ID = os.environ.get("B2_KEY_ID")

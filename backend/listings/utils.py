@@ -53,13 +53,16 @@ def validate_image_file(file):
 
 
 def get_photo_url(filename):
-    """Get the URL for a photo (B2 or local)"""
+    """Get the URL for a photo (B2 or local).
+
+    Returns an absolute URL in all cases so Flutter web can load images
+    regardless of whether it's running on a different port than Django.
+    """
     if settings.B2_KEY_ID and settings.B2_BUCKET_NAME:
-        # Use S3-compatible URL format which should work better with CORS
         return f"https://{settings.B2_BUCKET_NAME}.s3.us-east-005.backblazeb2.com/{filename}"
-    else:
-        # Return local URL
-        return f"{settings.MEDIA_URL}{filename}"
+    # Local fallback: build an absolute URL using SITE_URL so that Flutter
+    # running on localhost:3000 can reach media files served by Django on :8000.
+    return f"{settings.SITE_URL}/{settings.MEDIA_URL}{filename}"
 
 
 def get_b2_api():

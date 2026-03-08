@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -238,8 +239,16 @@ class _ListingFormState extends ConsumerState<ListingForm> {
       setState(() => _photos.addAll(uploaded));
       ref.read(notificationQueueProvider.notifier)
           .show('${uploaded.length} photo${uploaded.length == 1 ? '' : 's'} uploaded.');
-    } on ApiException catch (e) {
-      ref.read(notificationQueueProvider.notifier).showError(e.detail);
+    } on DioException catch (e) {
+      // _ErrorInterceptor wraps ApiException inside DioException.error.
+      final inner = e.error;
+      final msg = inner is ApiException
+          ? inner.detail
+          : 'Upload failed. Please try again.';
+      ref.read(notificationQueueProvider.notifier).showError(msg);
+    } catch (_) {
+      ref.read(notificationQueueProvider.notifier)
+          .showError('Upload failed. Please try again.');
     } finally {
       if (mounted) setState(() => _uploadingPhotos = false);
     }
@@ -252,8 +261,12 @@ class _ListingFormState extends ConsumerState<ListingForm> {
           .deletePhoto(_listingId!, photo.id);
       setState(() => _photos.remove(photo));
       ref.read(notificationQueueProvider.notifier).show('Photo deleted.');
-    } on ApiException catch (e) {
-      ref.read(notificationQueueProvider.notifier).showError(e.detail);
+    } on DioException catch (e) {
+      final inner = e.error;
+      final msg = inner is ApiException
+          ? inner.detail
+          : 'Delete failed. Please try again.';
+      ref.read(notificationQueueProvider.notifier).showError(msg);
     }
   }
 
