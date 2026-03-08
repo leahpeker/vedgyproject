@@ -295,17 +295,14 @@ def upload_photo(request, listing_id: UUID, photo: UploadedFile = File(...)):
     if listing.photos.count() >= 10:
         return 400, {"detail": "Maximum of 10 photos per listing."}
 
-    filename, url = save_picture(photo)
+    filename = save_picture(photo)
     if not filename:
         return 400, {
             "detail": "Invalid image file. Accepted: JPG, PNG, GIF, HEIC (max 10MB)."
         }
 
     listing_photo = ListingPhoto.objects.create(listing=listing, filename=filename)
-    # Use the url returned by save_picture — it reflects the actual storage
-    # backend used (B2 or local fallback), avoiding a mismatch when B2 is
-    # partially configured but credentials are invalid.
-    return 201, PhotoOut(id=listing_photo.id, filename=filename, url=url)
+    return 201, PhotoOut.from_photo(listing_photo)
 
 
 # ---------------------------------------------------------------------------

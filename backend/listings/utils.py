@@ -142,28 +142,19 @@ def save_picture_to_b2(form_picture):
 
 
 def save_picture(form_picture):
-    """Save picture to B2 if configured, otherwise save locally.
-
-    Returns (filename, url) on success where url reflects the actual storage
-    location, or (None, None) on failure.
-
-    Returning the URL here avoids the mismatch that occurs when B2 credentials
-    are present but invalid: the file falls back to local storage while
-    get_photo_url() would still build a B2 URL from the bucket name setting.
-    """
+    """Save picture to B2 if configured, otherwise save locally"""
     # Validate file first
     try:
         validate_image_file(form_picture)
     except ValidationError as e:
         print(f"File validation error: {e}")
-        return None, None
+        return None
 
     # Try B2 first if configured and available
     if B2_AVAILABLE and settings.B2_KEY_ID:
         b2_filename = save_picture_to_b2(form_picture)
         if b2_filename:
-            url = f"https://{settings.B2_BUCKET_NAME}.s3.us-east-005.backblazeb2.com/{b2_filename}"
-            return b2_filename, url
+            return b2_filename
 
     # Fallback to local storage
     random_hex = secrets.token_hex(8)
@@ -194,8 +185,7 @@ def save_picture(form_picture):
     # Save as optimized JPEG
     img.save(picture_path, format="JPEG", quality=85, optimize=True)
 
-    url = f"{settings.SITE_URL}/{settings.MEDIA_URL}{picture_fn}"
-    return picture_fn, url
+    return picture_fn
 
 
 def delete_photo_from_b2(filename):
