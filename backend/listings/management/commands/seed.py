@@ -41,7 +41,9 @@ class Command(BaseCommand):
 
         if options["reset"]:
             deleted, _ = User.objects.filter(email__in=seed_emails).delete()
-            self.stdout.write(self.style.WARNING(f"Deleted {deleted} seed user(s) and their listings"))
+            self.stdout.write(
+                self.style.WARNING(f"Deleted {deleted} seed user(s) and their listings")
+            )
 
         self._create_users(data["users"])
         self._create_listings(data["listings"])
@@ -75,7 +77,11 @@ class Command(BaseCommand):
             try:
                 user = User.objects.get(email=l["user_email"])
             except User.DoesNotExist:
-                self.stderr.write(self.style.ERROR(f"  User not found: {l['user_email']} — skipping listing"))
+                self.stderr.write(
+                    self.style.ERROR(
+                        f"  User not found: {l['user_email']} — skipping listing"
+                    )
+                )
                 continue
 
             Listing.objects.create(

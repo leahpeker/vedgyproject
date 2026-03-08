@@ -49,7 +49,10 @@ def _get_owned_listing(request, listing_id: UUID):
         id=listing_id,
     )
     if listing.user_id != request.auth.id:
-        return None, (403, {"detail": "You do not have permission to modify this listing."})
+        return None, (
+            403,
+            {"detail": "You do not have permission to modify this listing."},
+        )
     return listing, None
 
 
@@ -130,7 +133,11 @@ def create_listing(request, data: ListingIn):
         include_phone=data.include_phone,
     )
     listing.refresh_from_db()
-    listing = Listing.objects.prefetch_related("photos").select_related("user").get(id=listing.id)
+    listing = (
+        Listing.objects.prefetch_related("photos")
+        .select_related("user")
+        .get(id=listing.id)
+    )
     return 201, ListingOut.from_listing(listing)
 
 
@@ -173,7 +180,9 @@ def dashboard(request):
 )
 def delete_photo(request, photo_id: UUID):
     """Delete a listing photo (owner only)."""
-    photo = get_object_or_404(ListingPhoto.objects.select_related("listing"), id=photo_id)
+    photo = get_object_or_404(
+        ListingPhoto.objects.select_related("listing"), id=photo_id
+    )
     if photo.listing.user_id != request.auth.id:
         return 403, {"detail": "You do not have permission to delete this photo."}
     delete_photo_file(photo.filename)
@@ -225,7 +234,11 @@ def update_listing(request, listing_id: UUID, data: ListingIn):
         listing.save(update_fields=update_fields)
 
     listing.refresh_from_db()
-    listing = Listing.objects.prefetch_related("photos").select_related("user").get(id=listing.id)
+    listing = (
+        Listing.objects.prefetch_related("photos")
+        .select_related("user")
+        .get(id=listing.id)
+    )
     return ListingOut.from_listing(listing)
 
 
@@ -260,7 +273,11 @@ def deactivate_listing(request, listing_id: UUID):
 
     listing.status = ListingStatus.DEACTIVATED
     listing.save(update_fields=["status"])
-    listing = Listing.objects.prefetch_related("photos").select_related("user").get(id=listing.id)
+    listing = (
+        Listing.objects.prefetch_related("photos")
+        .select_related("user")
+        .get(id=listing.id)
+    )
     return ListingOut.from_listing(listing)
 
 
@@ -280,7 +297,9 @@ def upload_photo(request, listing_id: UUID, photo: UploadedFile = File(...)):
 
     filename = save_picture(photo)
     if not filename:
-        return 400, {"detail": "Invalid image file. Accepted: JPG, PNG, GIF, HEIC (max 10MB)."}
+        return 400, {
+            "detail": "Invalid image file. Accepted: JPG, PNG, GIF, HEIC (max 10MB)."
+        }
 
     listing_photo = ListingPhoto.objects.create(listing=listing, filename=filename)
     return 201, PhotoOut.from_photo(listing_photo)
@@ -304,7 +323,11 @@ def submit_listing(request, listing_id: UUID):
 
     listing.status = ListingStatus.PAYMENT_SUBMITTED
     listing.save(update_fields=["status"])
-    listing = Listing.objects.prefetch_related("photos").select_related("user").get(id=listing.id)
+    listing = (
+        Listing.objects.prefetch_related("photos")
+        .select_related("user")
+        .get(id=listing.id)
+    )
     return ListingOut.from_listing(listing)
 
 
@@ -323,7 +346,11 @@ def approve_listing(request, listing_id: UUID):
         id=listing_id,
     )
     listing.activate_listing()
-    listing = Listing.objects.prefetch_related("photos").select_related("user").get(id=listing.id)
+    listing = (
+        Listing.objects.prefetch_related("photos")
+        .select_related("user")
+        .get(id=listing.id)
+    )
     return ListingOut.from_listing(listing)
 
 
@@ -343,5 +370,9 @@ def reject_listing(request, listing_id: UUID):
     )
     listing.status = ListingStatus.DRAFT
     listing.save(update_fields=["status"])
-    listing = Listing.objects.prefetch_related("photos").select_related("user").get(id=listing.id)
+    listing = (
+        Listing.objects.prefetch_related("photos")
+        .select_related("user")
+        .get(id=listing.id)
+    )
     return ListingOut.from_listing(listing)

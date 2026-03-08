@@ -16,9 +16,7 @@ class ListingDetailScreen extends ConsumerWidget {
     final listingAsync = ref.watch(listingDetailProvider(id));
 
     return listingAsync.when(
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
+      loading: () => const Scaffold(body: _SkeletonDetail()),
       error: (err, _) => _ErrorBody(err: err, onRetry: () => ref.invalidate(listingDetailProvider(id))),
       data: (listing) => _DetailBody(listing: listing),
     );
@@ -519,6 +517,99 @@ class _Chip extends StatelessWidget {
         label,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(color: base.withValues(alpha: 0.9)),
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Skeleton loading state
+// ---------------------------------------------------------------------------
+
+class _SkeletonDetail extends StatelessWidget {
+  const _SkeletonDetail();
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.surfaceContainerHighest;
+
+    Widget box({double? w, double h = 16, double? radius}) => Container(
+          width: w ?? double.infinity,
+          height: h,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(radius ?? 4),
+          ),
+        );
+
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isWide = constraints.maxWidth >= 800;
+                final content = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Back link placeholder
+                    box(w: 120, h: 14),
+                    const SizedBox(height: 20),
+                    // Title
+                    box(h: 28),
+                    const SizedBox(height: 10),
+                    box(w: 180, h: 28),
+                    const SizedBox(height: 12),
+                    // Location
+                    box(w: 140, h: 14),
+                    const SizedBox(height: 16),
+                    // Chips row
+                    Row(children: [
+                      box(w: 80, h: 24, radius: 12),
+                      const SizedBox(width: 8),
+                      box(w: 80, h: 24, radius: 12),
+                      const SizedBox(width: 8),
+                      box(w: 100, h: 24, radius: 12),
+                    ]),
+                    const SizedBox(height: 20),
+                    // Photo area
+                    box(h: 260, radius: 8),
+                    const SizedBox(height: 20),
+                    // Description card
+                    box(h: 100, radius: 8),
+                    const SizedBox(height: 16),
+                    // Details card
+                    box(h: 120, radius: 8),
+                  ],
+                );
+
+                if (isWide) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 2, child: content),
+                      const SizedBox(width: 24),
+                      SizedBox(
+                        width: 300,
+                        child: Column(
+                          children: [
+                            box(h: 180, radius: 8),
+                            const SizedBox(height: 16),
+                            box(h: 80, radius: 8),
+                            const SizedBox(height: 16),
+                            box(h: 100, radius: 8),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                }
+                return content;
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

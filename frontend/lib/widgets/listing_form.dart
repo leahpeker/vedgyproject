@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../models/listing.dart';
 import '../providers/listing_actions_provider.dart';
+import '../providers/notification_provider.dart';
 import '../providers/photo_provider.dart';
 import '../services/api_client.dart';
 
@@ -189,19 +190,40 @@ class _ListingFormState extends ConsumerState<ListingForm> {
 
   Future<void> _pickAndUploadPhotos() async {
     if (_listingId == null) {
-      // Must save first so we have an ID to attach photos to
-      await _autoSave();
-      if (_listingId == null) return;
+      // If auto-save is already creating the listing, avoid a concurrent POST.
+      if (_firstSaveInProgress) {
+        ref.read(notificationQueueProvider.notifier)
+            .show('Still saving your draft — please try again in a moment.');
+        return;
+      }
+      // Cancel any pending debounce so it doesn't fire a second create mid-flight.
+      _debounce?.cancel();
+      _firstSaveInProgress = true;
+      setState(() => _saveStatus = _SaveStatus.saving);
+      try {
+        final created = await ref
+            .read(listingActionsProvider)
+            .createListing(Map.from(_pendingChanges));
+        _listingId = created.id;
+        _pendingChanges.clear();
+        if (mounted) setState(() => _saveStatus = _SaveStatus.saved);
+      } catch (e) {
+        if (mounted) {
+          setState(() => _saveStatus = _SaveStatus.error);
+          ref.read(notificationQueueProvider.notifier)
+              .showError('Could not save your draft. Check your connection and try again.');
+        }
+        return;
+      } finally {
+        _firstSaveInProgress = false;
+      }
     }
 
     final picker = ImagePicker();
     final remaining = 10 - _photos.length;
     if (remaining <= 0) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Maximum 10 photos per listing.')),
-        );
-      }
+      ref.read(notificationQueueProvider.notifier)
+          .show('Maximum 10 photos per listing.');
       return;
     }
 
@@ -214,11 +236,10 @@ class _ListingFormState extends ConsumerState<ListingForm> {
           .read(photoActionsProvider)
           .uploadPhotos(_listingId!, picked);
       setState(() => _photos.addAll(uploaded));
+      ref.read(notificationQueueProvider.notifier)
+          .show('${uploaded.length} photo${uploaded.length == 1 ? '' : 's'} uploaded.');
     } on ApiException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.detail)));
-      }
+      ref.read(notificationQueueProvider.notifier).showError(e.detail);
     } finally {
       if (mounted) setState(() => _uploadingPhotos = false);
     }
@@ -230,17 +251,78 @@ class _ListingFormState extends ConsumerState<ListingForm> {
           .read(photoActionsProvider)
           .deletePhoto(_listingId!, photo.id);
       setState(() => _photos.remove(photo));
+      ref.read(notificationQueueProvider.notifier).show('Photo deleted.');
     } on ApiException catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.detail)));
+      ref.read(notificationQueueProvider.notifier).showError(e.detail);
+    }
+  }
+
+  // ---- Submit validation ---------------------------------------------------
+
+  /// Returns a list of error messages, or empty list if valid.
+  List<String> _validate() {
+    final errors = <String>[];
+    if (_title.text.trim().isEmpty) errors.add('Title is required.');
+    if (_city == null) errors.add('City is required.');
+    final priceText = _price.text.trim();
+    if (priceText.isNotEmpty) {
+      final parsed = int.tryParse(priceText);
+      if (parsed == null || parsed <= 0) {
+        errors.add('Price must be a positive whole number.');
       }
     }
+    return errors;
   }
 
   // ---- Preview navigation --------------------------------------------------
 
   Future<void> _previewOrSaveFirst() async {
+    // Client-side validation before allowing preview/submit
+    final errors = _validate();
+    if (errors.isNotEmpty) {
+      if (mounted) {
+        showDialog<void>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Please fix these issues'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: errors
+                  .map((e) => Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('• '),
+                            Expanded(child: Text(e)),
+                          ],
+                        ),
+                      ))
+                  .toList(),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+      return;
+    }
+
+    // Warn (non-blocking) if no photos
+    if (_photos.isEmpty && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Tip: listings with photos get more interest.'),
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+
     // Flush any unsaved changes before navigating to preview
     _debounce?.cancel();
     if (_pendingChanges.isNotEmpty || _listingId == null) {

@@ -21,7 +21,7 @@ final class ListingActionsProvider
         argument: null,
         retry: null,
         name: r'listingActionsProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -48,4 +48,4 @@ final class ListingActionsProvider
   }
 }
 
-String _$listingActionsHash() => r'2f1ed0c2e2b324640f8b5c5b65a386554e2cc722';
+String _$listingActionsHash() => r'3b1cffcb25cfb49ff1ae3344024311a9f8055ccc';

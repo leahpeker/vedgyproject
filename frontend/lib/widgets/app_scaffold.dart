@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../providers/auth_provider.dart';
+import '../providers/notification_provider.dart';
 
 // Width at which the nav switches from hamburger menu to full horizontal nav.
 const _kNavBreakpoint = 768.0;
@@ -14,6 +15,23 @@ class AppScaffold extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Listen for snackbar notifications and display them.
+    ref.listen<AppNotification?>(notificationQueueProvider, (_, notification) {
+      if (notification == null) return;
+      final messenger = ScaffoldMessenger.maybeOf(context);
+      if (messenger == null) return;
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(notification.message),
+          backgroundColor: notification.isError
+              ? Theme.of(context).colorScheme.error
+              : Colors.green.shade700,
+        ),
+      );
+      // Clear so the same notification isn't re-shown on rebuild.
+      ref.read(notificationQueueProvider.notifier).clear();
+    });
+
     return Scaffold(
       appBar: _VedgyNavBar(onMenuPressed: _openDrawer),
       drawer: const _VedgyDrawer(),

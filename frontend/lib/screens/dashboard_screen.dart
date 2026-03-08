@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../models/listing.dart';
 import '../providers/dashboard_provider.dart';
 import '../providers/listing_actions_provider.dart';
+import '../providers/notification_provider.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -15,7 +16,7 @@ class DashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const _SkeletonDashboard(),
         error: (e, _) => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -169,7 +170,12 @@ class DashboardScreen extends ConsumerWidget {
       ),
     );
     if (ok == true && context.mounted) {
-      await ref.read(listingActionsProvider).deactivateListing(listing.id);
+      try {
+        await ref.read(listingActionsProvider).deactivateListing(listing.id);
+        ref.read(notificationQueueProvider.notifier).show('Listing deactivated.');
+      } catch (e) {
+        ref.read(notificationQueueProvider.notifier).showError('Failed to deactivate: $e');
+      }
     }
   }
 
@@ -194,7 +200,12 @@ class DashboardScreen extends ConsumerWidget {
       ),
     );
     if (ok == true && context.mounted) {
-      await ref.read(listingActionsProvider).deleteListing(listing.id);
+      try {
+        await ref.read(listingActionsProvider).deleteListing(listing.id);
+        ref.read(notificationQueueProvider.notifier).show('Listing deleted.');
+      } catch (e) {
+        ref.read(notificationQueueProvider.notifier).showError('Failed to delete: $e');
+      }
     }
   }
 }
@@ -346,6 +357,85 @@ class _ActionButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Skeleton loading state
+// ---------------------------------------------------------------------------
+
+class _SkeletonDashboard extends StatelessWidget {
+  const _SkeletonDashboard();
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.surfaceContainerHighest;
+
+    Widget box({double? w, double h = 16, double? radius}) => Container(
+          width: w ?? double.infinity,
+          height: h,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(radius ?? 4),
+          ),
+        );
+
+    Widget skeletonRow() => Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        box(w: 200, h: 14),
+                        const SizedBox(height: 6),
+                        box(w: 120, h: 12),
+                      ],
+                    ),
+                  ),
+                  box(w: 60, h: 12),
+                ],
+              ),
+            ),
+          ),
+        );
+
+    Widget skeletonSection() => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            box(w: 120, h: 16),
+            const SizedBox(height: 10),
+            skeletonRow(),
+            skeletonRow(),
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 16),
+          ],
+        );
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              box(w: 160, h: 24),
+              const Spacer(),
+              box(w: 140, h: 36, radius: 20),
+            ],
+          ),
+          const SizedBox(height: 24),
+          skeletonSection(),
+          skeletonSection(),
+          skeletonSection(),
+        ],
       ),
     );
   }

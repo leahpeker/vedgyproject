@@ -11,7 +11,7 @@ part 'listing_actions_provider.g.dart';
 // Wraps all mutating listing API calls and handles cache invalidation.
 // ---------------------------------------------------------------------------
 
-@riverpod
+@Riverpod(keepAlive: true)
 ListingActions listingActions(Ref ref) => ListingActions(ref);
 
 class ListingActions {

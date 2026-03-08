@@ -76,7 +76,10 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],  # Templates in backend/templates
+        # On Railway, also look in staticfiles/ so the Flutter catch-all view
+        # can find flutter/index.html after `collectstatic` copies it there.
+        "DIRS": [BASE_DIR / "templates"]
+        + ([BASE_DIR / "staticfiles"] if IS_PRODUCTION else []),
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -244,11 +247,13 @@ LOGGING = {
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# CORS configuration (for Flutter frontend)
-CORS_ALLOWED_ORIGINS = os.environ.get(
-    "CORS_ALLOWED_ORIGINS", "http://localhost:3000"
-).split(",")
-CORS_ALLOW_CREDENTIALS = True
+# CORS is only needed when the Flutter dev server runs on a different origin.
+# In production, Flutter is served from the same Django origin — no CORS needed.
+if DEBUG:
+    CORS_ALLOWED_ORIGINS = os.environ.get(
+        "CORS_ALLOWED_ORIGINS", "http://localhost:3000"
+    ).split(",")
+    CORS_ALLOW_CREDENTIALS = True
 
 # JWT configuration (for Flutter frontend auth)
 NINJA_JWT = {

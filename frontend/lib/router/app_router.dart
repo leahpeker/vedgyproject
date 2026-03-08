@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../providers/auth_provider.dart';
 import '../screens/about_screen.dart';
 import '../screens/auth/login_screen.dart';
+import '../screens/auth/password_reset_screen.dart';
 import '../screens/auth/signup_screen.dart';
 import '../screens/browse_screen.dart';
 import '../screens/create_listing_screen.dart';
@@ -90,6 +91,10 @@ GoRouter appRouter(Ref ref) {
           GoRoute(
             path: '/signup',
             builder: (context, state) => const SignupScreen(),
+          ),
+          GoRoute(
+            path: '/password-reset',
+            builder: (context, state) => const PasswordResetScreen(),
           ),
           GoRoute(
             path: '/dashboard',

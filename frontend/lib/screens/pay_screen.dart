@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../providers/listing_actions_provider.dart';
 import '../providers/listings_provider.dart';
+import '../providers/notification_provider.dart';
 
 class PayScreen extends ConsumerStatefulWidget {
   const PayScreen({super.key, required this.id});
@@ -22,21 +23,14 @@ class _PayScreenState extends ConsumerState<PayScreen> {
     try {
       await ref.read(listingActionsProvider).submitForReview(widget.id);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Listing submitted! We\'ll review it shortly.'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        ref.read(notificationQueueProvider.notifier)
+            .show("Listing submitted! We'll review it shortly.");
         context.go('/dashboard');
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Submission failed: $e')),
-        );
-        setState(() => _submitting = false);
-      }
+      ref.read(notificationQueueProvider.notifier)
+          .showError('Submission failed: $e');
+      if (mounted) setState(() => _submitting = false);
     }
   }
 

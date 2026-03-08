@@ -470,7 +470,10 @@ class TestCreateListing:
         assert data["title"] == "My New Listing"
         assert data["city"] == "Chicago"
         assert data["status"] == "draft"
-        assert Listing.objects.filter(user=test_user, status=ListingStatus.DRAFT).count() == 1
+        assert (
+            Listing.objects.filter(user=test_user, status=ListingStatus.DRAFT).count()
+            == 1
+        )
 
     @pytest.mark.django_db
     def test_create_empty_draft(self, api_client, auth_headers, test_user):
@@ -559,9 +562,7 @@ class TestDeleteListing:
     def test_delete_own_listing(self, api_client, auth_headers, draft_listing):
         listing_id = draft_listing.id
         with patch("listings.api.delete_photo_file"):
-            response = api_client.delete(
-                f"/api/listings/{listing_id}/", **auth_headers
-            )
+            response = api_client.delete(f"/api/listings/{listing_id}/", **auth_headers)
         assert response.status_code == 204
         assert not Listing.objects.filter(id=listing_id).exists()
 
@@ -590,9 +591,7 @@ class TestDeleteListing:
         assert photo_count == 2
 
         with patch("listings.api.delete_photo_file") as mock_delete:
-            response = api_client.delete(
-                f"/api/listings/{listing_id}/", **auth_headers
-            )
+            response = api_client.delete(f"/api/listings/{listing_id}/", **auth_headers)
         assert response.status_code == 204
         assert mock_delete.call_count == 2
         assert not ListingPhoto.objects.filter(listing_id=listing_id).exists()
@@ -637,7 +636,9 @@ class TestPhotoUpload:
         self, api_client, auth_headers, draft_listing
     ):
         with patch("listings.api.save_picture", return_value=None):
-            bad_file = SimpleUploadedFile("not_an_image.txt", b"not an image", content_type="text/plain")
+            bad_file = SimpleUploadedFile(
+                "not_an_image.txt", b"not an image", content_type="text/plain"
+            )
             response = api_client.post(
                 f"/api/listings/{draft_listing.id}/photos/",
                 data={"photo": bad_file},
