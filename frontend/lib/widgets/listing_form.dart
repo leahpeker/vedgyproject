@@ -11,6 +11,7 @@ import '../providers/listing_actions_provider.dart';
 import '../providers/notification_provider.dart';
 import '../providers/photo_provider.dart';
 import '../services/api_client.dart';
+import '../utils/platform.dart';
 
 // ---------------------------------------------------------------------------
 // Shared listing form — used by CreateListingScreen and EditListingScreen.
@@ -228,9 +229,52 @@ class _ListingFormState extends ConsumerState<ListingForm> {
       return;
     }
 
+    // On mobile, show camera + gallery options. On web, skip to gallery.
+    if (PlatformUtils.isMobile && mounted) {
+      await showModalBottomSheet<void>(
+        context: context,
+        builder: (_) => SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Take a photo'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await _uploadFromCamera(picker, remaining);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.image),
+                title: const Text('Choose from gallery'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await _uploadFromGallery(picker, remaining);
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      await _uploadFromGallery(picker, remaining);
+    }
+  }
+
+  Future<void> _uploadFromCamera(ImagePicker picker, int remaining) async {
+    final picked = await picker.pickImage(source: ImageSource.camera);
+    if (picked == null) return;
+    await _doPhotoUpload([picked], remaining);
+  }
+
+  Future<void> _uploadFromGallery(ImagePicker picker, int remaining) async {
     final picked = await picker.pickMultiImage(limit: remaining);
     if (picked.isEmpty) return;
+    await _doPhotoUpload(picked, remaining);
+  }
 
+  Future<void> _doPhotoUpload(List<XFile> picked, int remaining) async {
     setState(() => _uploadingPhotos = true);
     try {
       final uploaded = await ref

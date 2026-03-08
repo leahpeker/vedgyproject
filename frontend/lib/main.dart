@@ -34,6 +34,7 @@ class _VedgyAppState extends ConsumerState<VedgyApp> {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF2D6A4F)),
         useMaterial3: true,
       ),
+      builder: (context, child) => SafeArea(child: child ?? const SizedBox()),
       routerConfig: router,
     );
   }
