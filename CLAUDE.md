@@ -31,6 +31,8 @@ make seed-reset       # Delete and re-create all seed data
 
 `make ci` runs in sequence: `lint` → `check` → `test` → `frontend-test`. All must pass.
 
+Never run `flutter test` directly — always use `make ci` or `make frontend-test`.
+
 Local dev setup: `cp .env.example .env`, then `make install && make db-start && make migrate && make run`.
 
 ### Flutter frontend commands
@@ -54,6 +56,7 @@ cd backend && uv run python -m pytest tests/test_views.py::TestClassName::test_f
 ```
 
 Pytest config is in `pyproject.toml`. Tests use `reuse-db` and the `django_db` marker for database access.
+
 
 ## Architecture
 
