@@ -26,6 +26,13 @@ Flutter/flutter_assets/
 Flutter/flutter_export_environment.sh
 ServiceDefinitions.json
 Runner/GeneratedPluginRegistrant.*
+Runner/AppDelegate.swift
+Runner/SceneDelegate.swift
+Runner/Assets.xcassets/
+Runner/Base.lproj/
+Runner/Runner-Bridging-Header.h
+Runner.xcworkspace/
+RunnerTests/
 
 # Exceptions to above rules.
 !default.mode1v3

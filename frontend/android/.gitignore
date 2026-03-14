@@ -6,6 +6,10 @@ gradle-wrapper.jar
 /local.properties
 GeneratedPluginRegistrant.java
 .cxx/
+/app/src/debug/
+/app/src/profile/
+/app/src/main/kotlin/
+/app/src/main/res/
 
 # Remember to never publicly share your keystore.
 # See https://flutter.dev/to/reference-keystore
