@@ -198,8 +198,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           ),
                         ),
                         validator: (v) {
-                          if (v == null || v.isEmpty)
+                          if (v == null || v.isEmpty) {
                             return 'Password is required';
+                          }
                           if (v.length < 8) {
                             return 'Password must be at least 8 characters';
                           }
