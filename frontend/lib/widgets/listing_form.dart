@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../models/listing.dart';
+import '../models/listing_form_state.dart';
 import '../providers/listing_actions_provider.dart';
 import '../providers/notification_provider.dart';
 import '../providers/photo_provider.dart';
@@ -50,32 +51,17 @@ class _ListingFormState extends ConsumerState<ListingForm> {
   final _transportation = TextEditingController();
   final _phoneNumber = TextEditingController();
 
-  // ---- Dropdown state ------------------------------------------------------
-  String? _city;
-  String? _borough;
-  String? _rentalType;
-  String? _roomType;
-  String? _veganHousehold;
-  String? _furnished;
-  String? _listerRelationship;
-  bool _seekingRoommate = false;
-  bool _includePhone = false;
+  // ---- Form state (Freezed) ------------------------------------------------
+  ListingFormState _fs = const ListingFormState();
 
-  // ---- Auto-save state -----------------------------------------------------
-  String? _listingId;
-  _SaveStatus _saveStatus = _SaveStatus.idle;
+  // ---- Auto-save internals (not in Freezed — mutable/non-serializable) -----
   Timer? _debounce;
   final Map<String, dynamic> _pendingChanges = {};
-  bool _firstSaveInProgress = false;
-
-  // ---- Photo state ---------------------------------------------------------
-  List<ListingPhoto> _photos = [];
-  bool _uploadingPhotos = false;
 
   // ---- Constants -----------------------------------------------------------
   static const _cities = ['New York', 'Los Angeles', 'Chicago'];
   static const _boroughs = [
-    'Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island'
+    'Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island',
   ];
   static const _rentalTypes = [
     ('sublet', 'Sublet'),
@@ -109,7 +95,6 @@ class _ListingFormState extends ConsumerState<ListingForm> {
     super.initState();
     final l = widget.initial;
     if (l != null) {
-      _listingId = l.id;
       _title.text = l.title;
       _description.text = l.description;
       _neighborhood.text = l.neighborhood ?? '';
@@ -126,17 +111,20 @@ class _ListingFormState extends ConsumerState<ListingForm> {
       _size.text = l.size ?? '';
       _transportation.text = l.transportation ?? '';
       _phoneNumber.text = l.phoneNumber ?? '';
-      _city = l.city.isEmpty ? null : l.city;
-      _borough = l.borough;
-      _rentalType = l.rentalType.isEmpty ? null : l.rentalType;
-      _roomType = l.roomType.isEmpty ? null : l.roomType;
-      _veganHousehold = l.veganHousehold.isEmpty ? null : l.veganHousehold;
-      _furnished = l.furnished.isEmpty ? null : l.furnished;
-      _listerRelationship =
-          l.listerRelationship.isEmpty ? null : l.listerRelationship;
-      _seekingRoommate = l.seekingRoommate;
-      _includePhone = l.includePhone;
-      _photos = List.from(l.photos);
+      _fs = _fs.copyWith(
+        listingId: l.id,
+        city: l.city.isEmpty ? null : l.city,
+        borough: l.borough,
+        rentalType: l.rentalType.isEmpty ? null : l.rentalType,
+        roomType: l.roomType.isEmpty ? null : l.roomType,
+        veganHousehold: l.veganHousehold.isEmpty ? null : l.veganHousehold,
+        furnished: l.furnished.isEmpty ? null : l.furnished,
+        listerRelationship:
+            l.listerRelationship.isEmpty ? null : l.listerRelationship,
+        seekingRoommate: l.seekingRoommate,
+        includePhone: l.includePhone,
+        photos: List.of(l.photos),
+      );
     }
   }
 
@@ -161,10 +149,10 @@ class _ListingFormState extends ConsumerState<ListingForm> {
   }
 
   void _scheduleAutoSave() {
-    if (_firstSaveInProgress) return;
+    if (_fs.firstSaveInProgress) return;
     _debounce?.cancel();
     _debounce = Timer(const Duration(seconds: 2), _autoSave);
-    setState(() => _saveStatus = _SaveStatus.saving);
+    setState(() => _fs = _fs.copyWith(saveStatus: SaveStatus.saving));
   }
 
   Future<void> _autoSave() async {
@@ -172,25 +160,37 @@ class _ListingFormState extends ConsumerState<ListingForm> {
 
     final actions = ref.read(listingActionsProvider);
 
-    if (_listingId == null) {
-      _firstSaveInProgress = true;
+    if (_fs.listingId == null) {
+      setState(() => _fs = _fs.copyWith(firstSaveInProgress: true));
       try {
         final created = await actions.createListing(Map.from(_pendingChanges));
-        _listingId = created.id;
         _pendingChanges.clear();
-        if (mounted) setState(() => _saveStatus = _SaveStatus.saved);
+        if (mounted) {
+          setState(() => _fs = _fs.copyWith(
+                listingId: created.id,
+                saveStatus: SaveStatus.saved,
+                firstSaveInProgress: false,
+              ));
+        }
       } catch (_) {
-        if (mounted) setState(() => _saveStatus = _SaveStatus.error);
-      } finally {
-        _firstSaveInProgress = false;
+        if (mounted) {
+          setState(() => _fs = _fs.copyWith(
+                saveStatus: SaveStatus.error,
+                firstSaveInProgress: false,
+              ));
+        }
       }
     } else {
       try {
-        await actions.updateListing(_listingId!, Map.from(_pendingChanges));
+        await actions.updateListing(_fs.listingId!, Map.from(_pendingChanges));
         _pendingChanges.clear();
-        if (mounted) setState(() => _saveStatus = _SaveStatus.saved);
+        if (mounted) {
+          setState(() => _fs = _fs.copyWith(saveStatus: SaveStatus.saved));
+        }
       } catch (_) {
-        if (mounted) setState(() => _saveStatus = _SaveStatus.error);
+        if (mounted) {
+          setState(() => _fs = _fs.copyWith(saveStatus: SaveStatus.error));
+        }
       }
     }
   }
@@ -198,45 +198,50 @@ class _ListingFormState extends ConsumerState<ListingForm> {
   // ---- Photo handling ------------------------------------------------------
 
   Future<void> _pickAndUploadPhotos() async {
-    if (_listingId == null) {
-      // If auto-save is already creating the listing, avoid a concurrent POST.
-      if (_firstSaveInProgress) {
+    if (_fs.listingId == null) {
+      if (_fs.firstSaveInProgress) {
         ref.read(notificationQueueProvider.notifier)
             .show('Still saving your draft — please try again in a moment.');
         return;
       }
-      // Cancel any pending debounce so it doesn't fire a second create mid-flight.
       _debounce?.cancel();
-      _firstSaveInProgress = true;
-      setState(() => _saveStatus = _SaveStatus.saving);
+      setState(() => _fs = _fs.copyWith(
+            firstSaveInProgress: true,
+            saveStatus: SaveStatus.saving,
+          ));
       try {
         final created = await ref
             .read(listingActionsProvider)
             .createListing(Map.from(_pendingChanges));
-        _listingId = created.id;
         _pendingChanges.clear();
-        if (mounted) setState(() => _saveStatus = _SaveStatus.saved);
+        if (mounted) {
+          setState(() => _fs = _fs.copyWith(
+                listingId: created.id,
+                saveStatus: SaveStatus.saved,
+                firstSaveInProgress: false,
+              ));
+        }
       } catch (e) {
         if (mounted) {
-          setState(() => _saveStatus = _SaveStatus.error);
-          ref.read(notificationQueueProvider.notifier)
-              .showError('Could not save your draft. Check your connection and try again.');
+          setState(() => _fs = _fs.copyWith(
+                saveStatus: SaveStatus.error,
+                firstSaveInProgress: false,
+              ));
+          ref.read(notificationQueueProvider.notifier).showError(
+              'Could not save your draft. Check your connection and try again.');
         }
         return;
-      } finally {
-        _firstSaveInProgress = false;
       }
     }
 
     final picker = ImagePicker();
-    final remaining = 10 - _photos.length;
+    final remaining = 10 - _fs.photos.length;
     if (remaining <= 0) {
       ref.read(notificationQueueProvider.notifier)
           .show('Maximum 10 photos per listing.');
       return;
     }
 
-    // On mobile, show camera + gallery options. On web, skip to gallery.
     if (PlatformUtils.isMobile && mounted) {
       await showModalBottomSheet<void>(
         context: context,
@@ -282,28 +287,35 @@ class _ListingFormState extends ConsumerState<ListingForm> {
   }
 
   Future<void> _doPhotoUpload(List<XFile> picked, int remaining) async {
-    setState(() => _uploadingPhotos = true);
+    setState(() => _fs = _fs.copyWith(uploadingPhotos: true));
     try {
       final uploaded = await ref
           .read(photoActionsProvider)
-          .uploadPhotos(_listingId!, picked);
-      setState(() => _photos.addAll(uploaded));
+          .uploadPhotos(_fs.listingId!, picked);
+      setState(() => _fs = _fs.copyWith(
+            photos: [..._fs.photos, ...uploaded],
+            uploadingPhotos: false,
+          ));
       ref.read(notificationQueueProvider.notifier)
           .show('${uploaded.length} photo${uploaded.length == 1 ? '' : 's'} uploaded.');
     } on DioException catch (e) {
-      // _ErrorInterceptor wraps ApiException inside DioException.error.
       final inner = e.error;
       final msg = inner is ApiException
           ? inner.detail
           : 'Upload failed. Please try again.';
-      log.warning('[photo upload] DioException: ${e.type} | response: ${e.response?.statusCode} ${e.response?.data} | inner: $inner');
+      log.warning(
+          '[photo upload] DioException: ${e.type} | response: ${e.response?.statusCode} ${e.response?.data} | inner: $inner');
       ref.read(notificationQueueProvider.notifier).showError(msg);
+      if (mounted) {
+        setState(() => _fs = _fs.copyWith(uploadingPhotos: false));
+      }
     } catch (e, st) {
       log.severe('[photo upload] unexpected error: $e', e, st);
       ref.read(notificationQueueProvider.notifier)
           .showError('Upload failed. Please try again.');
-    } finally {
-      if (mounted) setState(() => _uploadingPhotos = false);
+      if (mounted) {
+        setState(() => _fs = _fs.copyWith(uploadingPhotos: false));
+      }
     }
   }
 
@@ -311,8 +323,10 @@ class _ListingFormState extends ConsumerState<ListingForm> {
     try {
       await ref
           .read(photoActionsProvider)
-          .deletePhoto(_listingId!, photo.id);
-      setState(() => _photos.remove(photo));
+          .deletePhoto(_fs.listingId!, photo.id);
+      setState(() => _fs = _fs.copyWith(
+            photos: _fs.photos.where((p) => p != photo).toList(),
+          ));
       ref.read(notificationQueueProvider.notifier).show('Photo deleted.');
     } on DioException catch (e) {
       final inner = e.error;
@@ -325,10 +339,9 @@ class _ListingFormState extends ConsumerState<ListingForm> {
 
   // ---- Submit validation ---------------------------------------------------
 
-  /// Returns a list of error messages, or empty list if valid.
   List<String> _validate() => validateListingForm(
         title: _title.text,
-        city: _city,
+        city: _fs.city,
         price: _price.text,
         startDate: _startDate.text,
         endDate: _endDate.text,
@@ -337,7 +350,6 @@ class _ListingFormState extends ConsumerState<ListingForm> {
   // ---- Preview navigation --------------------------------------------------
 
   Future<void> _previewOrSaveFirst() async {
-    // Client-side validation before allowing preview/submit
     final errors = _validate();
     if (errors.isNotEmpty) {
       if (mounted) {
@@ -373,8 +385,7 @@ class _ListingFormState extends ConsumerState<ListingForm> {
       return;
     }
 
-    // Warn (non-blocking) if no photos
-    if (_photos.isEmpty && mounted) {
+    if (_fs.photos.isEmpty && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Tip: listings with photos get more interest.'),
@@ -383,13 +394,12 @@ class _ListingFormState extends ConsumerState<ListingForm> {
       );
     }
 
-    // Flush any unsaved changes before navigating to preview
     _debounce?.cancel();
-    if (_pendingChanges.isNotEmpty || _listingId == null) {
+    if (_pendingChanges.isNotEmpty || _fs.listingId == null) {
       await _autoSave();
     }
-    if (_listingId != null && mounted) {
-      context.go('/preview/$_listingId');
+    if (_fs.listingId != null && mounted) {
+      context.go('/preview/${_fs.listingId}');
     }
   }
 
@@ -405,7 +415,6 @@ class _ListingFormState extends ConsumerState<ListingForm> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Status bar
               Row(
                 children: [
                   Text(
@@ -416,12 +425,10 @@ class _ListingFormState extends ConsumerState<ListingForm> {
                         ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                   const Spacer(),
-                  _SaveIndicator(_saveStatus),
+                  _SaveIndicator(_fs.saveStatus),
                 ],
               ),
               const SizedBox(height: 24),
-
-              // Basic info
               const _SectionHeader('Basic Information'),
               _field(
                 label: 'Title *',
@@ -432,36 +439,35 @@ class _ListingFormState extends ConsumerState<ListingForm> {
               const SizedBox(height: 12),
               _field(
                 label: 'Description *',
-                hint: 'Describe your space, lifestyle, and what you\'re looking for...',
+                hint:
+                    'Describe your space, lifestyle, and what you\'re looking for...',
                 controller: _description,
                 maxLines: 4,
                 onChanged: (v) => _onChange('description', v),
               ),
               const SizedBox(height: 24),
-
-              // Location
               const _SectionHeader('Location'),
               _dropdown<String>(
                 label: 'City *',
-                value: _city,
+                value: _fs.city,
                 items: _cities.map((c) => (c, c)).toList(),
                 onChanged: (v) {
                   setState(() {
-                    _city = v;
-                    if (v != 'New York') _borough = null;
+                    _fs = _fs.copyWith(city: v);
+                    if (v != 'New York') _fs = _fs.copyWith(borough: null);
                   });
                   _onChange('city', v);
                   if (v != 'New York') _onChange('borough', null);
                 },
               ),
-              if (_city == 'New York') ...[
+              if (_fs.city == 'New York') ...[
                 const SizedBox(height: 12),
                 _dropdown<String>(
                   label: 'Borough *',
-                  value: _borough,
+                  value: _fs.borough,
                   items: _boroughs.map((b) => (b, b)).toList(),
                   onChanged: (v) {
-                    setState(() => _borough = v);
+                    setState(() => _fs = _fs.copyWith(borough: v));
                     _onChange('borough', v);
                   },
                 ),
@@ -474,15 +480,13 @@ class _ListingFormState extends ConsumerState<ListingForm> {
                 onChanged: (v) => _onChange('neighborhood', v),
               ),
               const SizedBox(height: 24),
-
-              // Rental details
               const _SectionHeader('Rental Details'),
               _dropdown<String>(
                 label: 'Vegan Household *',
-                value: _veganHousehold,
+                value: _fs.veganHousehold,
                 items: _veganHouseholds.toList(),
                 onChanged: (v) {
-                  setState(() => _veganHousehold = v);
+                  setState(() => _fs = _fs.copyWith(veganHousehold: v));
                   _onChange('vegan_household', v);
                 },
               ),
@@ -492,10 +496,10 @@ class _ListingFormState extends ConsumerState<ListingForm> {
                   Expanded(
                     child: _dropdown<String>(
                       label: 'Rental Type *',
-                      value: _rentalType,
+                      value: _fs.rentalType,
                       items: _rentalTypes.toList(),
                       onChanged: (v) {
-                        setState(() => _rentalType = v);
+                        setState(() => _fs = _fs.copyWith(rentalType: v));
                         _onChange('rental_type', v);
                       },
                     ),
@@ -504,10 +508,10 @@ class _ListingFormState extends ConsumerState<ListingForm> {
                   Expanded(
                     child: _dropdown<String>(
                       label: 'Room Type *',
-                      value: _roomType,
+                      value: _fs.roomType,
                       items: _roomTypes.toList(),
                       onChanged: (v) {
-                        setState(() => _roomType = v);
+                        setState(() => _fs = _fs.copyWith(roomType: v));
                         _onChange('room_type', v);
                       },
                     ),
@@ -547,10 +551,10 @@ class _ListingFormState extends ConsumerState<ListingForm> {
               const SizedBox(height: 12),
               _dropdown<String>(
                 label: 'Furnished Status *',
-                value: _furnished,
+                value: _fs.furnished,
                 items: _furnishedOptions.toList(),
                 onChanged: (v) {
-                  setState(() => _furnished = v);
+                  setState(() => _fs = _fs.copyWith(furnished: v));
                   _onChange('furnished', v);
                 },
               ),
@@ -577,12 +581,11 @@ class _ListingFormState extends ConsumerState<ListingForm> {
                 ],
               ),
               const SizedBox(height: 24),
-
-              // About you
               const _SectionHeader('About You'),
               _field(
                 label: 'About you as the lister *',
-                hint: 'Tell potential tenants about yourself, your lifestyle, interests...',
+                hint:
+                    'Tell potential tenants about yourself, your lifestyle, interests...',
                 controller: _aboutLister,
                 maxLines: 3,
                 onChanged: (v) => _onChange('about_lister', v),
@@ -590,16 +593,14 @@ class _ListingFormState extends ConsumerState<ListingForm> {
               const SizedBox(height: 12),
               _dropdown<String>(
                 label: 'Your relationship to this space *',
-                value: _listerRelationship,
+                value: _fs.listerRelationship,
                 items: _relationships.toList(),
                 onChanged: (v) {
-                  setState(() => _listerRelationship = v);
+                  setState(() => _fs = _fs.copyWith(listerRelationship: v));
                   _onChange('lister_relationship', v);
                 },
               ),
               const SizedBox(height: 24),
-
-              // Requirements
               const _SectionHeader('Rental Requirements'),
               _field(
                 label: 'Requirements for potential tenants *',
@@ -617,38 +618,34 @@ class _ListingFormState extends ConsumerState<ListingForm> {
                 onChanged: (v) => _onChange('pet_policy', v),
               ),
               const SizedBox(height: 24),
-
-              // Photos
               const _SectionHeader('Photos'),
               PhotoSection(
-                photos: _photos,
-                uploading: _uploadingPhotos,
+                photos: _fs.photos,
+                uploading: _fs.uploadingPhotos,
                 onAdd: _pickAndUploadPhotos,
                 onDelete: _deletePhoto,
               ),
               const SizedBox(height: 24),
-
-              // Additional options
               const _SectionHeader('Additional Options'),
               SwitchListTile(
                 title: const Text('Seeking a roommate (not just a tenant)'),
-                value: _seekingRoommate,
+                value: _fs.seekingRoommate,
                 onChanged: (v) {
-                  setState(() => _seekingRoommate = v);
+                  setState(() => _fs = _fs.copyWith(seekingRoommate: v));
                   _onChange('seeking_roommate', v);
                 },
                 contentPadding: EdgeInsets.zero,
               ),
               SwitchListTile(
                 title: const Text('Include phone number in listing'),
-                value: _includePhone,
+                value: _fs.includePhone,
                 onChanged: (v) {
-                  setState(() => _includePhone = v);
+                  setState(() => _fs = _fs.copyWith(includePhone: v));
                   _onChange('include_phone', v);
                 },
                 contentPadding: EdgeInsets.zero,
               ),
-              if (_includePhone) ...[
+              if (_fs.includePhone) ...[
                 const SizedBox(height: 8),
                 _field(
                   label: 'Phone Number',
@@ -659,8 +656,6 @@ class _ListingFormState extends ConsumerState<ListingForm> {
                 ),
               ],
               const SizedBox(height: 32),
-
-              // Actions
               Row(
                 children: [
                   FilledButton(
@@ -822,17 +817,15 @@ class _SectionHeader extends StatelessWidget {
 // Save status indicator
 // ---------------------------------------------------------------------------
 
-enum _SaveStatus { idle, saving, saved, error }
-
 class _SaveIndicator extends StatelessWidget {
   const _SaveIndicator(this.status);
-  final _SaveStatus status;
+  final SaveStatus status;
 
   @override
   Widget build(BuildContext context) {
     return switch (status) {
-      _SaveStatus.idle => const SizedBox.shrink(),
-      _SaveStatus.saving => Row(
+      SaveStatus.idle => const SizedBox.shrink(),
+      SaveStatus.saving => Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(
@@ -846,7 +839,7 @@ class _SaveIndicator extends StatelessWidget {
                     )),
           ],
         ),
-      _SaveStatus.saved => Row(
+      SaveStatus.saved => Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.check, size: 14,
@@ -858,7 +851,7 @@ class _SaveIndicator extends StatelessWidget {
                     )),
           ],
         ),
-      _SaveStatus.error => Row(
+      SaveStatus.error => Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.error_outline, size: 14,
