@@ -152,6 +152,12 @@ STORAGES = {
     },
 }
 
+# Serve Flutter web build files at the root URL (e.g., /main.dart.js).
+# WhiteNoise serves these before Django URL routing, so the SPA catch-all
+# won't intercept requests for static assets.
+if IS_PRODUCTION:
+    WHITENOISE_ROOT = STATIC_ROOT / "flutter"
+
 # Media files (user uploads)
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"

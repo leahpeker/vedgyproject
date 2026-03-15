@@ -33,7 +33,11 @@ if _on_railway:
         path("password-reset/", include("listings.urls_password_reset")),
         # Flutter catch-all — must be last. GoRouter handles client-side routing,
         # so any path that Django doesn't own serves index.html.
-        re_path(r"^.*$", TemplateView.as_view(template_name="flutter/index.html")),
+        # Exclude static asset extensions so WhiteNoise can serve Flutter build files.
+        re_path(
+            r"^(?!.*\.(js|css|json|wasm|png|jpg|ico|svg|ttf|otf|woff|woff2|map)$).*$",
+            TemplateView.as_view(template_name="flutter/index.html"),
+        ),
     ]
 else:
     # Development / CI: serve the legacy server-rendered Django views and media.
