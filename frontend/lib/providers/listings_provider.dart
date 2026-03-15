@@ -22,7 +22,7 @@ class BrowseFilters extends _$BrowseFilters {
 @riverpod
 Future<PaginatedListings> browseListings(Ref ref) async {
   final filters = ref.watch(browseFiltersProvider);
-  final dio = ref.watch(apiClientProvider);
+  final dio = ref.read(apiClientProvider);
 
   final queryParams = <String, dynamic>{
     'page': filters.page,
@@ -50,7 +50,7 @@ Future<PaginatedListings> browseListings(Ref ref) async {
 
 @riverpod
 Future<Listing> listingDetail(Ref ref, String id) async {
-  final dio = ref.watch(apiClientProvider);
+  final dio = ref.read(apiClientProvider);
   final response = await dio.get<Map<String, dynamic>>('/api/listings/$id/');
   return Listing.fromJson(response.data!);
 }
