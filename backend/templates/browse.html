@@ -72,6 +72,7 @@ function validatePriceRange(minInput, maxInput) {
             <option value="sublet" {% if request.GET.rental_type == "sublet" %}selected{% endif %}>Sublet</option>
             <option value="new_lease" {% if request.GET.rental_type == "new_lease" %}selected{% endif %}>New Lease</option>
             <option value="month_to_month" {% if request.GET.rental_type == "month_to_month" %}selected{% endif %}>Month to Month</option>
+            <option value="short_term" {% if request.GET.rental_type == "short_term" %}selected{% endif %}>Short Term</option>
         </select>
 
         <!-- Room Type -->
@@ -98,7 +99,7 @@ function validatePriceRange(minInput, maxInput) {
                 hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
                 hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
             <option value="">Any</option>
-            <option value="furnished" {% if request.GET.furnished == "furnished" %}selected{% endif %}>Furnished</option>
+            <option value="fully_furnished" {% if request.GET.furnished == "fully_furnished" %}selected{% endif %}>Fully Furnished</option>
             <option value="unfurnished" {% if request.GET.furnished == "unfurnished" %}selected{% endif %}>Unfurnished</option>
             <option value="partially_furnished" {% if request.GET.furnished == "partially_furnished" %}selected{% endif %}>Partially Furnished</option>
         </select>
@@ -108,10 +109,8 @@ function validatePriceRange(minInput, maxInput) {
                 hx-get="{% url 'browse' %}" hx-trigger="change" hx-target="#listings-container" hx-push-url="true"
                 hx-include="[name='rental_type'], [name='room_type'], [name='seeking_roommate'], [name='city'], [name='borough'], [name='furnished'], [name='vegan_household'], [name='min_price'], [name='max_price']">
             <option value="">All Households</option>
-            <option value="vegan" {% if request.GET.vegan_household == "vegan" %}selected{% endif %}>Vegan</option>
-            <option value="vegetarian" {% if request.GET.vegan_household == "vegetarian" %}selected{% endif %}>Vegetarian</option>
-            <option value="vegan_friendly" {% if request.GET.vegan_household == "vegan_friendly" %}selected{% endif %}>Vegan-Friendly</option>
-            <option value="not_vegan" {% if request.GET.vegan_household == "not_vegan" %}selected{% endif %}>Not Vegan</option>
+            <option value="fully_vegan" {% if request.GET.vegan_household == "fully_vegan" %}selected{% endif %}>Fully Vegan</option>
+            <option value="mixed_household" {% if request.GET.vegan_household == "mixed_household" %}selected{% endif %}>Mixed Household</option>
         </select>
 
         <!-- Price Range -->

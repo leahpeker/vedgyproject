@@ -102,6 +102,7 @@
                         <option value="sublet" {% if form.rental_type.value == 'sublet' %}selected{% endif %}>Sublet</option>
                         <option value="new_lease" {% if form.rental_type.value == 'new_lease' %}selected{% endif %}>New Lease</option>
                         <option value="month_to_month" {% if form.rental_type.value == 'month_to_month' %}selected{% endif %}>Month to Month</option>
+                        <option value="short_term" {% if form.rental_type.value == 'short_term' %}selected{% endif %}>Short Term</option>
                     </select>
                 </div>
                 
@@ -192,8 +193,6 @@
                         <option value="manager" {% if form.lister_relationship.value == 'manager' %}selected{% endif %}>I manage the space</option>
                         <option value="tenant" {% if form.lister_relationship.value == 'tenant' %}selected{% endif %}>I am the current tenant</option>
                         <option value="roommate" {% if form.lister_relationship.value == 'roommate' %}selected{% endif %}>I am a current roommate</option>
-                        <option value="agent" {% if form.lister_relationship.value == 'agent' %}selected{% endif %}>I am a rental agent/broker</option>
-                        <option value="other" {% if form.lister_relationship.value == 'other' %}selected{% endif %}>Other</option>
                     </select>
                 </div>
             </div>

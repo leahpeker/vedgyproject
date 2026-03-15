@@ -193,7 +193,7 @@
                                 <a href="{% url 'listing_preview' listing.id %}" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">
                                     Preview
                                 </a>
-                                <a href="{% url 'listing_detail' listing.id %}?renew=true" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">
+                                <a href="{% url 'pay_listing' listing.id %}?renewal=true" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">
                                     Renew
                                 </a>
                                 <form method="POST" action="{% url 'delete_listing' listing.id %}" class="inline" onsubmit="return confirm('Are you sure you want to permanently delete this listing? This cannot be undone.')">
@@ -249,7 +249,7 @@
                                 <a href="{% url 'listing_detail' listing.id %}" class="bg-gray-500 text-white px-3 py-1 rounded text-sm hover:bg-gray-600">
                                     View
                                 </a>
-                                <a href="{% url 'listing_detail' listing.id %}?renew=true" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">
+                                <a href="{% url 'pay_listing' listing.id %}?renewal=true" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">
                                     Renew
                                 </a>
                                 <form method="POST" action="{% url 'delete_listing' listing.id %}" class="inline" onsubmit="return confirm('Are you sure you want to permanently delete this expired listing? This cannot be undone.')">

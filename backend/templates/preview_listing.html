@@ -208,12 +208,6 @@
                                     <span class="text-gray-600"> - {{ listing.end_date|date:'F d, Y' }}</span>
                                 {% endif %}
                             </div>
-                            {% if listing.date_until %}
-                            <div class="flex justify-between">
-                                <span class="text-gray-600">Until:</span>
-                                <span class="font-medium">{{ listing.date_until|date:'F d, Y' }}</span>
-                            </div>
-                            {% endif %}
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Rental Type:</span>
                                 <span class="font-medium">{{ listing.get_rental_type_display }}</span>
