@@ -26,10 +26,22 @@ Widget _wrap(Widget screen) {
   final router = GoRouter(
     routes: [
       GoRoute(path: '/', builder: (ctx, st) => screen),
-      GoRoute(path: '/browse', builder: (ctx, st) => const Scaffold(body: Text('browse'))),
-      GoRoute(path: '/create', builder: (ctx, st) => const Scaffold(body: Text('create'))),
-      GoRoute(path: '/login', builder: (ctx, st) => const Scaffold(body: Text('login'))),
-      GoRoute(path: '/listing/:id', builder: (ctx, st) => const Scaffold(body: Text('detail'))),
+      GoRoute(
+        path: '/browse',
+        builder: (ctx, st) => const Scaffold(body: Text('browse')),
+      ),
+      GoRoute(
+        path: '/create',
+        builder: (ctx, st) => const Scaffold(body: Text('create')),
+      ),
+      GoRoute(
+        path: '/login',
+        builder: (ctx, st) => const Scaffold(body: Text('login')),
+      ),
+      GoRoute(
+        path: '/listing/:id',
+        builder: (ctx, st) => const Scaffold(body: Text('detail')),
+      ),
     ],
   );
 
@@ -96,7 +108,9 @@ void main() {
   });
 
   group('ListingCard', () {
-    testWidgets('renders title, price, location, and lister name', (tester) async {
+    testWidgets('renders title, price, location, and lister name', (
+      tester,
+    ) async {
       await tester.pumpWidget(_wrap(ListingCard(listing: _testListing)));
       await tester.pump();
 

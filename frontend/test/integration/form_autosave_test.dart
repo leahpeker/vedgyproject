@@ -26,22 +26,22 @@ import 'helpers/mock_dio.dart';
 // ---------------------------------------------------------------------------
 
 GoRouter _makeRouter() => GoRouter(
-      initialLocation: '/create',
-      routes: [
-        GoRoute(
-          path: '/create',
-          builder: (_, __) => const Scaffold(body: ListingForm()),
-        ),
-        GoRoute(
-          path: '/dashboard',
-          builder: (_, __) => const Scaffold(body: Text('Dashboard')),
-        ),
-        GoRoute(
-          path: '/preview/:id',
-          builder: (_, __) => const Scaffold(body: Text('Preview')),
-        ),
-      ],
-    );
+  initialLocation: '/create',
+  routes: [
+    GoRoute(
+      path: '/create',
+      builder: (_, __) => const Scaffold(body: ListingForm()),
+    ),
+    GoRoute(
+      path: '/dashboard',
+      builder: (_, __) => const Scaffold(body: Text('Dashboard')),
+    ),
+    GoRoute(
+      path: '/preview/:id',
+      builder: (_, __) => const Scaffold(body: Text('Preview')),
+    ),
+  ],
+);
 
 Widget _buildApp(MockDio mockDio) {
   return ProviderScope(
@@ -75,18 +75,23 @@ void _configureView(WidgetTester tester) {
 }
 
 void _stubCreateListing(MockDio mockDio) {
-  when(() => mockDio.post<Map<String, dynamic>>(
-        '/api/listings/',
-        data: any(named: 'data'),
-      )).thenAnswer((_) async => okResponse(testListingJson, '/api/listings/'));
+  when(
+    () => mockDio.post<Map<String, dynamic>>(
+      '/api/listings/',
+      data: any(named: 'data'),
+    ),
+  ).thenAnswer((_) async => okResponse(testListingJson, '/api/listings/'));
 }
 
 void _stubUpdateListing(MockDio mockDio) {
-  when(() => mockDio.patch<Map<String, dynamic>>(
-        '/api/listings/listing-uuid-001/',
-        data: any(named: 'data'),
-      )).thenAnswer((_) async =>
-          okResponse(testListingJson, '/api/listings/listing-uuid-001/'));
+  when(
+    () => mockDio.patch<Map<String, dynamic>>(
+      '/api/listings/listing-uuid-001/',
+      data: any(named: 'data'),
+    ),
+  ).thenAnswer(
+    (_) async => okResponse(testListingJson, '/api/listings/listing-uuid-001/'),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -99,8 +104,9 @@ void main() {
   });
 
   group('Form auto-save', () {
-    testWidgets('entering text and pumping 2s triggers POST (creates draft)',
-        (tester) async {
+    testWidgets('entering text and pumping 2s triggers POST (creates draft)', (
+      tester,
+    ) async {
       _configureView(tester);
       final mockDio = MockDio();
       _stubCreateListing(mockDio);
@@ -119,14 +125,17 @@ void main() {
       await tester.pump(const Duration(seconds: 3));
 
       // POST should have been called to create a draft.
-      verify(() => mockDio.post<Map<String, dynamic>>(
-            '/api/listings/',
-            data: any(named: 'data'),
-          )).called(1);
+      verify(
+        () => mockDio.post<Map<String, dynamic>>(
+          '/api/listings/',
+          data: any(named: 'data'),
+        ),
+      ).called(1);
     });
 
-    testWidgets('rapid edits within 2s only trigger one API call',
-        (tester) async {
+    testWidgets('rapid edits within 2s only trigger one API call', (
+      tester,
+    ) async {
       _configureView(tester);
       final mockDio = MockDio();
       _stubCreateListing(mockDio);
@@ -148,14 +157,17 @@ void main() {
       await tester.pump(const Duration(seconds: 3));
 
       // Only one POST should have been made (not two).
-      verify(() => mockDio.post<Map<String, dynamic>>(
-            '/api/listings/',
-            data: any(named: 'data'),
-          )).called(1);
+      verify(
+        () => mockDio.post<Map<String, dynamic>>(
+          '/api/listings/',
+          data: any(named: 'data'),
+        ),
+      ).called(1);
     });
 
-    testWidgets('subsequent edit after draft created triggers PATCH',
-        (tester) async {
+    testWidgets('subsequent edit after draft created triggers PATCH', (
+      tester,
+    ) async {
       _configureView(tester);
       final mockDio = MockDio();
       _stubCreateListing(mockDio);
@@ -173,23 +185,26 @@ void main() {
       await tester.pump(const Duration(seconds: 3));
 
       // POST was called.
-      verify(() => mockDio.post<Map<String, dynamic>>(
-            '/api/listings/',
-            data: any(named: 'data'),
-          )).called(1);
+      verify(
+        () => mockDio.post<Map<String, dynamic>>(
+          '/api/listings/',
+          data: any(named: 'data'),
+        ),
+      ).called(1);
 
       // Second edit — should PATCH the existing listing.
       await tester.enterText(titleField, 'Updated title');
       await tester.pump(const Duration(seconds: 3));
 
-      verify(() => mockDio.patch<Map<String, dynamic>>(
-            '/api/listings/listing-uuid-001/',
-            data: any(named: 'data'),
-          )).called(1);
+      verify(
+        () => mockDio.patch<Map<String, dynamic>>(
+          '/api/listings/listing-uuid-001/',
+          data: any(named: 'data'),
+        ),
+      ).called(1);
     });
 
-    testWidgets('no API call before debounce fires',
-        (tester) async {
+    testWidgets('no API call before debounce fires', (tester) async {
       _configureView(tester);
       final mockDio = MockDio();
       _stubCreateListing(mockDio);
@@ -206,19 +221,23 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
 
       // No POST yet — debounce hasn't fired.
-      verifyNever(() => mockDio.post<Map<String, dynamic>>(
-            '/api/listings/',
-            data: any(named: 'data'),
-          ));
+      verifyNever(
+        () => mockDio.post<Map<String, dynamic>>(
+          '/api/listings/',
+          data: any(named: 'data'),
+        ),
+      );
 
       // Now pump past the debounce.
       await tester.pump(const Duration(seconds: 2));
 
       // POST fires after the full debounce.
-      verify(() => mockDio.post<Map<String, dynamic>>(
-            '/api/listings/',
-            data: any(named: 'data'),
-          )).called(1);
+      verify(
+        () => mockDio.post<Map<String, dynamic>>(
+          '/api/listings/',
+          data: any(named: 'data'),
+        ),
+      ).called(1);
     });
   });
 }

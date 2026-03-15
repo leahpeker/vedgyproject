@@ -169,7 +169,11 @@ Future<GoRouter> _pumpApp(
 // Helper: navigate and pump, suppressing overflow errors.
 // ---------------------------------------------------------------------------
 
-Future<void> _navigate(WidgetTester tester, GoRouter router, String location) async {
+Future<void> _navigate(
+  WidgetTester tester,
+  GoRouter router,
+  String location,
+) async {
   _withOverflowSuppressed(() => router.go(location));
   await tester.pump();
   // Suppress overflow in the settle phase too.
@@ -188,114 +192,99 @@ Future<void> _navigate(WidgetTester tester, GoRouter router, String location) as
 
 void main() {
   group('Router guard — unauthenticated user', () {
-    testWidgets(
-      'accessing /dashboard redirects to /login',
-      (tester) async {
-        final router = await _pumpApp(
-          tester,
-          authOverride: authProvider.overrideWith(_UnauthenticatedAuth.new),
-        );
+    testWidgets('accessing /dashboard redirects to /login', (tester) async {
+      final router = await _pumpApp(
+        tester,
+        authOverride: authProvider.overrideWith(_UnauthenticatedAuth.new),
+      );
 
-        await _navigate(tester, router, '/dashboard');
+      await _navigate(tester, router, '/dashboard');
 
-        // The guard produces /login?redirect=%2Fdashboard → LoginScreen renders.
-        expect(find.byType(LoginScreen), findsOneWidget);
-        // The 'Email' label on the login form confirms we are on LoginScreen.
-        expect(find.text('Email'), findsOneWidget);
-      },
-    );
+      // The guard produces /login?redirect=%2Fdashboard → LoginScreen renders.
+      expect(find.byType(LoginScreen), findsOneWidget);
+      // The 'Email' label on the login form confirms we are on LoginScreen.
+      expect(find.text('Email'), findsOneWidget);
+    });
 
-    testWidgets(
-      'accessing /create redirects to /login',
-      (tester) async {
-        final router = await _pumpApp(
-          tester,
-          authOverride: authProvider.overrideWith(_UnauthenticatedAuth.new),
-        );
+    testWidgets('accessing /create redirects to /login', (tester) async {
+      final router = await _pumpApp(
+        tester,
+        authOverride: authProvider.overrideWith(_UnauthenticatedAuth.new),
+      );
 
-        await _navigate(tester, router, '/create');
+      await _navigate(tester, router, '/create');
 
-        expect(find.byType(LoginScreen), findsOneWidget);
-      },
-    );
+      expect(find.byType(LoginScreen), findsOneWidget);
+    });
 
-    testWidgets(
-      'accessing /login is allowed — no redirect occurs',
-      (tester) async {
-        final router = await _pumpApp(
-          tester,
-          authOverride: authProvider.overrideWith(_UnauthenticatedAuth.new),
-        );
+    testWidgets('accessing /login is allowed — no redirect occurs', (
+      tester,
+    ) async {
+      final router = await _pumpApp(
+        tester,
+        authOverride: authProvider.overrideWith(_UnauthenticatedAuth.new),
+      );
 
-        await _navigate(tester, router, '/login');
+      await _navigate(tester, router, '/login');
 
-        // /login is not a protected route; unauthenticated users may access it.
-        expect(find.byType(LoginScreen), findsOneWidget);
-      },
-    );
+      // /login is not a protected route; unauthenticated users may access it.
+      expect(find.byType(LoginScreen), findsOneWidget);
+    });
 
-    testWidgets(
-      'accessing / (home) is allowed — no redirect occurs',
-      (tester) async {
-        await _pumpApp(
-          tester,
-          authOverride: authProvider.overrideWith(_UnauthenticatedAuth.new),
-        );
+    testWidgets('accessing / (home) is allowed — no redirect occurs', (
+      tester,
+    ) async {
+      await _pumpApp(
+        tester,
+        authOverride: authProvider.overrideWith(_UnauthenticatedAuth.new),
+      );
 
-        await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(const Duration(milliseconds: 300));
 
-        // The app starts at initialLocation '/'; HomeScreen should render.
-        expect(find.byType(HomeScreen), findsOneWidget);
-        expect(find.text('Find vegan-friendly housing.'), findsOneWidget);
-      },
-    );
+      // The app starts at initialLocation '/'; HomeScreen should render.
+      expect(find.byType(HomeScreen), findsOneWidget);
+      expect(find.text('Find vegan-friendly housing.'), findsOneWidget);
+    });
   });
 
   group('Router guard — authenticated user', () {
-    testWidgets(
-      'accessing /login redirects to /dashboard',
-      (tester) async {
-        final router = await _pumpApp(
-          tester,
-          authOverride: authProvider.overrideWith(_AuthenticatedAuth.new),
-        );
+    testWidgets('accessing /login redirects to /dashboard', (tester) async {
+      final router = await _pumpApp(
+        tester,
+        authOverride: authProvider.overrideWith(_AuthenticatedAuth.new),
+      );
 
-        await _navigate(tester, router, '/login');
+      await _navigate(tester, router, '/login');
 
-        // Authenticated users are redirected away from /login → /dashboard.
-        expect(find.byType(DashboardScreen), findsOneWidget);
-        // LoginScreen must NOT be present.
-        expect(find.byType(LoginScreen), findsNothing);
-      },
-    );
+      // Authenticated users are redirected away from /login → /dashboard.
+      expect(find.byType(DashboardScreen), findsOneWidget);
+      // LoginScreen must NOT be present.
+      expect(find.byType(LoginScreen), findsNothing);
+    });
 
-    testWidgets(
-      'accessing /signup redirects to /dashboard',
-      (tester) async {
-        final router = await _pumpApp(
-          tester,
-          authOverride: authProvider.overrideWith(_AuthenticatedAuth.new),
-        );
+    testWidgets('accessing /signup redirects to /dashboard', (tester) async {
+      final router = await _pumpApp(
+        tester,
+        authOverride: authProvider.overrideWith(_AuthenticatedAuth.new),
+      );
 
-        await _navigate(tester, router, '/signup');
+      await _navigate(tester, router, '/signup');
 
-        expect(find.byType(DashboardScreen), findsOneWidget);
-      },
-    );
+      expect(find.byType(DashboardScreen), findsOneWidget);
+    });
 
-    testWidgets(
-      'accessing /dashboard is allowed — no redirect',
-      (tester) async {
-        final router = await _pumpApp(
-          tester,
-          authOverride: authProvider.overrideWith(_AuthenticatedAuth.new),
-        );
+    testWidgets('accessing /dashboard is allowed — no redirect', (
+      tester,
+    ) async {
+      final router = await _pumpApp(
+        tester,
+        authOverride: authProvider.overrideWith(_AuthenticatedAuth.new),
+      );
 
-        await _navigate(tester, router, '/dashboard');
+      await _navigate(tester, router, '/dashboard');
 
-        expect(find.byType(DashboardScreen), findsOneWidget);
-      },
-    );
+      expect(find.byType(DashboardScreen), findsOneWidget);
+    });
 
     testWidgets(
       'accessing /login?redirect=%2Fabout follows the redirect param',
@@ -320,43 +309,41 @@ void main() {
   });
 
   group('Router guard — initial/loading state', () {
-    testWidgets(
-      'accessing /dashboard redirects to / (shows loading spinner)',
-      (tester) async {
-        final router = await _pumpApp(
-          tester,
-          authOverride: authProvider.overrideWith(_InitialAuth.new),
-        );
+    testWidgets('accessing /dashboard redirects to / (shows loading spinner)', (
+      tester,
+    ) async {
+      final router = await _pumpApp(
+        tester,
+        authOverride: authProvider.overrideWith(_InitialAuth.new),
+      );
 
-        router.go('/dashboard');
-        // Use pump() rather than pumpAndSettle(): CircularProgressIndicator
-        // animates forever and would cause pumpAndSettle to time out.
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 50));
+      router.go('/dashboard');
+      // Use pump() rather than pumpAndSettle(): CircularProgressIndicator
+      // animates forever and would cause pumpAndSettle to time out.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
 
-        // The initial state redirect sends protected routes to '/'.
-        // HomeScreen renders a CircularProgressIndicator while auth is initial.
-        expect(find.byType(HomeScreen), findsOneWidget);
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      },
-    );
+      // The initial state redirect sends protected routes to '/'.
+      // HomeScreen renders a CircularProgressIndicator while auth is initial.
+      expect(find.byType(HomeScreen), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    });
 
-    testWidgets(
-      'accessing /create redirects to / (shows loading spinner)',
-      (tester) async {
-        final router = await _pumpApp(
-          tester,
-          authOverride: authProvider.overrideWith(_InitialAuth.new),
-        );
+    testWidgets('accessing /create redirects to / (shows loading spinner)', (
+      tester,
+    ) async {
+      final router = await _pumpApp(
+        tester,
+        authOverride: authProvider.overrideWith(_InitialAuth.new),
+      );
 
-        router.go('/create');
-        await tester.pump();
-        await tester.pump(const Duration(milliseconds: 50));
+      router.go('/create');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
 
-        expect(find.byType(HomeScreen), findsOneWidget);
-        expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      },
-    );
+      expect(find.byType(HomeScreen), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    });
 
     testWidgets(
       'accessing / is allowed during initial state (shows loading spinner)',
@@ -374,19 +361,18 @@ void main() {
       },
     );
 
-    testWidgets(
-      'accessing /login is allowed during initial state',
-      (tester) async {
-        final router = await _pumpApp(
-          tester,
-          authOverride: authProvider.overrideWith(_InitialAuth.new),
-        );
+    testWidgets('accessing /login is allowed during initial state', (
+      tester,
+    ) async {
+      final router = await _pumpApp(
+        tester,
+        authOverride: authProvider.overrideWith(_InitialAuth.new),
+      );
 
-        await _navigate(tester, router, '/login');
+      await _navigate(tester, router, '/login');
 
-        // /login is not a protected route — initial state does not redirect it.
-        expect(find.byType(LoginScreen), findsOneWidget);
-      },
-    );
+      // /login is not a protected route — initial state does not redirect it.
+      expect(find.byType(LoginScreen), findsOneWidget);
+    });
   });
 }

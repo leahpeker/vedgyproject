@@ -157,9 +157,15 @@ void main() {
       expect(listing.photos.length, equals(2));
       expect(listing.photos[0].id, equals('photo-uuid-001'));
       expect(listing.photos[0].filename, equals('photo1.jpg'));
-      expect(listing.photos[0].url, equals('https://example.com/photos/photo1.jpg'));
+      expect(
+        listing.photos[0].url,
+        equals('https://example.com/photos/photo1.jpg'),
+      );
       expect(listing.photos[1].id, equals('photo-uuid-002'));
-      expect(listing.photos[1].url, equals('https://example.com/photos/photo2.jpg'));
+      expect(
+        listing.photos[1].url,
+        equals('https://example.com/photos/photo2.jpg'),
+      );
     });
 
     test('photos list has correct length', () {
@@ -260,7 +266,10 @@ void main() {
 
     test('fromJson then toJson preserves vegan_household', () {
       final json = Listing.fromJson(testListingJson).toJson();
-      expect(json['vegan_household'], equals(testListingJson['vegan_household']));
+      expect(
+        json['vegan_household'],
+        equals(testListingJson['vegan_household']),
+      );
     });
 
     test('second round-trip produces same result as first', () {

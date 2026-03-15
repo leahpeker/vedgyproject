@@ -8,10 +8,7 @@ import 'package:vedgy/services/secure_storage.dart';
 import 'fake_secure_storage.dart';
 
 class AppHarness {
-  AppHarness({
-    this.fakeStorage,
-    this.extraOverrides = const [],
-  });
+  AppHarness({this.fakeStorage, this.extraOverrides = const []});
 
   final FakeSecureStorage? fakeStorage;
   final List<Override> extraOverrides;

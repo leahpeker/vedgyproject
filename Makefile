@@ -1,5 +1,5 @@
 .PHONY: help install run down restart test clean format lint check migrate createsuperuser seed seed-reset \
-        db-start db-stop frontend-install frontend-run frontend-build frontend-codegen frontend-test dev ci
+        db-start db-stop frontend-install frontend-run frontend-build frontend-codegen frontend-lint frontend-format frontend-fix frontend-test dev ci
 
 help:
 	@echo "Backend commands:"
@@ -22,6 +22,9 @@ help:
 	@echo "  make frontend-run       Run Flutter web server (localhost:3000)"
 	@echo "  make frontend-build     Build Flutter web release"
 	@echo "  make frontend-codegen   Regenerate freezed/riverpod/json code"
+	@echo "  make frontend-lint      Run dart format check + dart analyze"
+	@echo "  make frontend-format    Auto-format Dart files"
+	@echo "  make frontend-fix       Auto-apply dart fix suggestions"
 	@echo "  make frontend-test      Run Flutter test suite"
 	@echo ""
 	@echo "  make dev                Run Django + Flutter concurrently"
@@ -97,11 +100,21 @@ frontend-build:
 frontend-codegen:
 	cd frontend && dart run build_runner build --delete-conflicting-outputs
 
+frontend-lint:
+	cd frontend && dart format --set-exit-if-changed lib/ test/
+	cd frontend && dart analyze lib/
+
+frontend-format:
+	cd frontend && dart format lib/ test/
+
+frontend-fix:
+	cd frontend && dart fix --apply
+
 frontend-test:
 	cd frontend && flutter test
 
 # Run all pre-commit checks in sequence. Fix any failures before committing.
-ci: lint check test frontend-test
+ci: lint check test frontend-lint frontend-test
 	@echo "All checks passed!"
 
 # Run Django backend and Flutter web app concurrently.

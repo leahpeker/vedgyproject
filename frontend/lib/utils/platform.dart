@@ -16,5 +16,6 @@ class PlatformUtils {
   static bool get isMobile => isIOS || isAndroid;
 
   /// True if running on desktop (macOS, Windows, Linux)
-  static bool get isDesktop => !kIsWeb && (Platform.isMacOS || Platform.isWindows || Platform.isLinux);
+  static bool get isDesktop =>
+      !kIsWeb && (Platform.isMacOS || Platform.isWindows || Platform.isLinux);
 }

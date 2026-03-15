@@ -61,11 +61,15 @@ class _DioOverrideAuth extends Auth {
       );
       final tokens = AuthTokens.fromJson(refreshResponse.data!);
 
-      await ref.read(secureStorageProvider).saveRefreshToken(tokens.refreshToken);
+      await ref
+          .read(secureStorageProvider)
+          .saveRefreshToken(tokens.refreshToken);
 
       final meResponse = await _dio.get<Map<String, dynamic>>(
         '/api/auth/me/',
-        options: Options(headers: {'Authorization': 'Bearer ${tokens.accessToken}'}),
+        options: Options(
+          headers: {'Authorization': 'Bearer ${tokens.accessToken}'},
+        ),
       );
       final user = User.fromJson(meResponse.data!);
       state = AuthState.authenticated(user, tokens.accessToken);
@@ -110,7 +114,9 @@ void main() {
     //    Start authenticated → call logout → auth state becomes unauthenticated,
     //    refresh token cleared from storage.
     // -----------------------------------------------------------------------
-    testWidgets('logout clears auth state and token from storage', (tester) async {
+    testWidgets('logout clears auth state and token from storage', (
+      tester,
+    ) async {
       _configureView(tester);
 
       // Pre-populate storage with a valid refresh token.
@@ -145,9 +151,7 @@ void main() {
           cancelToken: any(named: 'cancelToken'),
           onReceiveProgress: any(named: 'onReceiveProgress'),
         ),
-      ).thenAnswer(
-        (_) async => okResponse(userJson, '/api/auth/me/'),
-      );
+      ).thenAnswer((_) async => okResponse(userJson, '/api/auth/me/'));
 
       final harness = AppHarness(
         fakeStorage: storage,
@@ -169,7 +173,11 @@ void main() {
 
       // Verify refresh token is still in storage before logout.
       var token = await storage.getRefreshToken();
-      expect(token, isNotNull, reason: 'Token should be in storage before logout');
+      expect(
+        token,
+        isNotNull,
+        reason: 'Token should be in storage before logout',
+      );
 
       // Call logout.
       await harness.read(authProvider.notifier).logout();
@@ -185,7 +193,11 @@ void main() {
 
       // Refresh token must be cleared from storage.
       token = await storage.getRefreshToken();
-      expect(token, isNull, reason: 'Token should be cleared from storage after logout');
+      expect(
+        token,
+        isNull,
+        reason: 'Token should be cleared from storage after logout',
+      );
     });
 
     // -----------------------------------------------------------------------
@@ -228,9 +240,7 @@ void main() {
           cancelToken: any(named: 'cancelToken'),
           onReceiveProgress: any(named: 'onReceiveProgress'),
         ),
-      ).thenAnswer(
-        (_) async => okResponse(userJson, '/api/auth/me/'),
-      );
+      ).thenAnswer((_) async => okResponse(userJson, '/api/auth/me/'));
 
       // Stub dashboard API call so authenticated user can navigate to dashboard.
       when(
@@ -280,7 +290,7 @@ void main() {
       // At minimum, we should not be on the protected dashboard.
       final isOnPublicRoute =
           find.byType(HomeScreen).evaluate().isNotEmpty ||
-              find.byType(LoginScreen).evaluate().isNotEmpty;
+          find.byType(LoginScreen).evaluate().isNotEmpty;
       expect(
         isOnPublicRoute,
         isTrue,

@@ -50,8 +50,8 @@ class PhotoSection extends StatelessWidget {
             Text(
               '${photos.length}/10 photos',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -73,11 +73,7 @@ class _PhotoThumb extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(6),
-          child: VedgyImage(
-            url: photo.url,
-            width: 80,
-            height: 80,
-          ),
+          child: VedgyImage(url: photo.url, width: 80, height: 80),
         ),
         Positioned(
           top: -14,
@@ -96,11 +92,7 @@ class _PhotoThumb extends StatelessWidget {
                     color: Theme.of(context).colorScheme.error,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.close,
-                    size: 13,
-                    color: Colors.white,
-                  ),
+                  child: const Icon(Icons.close, size: 13, color: Colors.white),
                 ),
               ),
             ),

@@ -35,10 +35,7 @@ class PhotoActions {
     for (final file in files) {
       final bytes = await file.readAsBytes();
       final formData = FormData.fromMap({
-        'photo': MultipartFile.fromBytes(
-          bytes,
-          filename: file.name,
-        ),
+        'photo': MultipartFile.fromBytes(bytes, filename: file.name),
       });
 
       final response = await _dio.post<Map<String, dynamic>>(

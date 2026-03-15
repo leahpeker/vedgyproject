@@ -6,7 +6,11 @@ import 'package:flutter/material.dart';
 
 const listingCities = ['New York', 'Los Angeles', 'Chicago'];
 const listingBoroughs = [
-  'Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island',
+  'Manhattan',
+  'Brooklyn',
+  'Queens',
+  'Bronx',
+  'Staten Island',
 ];
 const listingRentalTypes = [
   ('sublet', 'Sublet'),
@@ -51,8 +55,10 @@ Widget buildFormField({
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(label,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+      Text(
+        label,
+        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+      ),
       const SizedBox(height: 4),
       TextField(
         controller: controller,
@@ -62,8 +68,10 @@ Widget buildFormField({
           hintText: hint,
           isDense: true,
           border: const OutlineInputBorder(),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 10,
+          ),
         ),
         onChanged: onChanged,
       ),
@@ -81,8 +89,10 @@ Widget buildFormDropdown<T>({
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(label,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+      Text(
+        label,
+        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+      ),
       const SizedBox(height: 4),
       DropdownButtonFormField<T>(
         key: ValueKey(value),
@@ -90,13 +100,13 @@ Widget buildFormDropdown<T>({
         decoration: const InputDecoration(
           isDense: true,
           border: OutlineInputBorder(),
-          contentPadding:
-              EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         ),
         items: [
           const DropdownMenuItem(value: null, child: Text('Select...')),
-          ...items.map((pair) =>
-              DropdownMenuItem(value: pair.$1, child: Text(pair.$2))),
+          ...items.map(
+            (pair) => DropdownMenuItem(value: pair.$1, child: Text(pair.$2)),
+          ),
         ],
         onChanged: onChanged,
       ),
@@ -114,8 +124,10 @@ Widget buildFormDateField({
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Text(label,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+      Text(
+        label,
+        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+      ),
       const SizedBox(height: 4),
       TextField(
         controller: controller,
@@ -124,8 +136,7 @@ Widget buildFormDateField({
           hintText: 'YYYY-MM-DD',
           isDense: true,
           border: OutlineInputBorder(),
-          contentPadding:
-              EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           suffixIcon: Icon(Icons.calendar_today, size: 16),
         ),
         onTap: () async {
@@ -161,11 +172,12 @@ class SectionHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title,
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(fontWeight: FontWeight.bold)),
+        Text(
+          title,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        ),
         const Divider(),
         const SizedBox(height: 12),
       ],

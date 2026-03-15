@@ -37,22 +37,19 @@ import '../helpers/fake_secure_storage.dart';
 /// Minimal router that places SignupScreen at /signup with stubs for
 /// routes that SignupScreen can navigate to.
 GoRouter _makeRouter() => GoRouter(
-      initialLocation: '/signup',
-      routes: [
-        GoRoute(
-          path: '/signup',
-          builder: (_, __) => const SignupScreen(),
-        ),
-        GoRoute(
-          path: '/login',
-          builder: (_, __) => const Scaffold(body: Text('Log in page')),
-        ),
-        GoRoute(
-          path: '/dashboard',
-          builder: (_, __) => const Scaffold(body: Text('Dashboard page')),
-        ),
-      ],
-    );
+  initialLocation: '/signup',
+  routes: [
+    GoRoute(path: '/signup', builder: (_, __) => const SignupScreen()),
+    GoRoute(
+      path: '/login',
+      builder: (_, __) => const Scaffold(body: Text('Log in page')),
+    ),
+    GoRoute(
+      path: '/dashboard',
+      builder: (_, __) => const Scaffold(body: Text('Dashboard page')),
+    ),
+  ],
+);
 
 /// Wraps the router inside a ProviderScope with the required overrides.
 Widget _buildApp() {
@@ -99,23 +96,25 @@ void main() {
     // -----------------------------------------------------------------------
     // 1. Form fields are present
     // -----------------------------------------------------------------------
-    testWidgets('renders email, password, and confirm-password TextFormFields',
-        (tester) async {
-      _configureView(tester);
+    testWidgets(
+      'renders email, password, and confirm-password TextFormFields',
+      (tester) async {
+        _configureView(tester);
 
-      await tester.pumpWidget(_buildApp());
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(_buildApp());
+        await tester.pumpAndSettle();
 
-      // Five TextFormFields: first name, last name, email, password, confirm.
-      expect(find.byType(TextFormField), findsNWidgets(5));
+        // Five TextFormFields: first name, last name, email, password, confirm.
+        expect(find.byType(TextFormField), findsNWidgets(5));
 
-      // Labels confirm which field is which.
-      expect(find.text('First name'), findsOneWidget);
-      expect(find.text('Last name'), findsOneWidget);
-      expect(find.text('Email'), findsOneWidget);
-      expect(find.text('Password'), findsOneWidget);
-      expect(find.text('Confirm password'), findsOneWidget);
-    });
+        // Labels confirm which field is which.
+        expect(find.text('First name'), findsOneWidget);
+        expect(find.text('Last name'), findsOneWidget);
+        expect(find.text('Email'), findsOneWidget);
+        expect(find.text('Password'), findsOneWidget);
+        expect(find.text('Confirm password'), findsOneWidget);
+      },
+    );
 
     // -----------------------------------------------------------------------
     // 2. Submit button is visible
@@ -152,8 +151,9 @@ void main() {
     // -----------------------------------------------------------------------
     // 4. Password mismatch error
     // -----------------------------------------------------------------------
-    testWidgets('shows passwords do not match error when passwords differ',
-        (tester) async {
+    testWidgets('shows passwords do not match error when passwords differ', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(_buildApp());
@@ -161,15 +161,25 @@ void main() {
 
       // Fill first name, last name, email, and password to pass those validators.
       await tester.enterText(
-          find.byType(TextFormField).at(0), 'Test'); // first name
+        find.byType(TextFormField).at(0),
+        'Test',
+      ); // first name
       await tester.enterText(
-          find.byType(TextFormField).at(1), 'User'); // last name
+        find.byType(TextFormField).at(1),
+        'User',
+      ); // last name
       await tester.enterText(
-          find.byType(TextFormField).at(2), 'test@example.com'); // email
+        find.byType(TextFormField).at(2),
+        'test@example.com',
+      ); // email
       await tester.enterText(
-          find.byType(TextFormField).at(3), 'password123'); // password
+        find.byType(TextFormField).at(3),
+        'password123',
+      ); // password
       await tester.enterText(
-          find.byType(TextFormField).at(4), 'differentpassword'); // confirm
+        find.byType(TextFormField).at(4),
+        'differentpassword',
+      ); // confirm
 
       await tester.tap(find.widgetWithText(FilledButton, 'Sign up'));
       await tester.pump();
@@ -216,18 +226,16 @@ void main() {
     // -----------------------------------------------------------------------
     // 8. No error banner shown on initial render
     // -----------------------------------------------------------------------
-    testWidgets('does not show an error message on first render',
-        (tester) async {
+    testWidgets('does not show an error message on first render', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(_buildApp());
       await tester.pumpAndSettle();
 
       // ErrorBanner only appears after a failed submission.
-      expect(
-        find.text('Sign up failed. Please try again.'),
-        findsNothing,
-      );
+      expect(find.text('Sign up failed. Please try again.'), findsNothing);
       expect(
         find.text('An unexpected error occurred. Please try again.'),
         findsNothing,

@@ -24,18 +24,15 @@ import '../helpers/test_fixtures.dart';
 // ---------------------------------------------------------------------------
 
 GoRouter _makeRouter() => GoRouter(
-      initialLocation: '/browse',
-      routes: [
-        GoRoute(
-          path: '/browse',
-          builder: (_, __) => const BrowseScreen(),
-        ),
-        GoRoute(
-          path: '/listing/:id',
-          builder: (_, __) => const Scaffold(body: Text('Detail')),
-        ),
-      ],
-    );
+  initialLocation: '/browse',
+  routes: [
+    GoRoute(path: '/browse', builder: (_, __) => const BrowseScreen()),
+    GoRoute(
+      path: '/listing/:id',
+      builder: (_, __) => const Scaffold(body: Text('Detail')),
+    ),
+  ],
+);
 
 Widget _buildApp({required Override accOverride}) {
   return ProviderScope(
@@ -95,15 +92,15 @@ final _listing3 = Listing.fromJson({
 
 void main() {
   group('Browse pagination', () {
-    testWidgets('shows first page of results with result count',
-        (tester) async {
+    testWidgets('shows first page of results with result count', (
+      tester,
+    ) async {
       _configureView(tester);
 
       final override = browseAccumulatorProvider.overrideWith(
-        () => _StubAccumulator(BrowseAccumulatorState(
-          items: [_listing1],
-          totalCount: 3,
-        )),
+        () => _StubAccumulator(
+          BrowseAccumulatorState(items: [_listing1], totalCount: 3),
+        ),
       );
 
       await tester.pumpWidget(_buildApp(accOverride: override));
@@ -114,16 +111,16 @@ void main() {
       expect(find.text('Load more'), findsOneWidget);
     });
 
-    testWidgets('shows both pages when accumulated results include page 2',
-        (tester) async {
+    testWidgets('shows both pages when accumulated results include page 2', (
+      tester,
+    ) async {
       _configureView(tester);
 
       // Simulate having loaded 2 pages of results.
       final override = browseAccumulatorProvider.overrideWith(
-        () => _StubAccumulator(BrowseAccumulatorState(
-          items: [_listing1, _listing2],
-          totalCount: 3,
-        )),
+        () => _StubAccumulator(
+          BrowseAccumulatorState(items: [_listing1, _listing2], totalCount: 3),
+        ),
       );
 
       await tester.pumpWidget(_buildApp(accOverride: override));
@@ -139,10 +136,12 @@ void main() {
       _configureView(tester);
 
       final override = browseAccumulatorProvider.overrideWith(
-        () => _StubAccumulator(BrowseAccumulatorState(
-          items: [_listing1, _listing2, _listing3],
-          totalCount: 3,
-        )),
+        () => _StubAccumulator(
+          BrowseAccumulatorState(
+            items: [_listing1, _listing2, _listing3],
+            totalCount: 3,
+          ),
+        ),
       );
 
       await tester.pumpWidget(_buildApp(accOverride: override));
@@ -159,11 +158,13 @@ void main() {
       _configureView(tester);
 
       final overrideWithItems = browseAccumulatorProvider.overrideWith(
-        () => _StubAccumulator(BrowseAccumulatorState(
-          items: [_listing1],
-          totalCount: 3,
-          loadMoreError: true,
-        )),
+        () => _StubAccumulator(
+          BrowseAccumulatorState(
+            items: [_listing1],
+            totalCount: 3,
+            loadMoreError: true,
+          ),
+        ),
       );
 
       await tester.pumpWidget(_buildApp(accOverride: overrideWithItems));

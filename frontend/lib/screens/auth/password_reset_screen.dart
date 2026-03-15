@@ -43,14 +43,18 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
       if (mounted) setState(() => _submitted = true);
     } on DioException catch (e) {
       if (mounted) {
-        setState(() => _error = parseAuthError(
-              e.response?.data,
-              fallback: 'Something went wrong. Please try again.',
-            ));
+        setState(
+          () => _error = parseAuthError(
+            e.response?.data,
+            fallback: 'Something went wrong. Please try again.',
+          ),
+        );
       }
     } catch (_) {
       if (mounted) {
-        setState(() => _error = 'An unexpected error occurred. Please try again.');
+        setState(
+          () => _error = 'An unexpected error occurred. Please try again.',
+        );
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -75,13 +79,15 @@ class _PasswordResetScreenState extends ConsumerState<PasswordResetScreen> {
               ),
               child: Padding(
                 padding: const EdgeInsets.all(32),
-                child: _submitted ? _SuccessView() : _FormView(
-                  formKey: _formKey,
-                  emailCtrl: _emailCtrl,
-                  loading: _loading,
-                  error: _error,
-                  onSubmit: _submit,
-                ),
+                child: _submitted
+                    ? _SuccessView()
+                    : _FormView(
+                        formKey: _formKey,
+                        emailCtrl: _emailCtrl,
+                        loading: _loading,
+                        error: _error,
+                        onSubmit: _submit,
+                      ),
               ),
             ),
           ),
@@ -116,17 +122,16 @@ class _FormView extends StatelessWidget {
         children: [
           Text(
             'Reset your password',
-            style: Theme.of(context)
-                .textTheme
-                .headlineSmall
-                ?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Text(
             'Enter the email address for your account and we\'ll send you a reset link.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 24),
 
@@ -189,18 +194,17 @@ class _SuccessView extends StatelessWidget {
         const SizedBox(height: 16),
         Text(
           'Check your inbox',
-          style: Theme.of(context)
-              .textTheme
-              .headlineSmall
-              ?.copyWith(fontWeight: FontWeight.bold),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
         Text(
           'If an account with that email exists, we\'ve sent a reset link. Check your spam folder if you don\'t see it.',
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: 24),
         SizedBox(

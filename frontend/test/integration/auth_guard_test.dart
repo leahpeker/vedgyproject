@@ -48,9 +48,9 @@ class _UnauthenticatedAuth extends Auth {
 class _AuthenticatedAuth extends Auth {
   @override
   AuthState build() => AuthState.authenticated(
-        User.fromJson(userJson),
-        validTokensJson['access'] as String,
-      );
+    User.fromJson(userJson),
+    validTokensJson['access'] as String,
+  );
 
   @override
   Future<void> init() async {
@@ -92,30 +92,31 @@ void main() {
     //    Expected: router redirects to /login
     // -----------------------------------------------------------------------
     testWidgets(
-        'unauthenticated user navigating to /dashboard redirects to /login',
-        (tester) async {
-      _configureView(tester);
+      'unauthenticated user navigating to /dashboard redirects to /login',
+      (tester) async {
+        _configureView(tester);
 
-      final harness = AppHarness(
-        fakeStorage: FakeSecureStorage(),
-        extraOverrides: [
-          authProvider.overrideWith(() => _UnauthenticatedAuth()),
-        ],
-      );
+        final harness = AppHarness(
+          fakeStorage: FakeSecureStorage(),
+          extraOverrides: [
+            authProvider.overrideWith(() => _UnauthenticatedAuth()),
+          ],
+        );
 
-      await harness.pump(tester);
-      // init() is a no-op in _UnauthenticatedAuth; pumpAndSettle lets the
-      // router process the initial redirect.
-      await harness.init(tester);
+        await harness.pump(tester);
+        // init() is a no-op in _UnauthenticatedAuth; pumpAndSettle lets the
+        // router process the initial redirect.
+        await harness.init(tester);
 
-      // Navigate to the protected route.
-      harness.read(appRouterProvider).go('/dashboard');
-      await tester.pumpAndSettle();
+        // Navigate to the protected route.
+        harness.read(appRouterProvider).go('/dashboard');
+        await tester.pumpAndSettle();
 
-      // Guard should have redirected to /login.
-      expect(find.byType(LoginScreen), findsOneWidget);
-      expect(find.byType(DashboardScreen), findsNothing);
-    });
+        // Guard should have redirected to /login.
+        expect(find.byType(LoginScreen), findsOneWidget);
+        expect(find.byType(DashboardScreen), findsNothing);
+      },
+    );
 
     // -----------------------------------------------------------------------
     // 2. Authenticated user navigates to /dashboard
@@ -124,96 +125,100 @@ void main() {
     //    stub with a MockDio override on apiClientProvider.
     // -----------------------------------------------------------------------
     testWidgets(
-        'authenticated user navigating to /dashboard shows DashboardScreen',
-        (tester) async {
-      _configureView(tester);
+      'authenticated user navigating to /dashboard shows DashboardScreen',
+      (tester) async {
+        _configureView(tester);
 
-      final mockDio = MockDio();
+        final mockDio = MockDio();
 
-      // Stub the dashboard API call so DashboardScreen can render its data.
-      when(
-        () => mockDio.get<Map<String, dynamic>>(
-          '/api/listings/dashboard/',
-          data: any(named: 'data'),
-          queryParameters: any(named: 'queryParameters'),
-          options: any(named: 'options'),
-          cancelToken: any(named: 'cancelToken'),
-          onReceiveProgress: any(named: 'onReceiveProgress'),
-        ),
-      ).thenAnswer(
-        (_) async => okResponse(emptyDashboardJson, '/api/listings/dashboard/'),
-      );
+        // Stub the dashboard API call so DashboardScreen can render its data.
+        when(
+          () => mockDio.get<Map<String, dynamic>>(
+            '/api/listings/dashboard/',
+            data: any(named: 'data'),
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          ),
+        ).thenAnswer(
+          (_) async =>
+              okResponse(emptyDashboardJson, '/api/listings/dashboard/'),
+        );
 
-      final harness = AppHarness(
-        fakeStorage: FakeSecureStorage(),
-        extraOverrides: [
-          authProvider.overrideWith(() => _AuthenticatedAuth()),
-          apiClientProvider.overrideWithValue(mockDio),
-        ],
-      );
+        final harness = AppHarness(
+          fakeStorage: FakeSecureStorage(),
+          extraOverrides: [
+            authProvider.overrideWith(() => _AuthenticatedAuth()),
+            apiClientProvider.overrideWithValue(mockDio),
+          ],
+        );
 
-      await harness.pump(tester);
-      await harness.init(tester);
+        await harness.pump(tester);
+        await harness.init(tester);
 
-      // Navigate to the protected route.
-      harness.read(appRouterProvider).go('/dashboard');
-      await tester.pumpAndSettle();
+        // Navigate to the protected route.
+        harness.read(appRouterProvider).go('/dashboard');
+        await tester.pumpAndSettle();
 
-      // Auth state must be authenticated.
-      final authState = harness.read(authProvider);
-      expect(
-        authState.whenOrNull(authenticated: (user, token) => true),
-        isTrue,
-      );
+        // Auth state must be authenticated.
+        final authState = harness.read(authProvider);
+        expect(
+          authState.whenOrNull(authenticated: (user, token) => true),
+          isTrue,
+        );
 
-      // DashboardScreen must be visible; login screen must not be.
-      expect(find.byType(DashboardScreen), findsOneWidget);
-      expect(find.byType(LoginScreen), findsNothing);
-    });
+        // DashboardScreen must be visible; login screen must not be.
+        expect(find.byType(DashboardScreen), findsOneWidget);
+        expect(find.byType(LoginScreen), findsNothing);
+      },
+    );
 
     // -----------------------------------------------------------------------
     // 3. Authenticated user navigates to /login
     //    Expected: router redirects to /dashboard (auth-only route guard).
     // -----------------------------------------------------------------------
     testWidgets(
-        'authenticated user navigating to /login redirects to /dashboard',
-        (tester) async {
-      _configureView(tester);
+      'authenticated user navigating to /login redirects to /dashboard',
+      (tester) async {
+        _configureView(tester);
 
-      final mockDio = MockDio();
+        final mockDio = MockDio();
 
-      // Stub the dashboard API call for the redirect destination.
-      when(
-        () => mockDio.get<Map<String, dynamic>>(
-          '/api/listings/dashboard/',
-          data: any(named: 'data'),
-          queryParameters: any(named: 'queryParameters'),
-          options: any(named: 'options'),
-          cancelToken: any(named: 'cancelToken'),
-          onReceiveProgress: any(named: 'onReceiveProgress'),
-        ),
-      ).thenAnswer(
-        (_) async => okResponse(emptyDashboardJson, '/api/listings/dashboard/'),
-      );
+        // Stub the dashboard API call for the redirect destination.
+        when(
+          () => mockDio.get<Map<String, dynamic>>(
+            '/api/listings/dashboard/',
+            data: any(named: 'data'),
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          ),
+        ).thenAnswer(
+          (_) async =>
+              okResponse(emptyDashboardJson, '/api/listings/dashboard/'),
+        );
 
-      final harness = AppHarness(
-        fakeStorage: FakeSecureStorage(),
-        extraOverrides: [
-          authProvider.overrideWith(() => _AuthenticatedAuth()),
-          apiClientProvider.overrideWithValue(mockDio),
-        ],
-      );
+        final harness = AppHarness(
+          fakeStorage: FakeSecureStorage(),
+          extraOverrides: [
+            authProvider.overrideWith(() => _AuthenticatedAuth()),
+            apiClientProvider.overrideWithValue(mockDio),
+          ],
+        );
 
-      await harness.pump(tester);
-      await harness.init(tester);
+        await harness.pump(tester);
+        await harness.init(tester);
 
-      // Navigate to the auth-only route.
-      harness.read(appRouterProvider).go('/login');
-      await tester.pumpAndSettle();
+        // Navigate to the auth-only route.
+        harness.read(appRouterProvider).go('/login');
+        await tester.pumpAndSettle();
 
-      // Guard should have redirected to /dashboard.
-      expect(find.byType(DashboardScreen), findsOneWidget);
-      expect(find.byType(LoginScreen), findsNothing);
-    });
+        // Guard should have redirected to /dashboard.
+        expect(find.byType(DashboardScreen), findsOneWidget);
+        expect(find.byType(LoginScreen), findsNothing);
+      },
+    );
   });
 }

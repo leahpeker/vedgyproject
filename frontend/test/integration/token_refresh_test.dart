@@ -59,11 +59,15 @@ class _DioOverrideAuth extends Auth {
       );
       final tokens = AuthTokens.fromJson(refreshResponse.data!);
 
-      await ref.read(secureStorageProvider).saveRefreshToken(tokens.refreshToken);
+      await ref
+          .read(secureStorageProvider)
+          .saveRefreshToken(tokens.refreshToken);
 
       final meResponse = await _dio.get<Map<String, dynamic>>(
         '/api/auth/me/',
-        options: Options(headers: {'Authorization': 'Bearer ${tokens.accessToken}'}),
+        options: Options(
+          headers: {'Authorization': 'Bearer ${tokens.accessToken}'},
+        ),
       );
       final user = User.fromJson(meResponse.data!);
       state = AuthState.authenticated(user, tokens.accessToken);
@@ -108,9 +112,9 @@ void main() {
     //    Valid refresh token in storage → auth.init() calls /api/auth/refresh/ →
     //    returns new tokens → calls /api/auth/me/ → sets authenticated state.
     // -----------------------------------------------------------------------
-    testWidgets(
-        'successful refresh with valid token → authenticated state',
-        (tester) async {
+    testWidgets('successful refresh with valid token → authenticated state', (
+      tester,
+    ) async {
       _configureView(tester);
 
       // Pre-populate storage with a valid refresh token.
@@ -132,13 +136,10 @@ void main() {
           onReceiveProgress: any(named: 'onReceiveProgress'),
         ),
       ).thenAnswer(
-        (_) async => okResponse(
-          <String, dynamic>{
-            'access': 'new-access-token-refreshed',
-            'refresh': 'new-refresh-token-refreshed',
-          },
-          '/api/auth/refresh/',
-        ),
+        (_) async => okResponse(<String, dynamic>{
+          'access': 'new-access-token-refreshed',
+          'refresh': 'new-refresh-token-refreshed',
+        }, '/api/auth/refresh/'),
       );
 
       // Stub /api/auth/me/ → returns user details.
@@ -151,9 +152,7 @@ void main() {
           cancelToken: any(named: 'cancelToken'),
           onReceiveProgress: any(named: 'onReceiveProgress'),
         ),
-      ).thenAnswer(
-        (_) async => okResponse(userJson, '/api/auth/me/'),
-      );
+      ).thenAnswer((_) async => okResponse(userJson, '/api/auth/me/'));
 
       final harness = AppHarness(
         fakeStorage: storage,
@@ -193,79 +192,82 @@ void main() {
     //    gets 401 error → clears token from storage → sets unauthenticated state.
     // -----------------------------------------------------------------------
     testWidgets(
-        'failed refresh with expired token → unauthenticated state, token cleared',
-        (tester) async {
-      _configureView(tester);
+      'failed refresh with expired token → unauthenticated state, token cleared',
+      (tester) async {
+        _configureView(tester);
 
-      // Pre-populate storage with a stale refresh token.
-      final storage = FakeSecureStorage(
-        initialRefreshToken: 'stale-expired-refresh-token',
-      );
+        // Pre-populate storage with a stale refresh token.
+        final storage = FakeSecureStorage(
+          initialRefreshToken: 'stale-expired-refresh-token',
+        );
 
-      final mockDio = MockDio();
+        final mockDio = MockDio();
 
-      // Stub /api/auth/refresh/ → returns 401 error.
-      when(
-        () => mockDio.post<Map<String, dynamic>>(
-          '/api/auth/refresh/',
-          data: any(named: 'data'),
-          options: any(named: 'options'),
-          queryParameters: any(named: 'queryParameters'),
-          cancelToken: any(named: 'cancelToken'),
-          onSendProgress: any(named: 'onSendProgress'),
-          onReceiveProgress: any(named: 'onReceiveProgress'),
-        ),
-      ).thenThrow(
-        DioException(
-          requestOptions: RequestOptions(path: '/api/auth/refresh/'),
-          response: Response(
-            data: {'detail': 'Token refresh failed.'},
-            statusCode: 401,
-            requestOptions: RequestOptions(path: '/api/auth/refresh/'),
+        // Stub /api/auth/refresh/ → returns 401 error.
+        when(
+          () => mockDio.post<Map<String, dynamic>>(
+            '/api/auth/refresh/',
+            data: any(named: 'data'),
+            options: any(named: 'options'),
+            queryParameters: any(named: 'queryParameters'),
+            cancelToken: any(named: 'cancelToken'),
+            onSendProgress: any(named: 'onSendProgress'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
           ),
-          type: DioExceptionType.badResponse,
-        ),
-      );
+        ).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/api/auth/refresh/'),
+            response: Response(
+              data: {'detail': 'Token refresh failed.'},
+              statusCode: 401,
+              requestOptions: RequestOptions(path: '/api/auth/refresh/'),
+            ),
+            type: DioExceptionType.badResponse,
+          ),
+        );
 
-      final harness = AppHarness(
-        fakeStorage: storage,
-        extraOverrides: [
-          authProvider.overrideWith(() => _DioOverrideAuth(mockDio)),
-        ],
-      );
+        final harness = AppHarness(
+          fakeStorage: storage,
+          extraOverrides: [
+            authProvider.overrideWith(() => _DioOverrideAuth(mockDio)),
+          ],
+        );
 
-      await harness.pump(tester);
-      await harness.init(tester);
+        await harness.pump(tester);
+        await harness.init(tester);
 
-      // Auth state must be unauthenticated after failed refresh.
-      final authState = harness.read(authProvider);
-      expect(
-        authState,
-        equals(const AuthState.unauthenticated()),
-        reason: 'Auth state should be unauthenticated after failed token refresh',
-      );
+        // Auth state must be unauthenticated after failed refresh.
+        final authState = harness.read(authProvider);
+        expect(
+          authState,
+          equals(const AuthState.unauthenticated()),
+          reason:
+              'Auth state should be unauthenticated after failed token refresh',
+        );
 
-      // The stale token must be cleared from storage.
-      final storedToken = await storage.getRefreshToken();
-      expect(
-        storedToken,
-        isNull,
-        reason: 'Stale token should be cleared from storage after failed refresh',
-      );
+        // The stale token must be cleared from storage.
+        final storedToken = await storage.getRefreshToken();
+        expect(
+          storedToken,
+          isNull,
+          reason:
+              'Stale token should be cleared from storage after failed refresh',
+        );
 
-      // HomeScreen should be visible (not redirected to login).
-      // "/" is a public route, so unauthenticated users are not redirected.
-      expect(find.byType(HomeScreen), findsOneWidget);
-    });
+        // HomeScreen should be visible (not redirected to login).
+        // "/" is a public route, so unauthenticated users are not redirected.
+        expect(find.byType(HomeScreen), findsOneWidget);
+      },
+    );
 
     // -----------------------------------------------------------------------
     // 3. Network error on refresh
     //    Refresh token in storage → auth.init() calls /api/auth/refresh/ →
     //    network error (not a server response) → clears token, sets unauthenticated.
     // -----------------------------------------------------------------------
-    testWidgets(
-        'network error on refresh → unauthenticated state, token cleared',
-        (tester) async {
+    testWidgets('network error on refresh → unauthenticated state, token cleared', (
+      tester,
+    ) async {
       _configureView(tester);
 
       // Pre-populate storage with a refresh token.
@@ -309,7 +311,8 @@ void main() {
       expect(
         authState,
         equals(const AuthState.unauthenticated()),
-        reason: 'Auth state should be unauthenticated after network error on refresh',
+        reason:
+            'Auth state should be unauthenticated after network error on refresh',
       );
 
       // The token must be cleared from storage.
@@ -317,7 +320,8 @@ void main() {
       expect(
         storedToken,
         isNull,
-        reason: 'Token should be cleared from storage after network error on refresh',
+        reason:
+            'Token should be cleared from storage after network error on refresh',
       );
 
       // HomeScreen should be visible.

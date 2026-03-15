@@ -60,11 +60,11 @@ const _testEditListingJson = <String, dynamic>{
   'price': 1200,
   'start_date': null,
   'end_date': null,
-  'rental_type': 'sublet',               // matches _rentalTypes
-  'room_type': 'private_room',           // matches _roomTypes
-  'vegan_household': 'fully_vegan',      // matches _veganHouseholds
-  'furnished': 'fully_furnished',        // matches _furnishedOptions
-  'lister_relationship': 'owner',        // matches _relationships
+  'rental_type': 'sublet', // matches _rentalTypes
+  'room_type': 'private_room', // matches _roomTypes
+  'vegan_household': 'fully_vegan', // matches _veganHouseholds
+  'furnished': 'fully_furnished', // matches _furnishedOptions
+  'lister_relationship': 'owner', // matches _relationships
   'seeking_roommate': false,
   'about_lister': 'I love cooking.',
   'rental_requirements': 'Non-smoker preferred.',
@@ -72,11 +72,7 @@ const _testEditListingJson = <String, dynamic>{
   'include_phone': false,
   'phone_number': null,
   'status': 'draft',
-  'user': {
-    'id': 'user-uuid-001',
-    'first_name': 'Test',
-    'last_name': 'User',
-  },
+  'user': {'id': 'user-uuid-001', 'first_name': 'Test', 'last_name': 'User'},
   'photos': <dynamic>[],
   'created_at': '2026-01-01T00:00:00Z',
   'expires_at': null,
@@ -89,45 +85,41 @@ const _testEditListingJson = <String, dynamic>{
 /// Minimal GoRouter placing ListingForm at /create with stubs for routes
 /// the form may navigate to (/dashboard, /preview/:id).
 GoRouter _makeRouter() => GoRouter(
-      initialLocation: '/create',
-      routes: [
-        GoRoute(
-          path: '/create',
-          builder: (_, __) => const Scaffold(body: ListingForm()),
-        ),
-        GoRoute(
-          path: '/dashboard',
-          builder: (_, __) =>
-              const Scaffold(body: Text('Dashboard page')),
-        ),
-        GoRoute(
-          path: '/preview/:id',
-          builder: (_, __) =>
-              const Scaffold(body: Text('Preview page')),
-        ),
-      ],
-    );
+  initialLocation: '/create',
+  routes: [
+    GoRoute(
+      path: '/create',
+      builder: (_, __) => const Scaffold(body: ListingForm()),
+    ),
+    GoRoute(
+      path: '/dashboard',
+      builder: (_, __) => const Scaffold(body: Text('Dashboard page')),
+    ),
+    GoRoute(
+      path: '/preview/:id',
+      builder: (_, __) => const Scaffold(body: Text('Preview page')),
+    ),
+  ],
+);
 
 /// Router pre-populated with an existing listing (edit mode).
 GoRouter _makeEditRouter(Listing listing) => GoRouter(
-      initialLocation: '/edit/${listing.id}',
-      routes: [
-        GoRoute(
-          path: '/edit/:id',
-          builder: (_, __) => Scaffold(body: ListingForm(initial: listing)),
-        ),
-        GoRoute(
-          path: '/dashboard',
-          builder: (_, __) =>
-              const Scaffold(body: Text('Dashboard page')),
-        ),
-        GoRoute(
-          path: '/preview/:id',
-          builder: (_, __) =>
-              const Scaffold(body: Text('Preview page')),
-        ),
-      ],
-    );
+  initialLocation: '/edit/${listing.id}',
+  routes: [
+    GoRoute(
+      path: '/edit/:id',
+      builder: (_, __) => Scaffold(body: ListingForm(initial: listing)),
+    ),
+    GoRoute(
+      path: '/dashboard',
+      builder: (_, __) => const Scaffold(body: Text('Dashboard page')),
+    ),
+    GoRoute(
+      path: '/preview/:id',
+      builder: (_, __) => const Scaffold(body: Text('Preview page')),
+    ),
+  ],
+);
 
 /// Wraps the router inside a ProviderScope with all required overrides.
 Widget _buildApp({GoRouter? router}) {
@@ -182,8 +174,9 @@ void main() {
     // -----------------------------------------------------------------------
     // 1. Renders in create mode — "Post a listing" heading
     // -----------------------------------------------------------------------
-    testWidgets('renders Post a listing heading in create mode',
-        (tester) async {
+    testWidgets('renders Post a listing heading in create mode', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(_buildApp());
@@ -238,7 +231,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // The button is at the bottom of a long scrollable form.
-      final previewButton = find.widgetWithText(FilledButton, 'Preview listing');
+      final previewButton = find.widgetWithText(
+        FilledButton,
+        'Preview listing',
+      );
       await _scrollToVisible(tester, previewButton);
 
       expect(previewButton, findsOneWidget);
@@ -263,37 +259,43 @@ void main() {
     // 7. Validation on submit — shows AlertDialog when required fields are empty
     // -----------------------------------------------------------------------
     testWidgets(
-        'shows Please fix these issues dialog when required fields are empty',
-        (tester) async {
-      _configureView(tester);
+      'shows Please fix these issues dialog when required fields are empty',
+      (tester) async {
+        _configureView(tester);
 
-      await tester.pumpWidget(_buildApp());
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(_buildApp());
+        await tester.pumpAndSettle();
 
-      // Scroll to the "Preview listing" button before tapping.
-      final previewButton =
-          find.widgetWithText(FilledButton, 'Preview listing');
-      await _scrollToVisible(tester, previewButton);
+        // Scroll to the "Preview listing" button before tapping.
+        final previewButton = find.widgetWithText(
+          FilledButton,
+          'Preview listing',
+        );
+        await _scrollToVisible(tester, previewButton);
 
-      await tester.tap(previewButton);
-      await tester.pumpAndSettle();
+        await tester.tap(previewButton);
+        await tester.pumpAndSettle();
 
-      expect(find.text('Please fix these issues'), findsOneWidget);
-    });
+        expect(find.text('Please fix these issues'), findsOneWidget);
+      },
+    );
 
     // -----------------------------------------------------------------------
     // 8. Empty title shows "Title is required." validation error
     // -----------------------------------------------------------------------
-    testWidgets('shows Title is required error when title is empty',
-        (tester) async {
+    testWidgets('shows Title is required error when title is empty', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(_buildApp());
       await tester.pumpAndSettle();
 
       // Scroll to and tap the Preview listing button with an empty title.
-      final previewButton =
-          find.widgetWithText(FilledButton, 'Preview listing');
+      final previewButton = find.widgetWithText(
+        FilledButton,
+        'Preview listing',
+      );
       await _scrollToVisible(tester, previewButton);
 
       await tester.tap(previewButton);
@@ -305,8 +307,9 @@ void main() {
     // -----------------------------------------------------------------------
     // 9. Missing city shows "City is required." validation error
     // -----------------------------------------------------------------------
-    testWidgets('shows City is required error when city is not selected',
-        (tester) async {
+    testWidgets('shows City is required error when city is not selected', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(_buildApp());
@@ -314,13 +317,17 @@ void main() {
 
       // Fill in the title field (visible at the top of the form).
       final titleField = find.widgetWithText(
-          TextField, 'Cozy room in vegan-friendly house');
+        TextField,
+        'Cozy room in vegan-friendly house',
+      );
       await tester.enterText(titleField, 'My nice vegan room');
       await tester.pumpAndSettle();
 
       // Scroll to the Preview button and tap — city is still null.
-      final previewButton =
-          find.widgetWithText(FilledButton, 'Preview listing');
+      final previewButton = find.widgetWithText(
+        FilledButton,
+        'Preview listing',
+      );
       await _scrollToVisible(tester, previewButton);
 
       await tester.tap(previewButton);
@@ -332,16 +339,19 @@ void main() {
     // -----------------------------------------------------------------------
     // 10. Validation dialog can be dismissed via OK button
     // -----------------------------------------------------------------------
-    testWidgets('dismisses validation dialog when OK is tapped',
-        (tester) async {
+    testWidgets('dismisses validation dialog when OK is tapped', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(_buildApp());
       await tester.pumpAndSettle();
 
       // Scroll to the button and tap.
-      final previewButton =
-          find.widgetWithText(FilledButton, 'Preview listing');
+      final previewButton = find.widgetWithText(
+        FilledButton,
+        'Preview listing',
+      );
       await _scrollToVisible(tester, previewButton);
 
       await tester.tap(previewButton);
@@ -361,23 +371,26 @@ void main() {
     // -----------------------------------------------------------------------
     // 11. Renders in edit mode — "Edit listing" heading
     // -----------------------------------------------------------------------
-    testWidgets('renders Edit listing heading when initial listing is supplied',
-        (tester) async {
-      _configureView(tester);
+    testWidgets(
+      'renders Edit listing heading when initial listing is supplied',
+      (tester) async {
+        _configureView(tester);
 
-      // Use the edit fixture with valid dropdown values.
-      final listing = Listing.fromJson(_testEditListingJson);
-      await tester.pumpWidget(_buildApp(router: _makeEditRouter(listing)));
-      await tester.pumpAndSettle();
+        // Use the edit fixture with valid dropdown values.
+        final listing = Listing.fromJson(_testEditListingJson);
+        await tester.pumpWidget(_buildApp(router: _makeEditRouter(listing)));
+        await tester.pumpAndSettle();
 
-      expect(find.text('Edit listing'), findsOneWidget);
-    });
+        expect(find.text('Edit listing'), findsOneWidget);
+      },
+    );
 
     // -----------------------------------------------------------------------
     // 12. Edit mode — pre-populates the title field
     // -----------------------------------------------------------------------
-    testWidgets('pre-populates title field from initial listing in edit mode',
-        (tester) async {
+    testWidgets('pre-populates title field from initial listing in edit mode', (
+      tester,
+    ) async {
       _configureView(tester);
 
       final listing = Listing.fromJson(_testEditListingJson);
@@ -391,8 +404,9 @@ void main() {
     // -----------------------------------------------------------------------
     // 13. Invalid price shows price error message
     // -----------------------------------------------------------------------
-    testWidgets('shows price error when price is not a positive integer',
-        (tester) async {
+    testWidgets('shows price error when price is not a positive integer', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(_buildApp());
@@ -405,22 +419,27 @@ void main() {
       await tester.pumpAndSettle();
 
       // Scroll to Preview button and tap.
-      final previewButton =
-          find.widgetWithText(FilledButton, 'Preview listing');
+      final previewButton = find.widgetWithText(
+        FilledButton,
+        'Preview listing',
+      );
       await _scrollToVisible(tester, previewButton);
 
       await tester.tap(previewButton);
       await tester.pumpAndSettle();
 
       expect(
-          find.text('Price must be a positive whole number.'), findsOneWidget);
+        find.text('Price must be a positive whole number.'),
+        findsOneWidget,
+      );
     });
 
     // -----------------------------------------------------------------------
     // 14. Section headers are present
     // -----------------------------------------------------------------------
-    testWidgets('renders Basic Information and Location section headers',
-        (tester) async {
+    testWidgets('renders Basic Information and Location section headers', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(_buildApp());
@@ -433,8 +452,9 @@ void main() {
     // -----------------------------------------------------------------------
     // 15. Photos section is present with 0/10 counter
     // -----------------------------------------------------------------------
-    testWidgets('renders Photos section with 0/10 photos counter',
-        (tester) async {
+    testWidgets('renders Photos section with 0/10 photos counter', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(_buildApp());

@@ -29,7 +29,7 @@ make seed-reset       # Delete and re-create all seed data
 
 **Always run `make ci` before committing and fix any failures before proceeding.**
 
-`make ci` runs in sequence: `lint` → `check` → `test` → `frontend-test`. All must pass.
+`make ci` runs in sequence: `lint` → `check` → `test` → `frontend-lint` → `frontend-test`. All must pass.
 
 Never run `flutter test` directly — always use `make ci` or `make frontend-test`.
 
@@ -42,6 +42,9 @@ make frontend-install   # flutter pub get
 make frontend-run       # Run Flutter dev server with hot reload (localhost:3000, any browser)
 make frontend-build     # Build Flutter web release (requires API_URL env var)
 make frontend-codegen   # Regenerate freezed/riverpod/json code after model changes
+make frontend-lint      # Run dart format check + dart analyze
+make frontend-format    # Auto-format Dart files
+make frontend-fix       # Auto-apply dart fix suggestions
 make frontend-test      # Run Flutter test suite
 make dev                # Run Django backend + Flutter frontend concurrently
 ```

@@ -8,6 +8,8 @@ part 'dashboard_provider.g.dart';
 @riverpod
 Future<DashboardOut> dashboard(Ref ref) async {
   final dio = ref.read(apiClientProvider);
-  final response = await dio.get<Map<String, dynamic>>('/api/listings/dashboard/');
+  final response = await dio.get<Map<String, dynamic>>(
+    '/api/listings/dashboard/',
+  );
   return DashboardOut.fromJson(response.data!);
 }

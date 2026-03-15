@@ -15,9 +15,7 @@ class HomeScreen extends ConsumerWidget {
     // GoRouter's refreshListenable will re-run the redirect once state resolves.
     final isInitial = authState.whenOrNull(initial: () => true) ?? false;
     if (isInitial) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(

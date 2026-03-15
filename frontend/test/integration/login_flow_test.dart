@@ -117,9 +117,7 @@ void _stubLoginSuccess(MockDio mockDio) {
       onSendProgress: any(named: 'onSendProgress'),
       onReceiveProgress: any(named: 'onReceiveProgress'),
     ),
-  ).thenAnswer(
-    (_) async => okResponse(validTokensJson, '/api/auth/login/'),
-  );
+  ).thenAnswer((_) async => okResponse(validTokensJson, '/api/auth/login/'));
 }
 
 void _stubMeSuccess(MockDio mockDio) {
@@ -132,9 +130,7 @@ void _stubMeSuccess(MockDio mockDio) {
       cancelToken: any(named: 'cancelToken'),
       onReceiveProgress: any(named: 'onReceiveProgress'),
     ),
-  ).thenAnswer(
-    (_) async => okResponse(userJson, '/api/auth/me/'),
-  );
+  ).thenAnswer((_) async => okResponse(userJson, '/api/auth/me/'));
 }
 
 void _stubDashboardSuccess(MockDio mockDio) {
@@ -228,7 +224,9 @@ void main() {
     //    User enters credentials → Dio returns 401 → error message shown on
     //    LoginScreen; auth state remains unauthenticated.
     // -----------------------------------------------------------------------
-    testWidgets('failed login (401) shows error on LoginScreen', (tester) async {
+    testWidgets('failed login (401) shows error on LoginScreen', (
+      tester,
+    ) async {
       _configureView(tester);
 
       final authMockDio = MockDio();
@@ -287,8 +285,7 @@ void main() {
       // {'detail': 'Authentication failed.'} which the screen renders
       // via parseAuthError. Also accept the fallback text.
       final errorText = find.textContaining('Authentication failed.');
-      final fallbackText =
-          find.textContaining('Invalid email or password.');
+      final fallbackText = find.textContaining('Invalid email or password.');
       expect(
         errorText.evaluate().isNotEmpty || fallbackText.evaluate().isNotEmpty,
         isTrue,
@@ -302,79 +299,83 @@ void main() {
     //    LoginScreen shows generic error; auth state remains unauthenticated.
     // -----------------------------------------------------------------------
     testWidgets(
-        'network error on login stays on LoginScreen with error message',
-        (tester) async {
-      _configureView(tester);
+      'network error on login stays on LoginScreen with error message',
+      (tester) async {
+        _configureView(tester);
 
-      final authMockDio = MockDio();
+        final authMockDio = MockDio();
 
-      // Stub login to throw a network-level DioException (no response).
-      when(
-        () => authMockDio.post<Map<String, dynamic>>(
-          '/api/auth/login/',
-          data: any(named: 'data'),
-          options: any(named: 'options'),
-          queryParameters: any(named: 'queryParameters'),
-          cancelToken: any(named: 'cancelToken'),
-          onSendProgress: any(named: 'onSendProgress'),
-          onReceiveProgress: any(named: 'onReceiveProgress'),
-        ),
-      ).thenThrow(
-        DioException(
-          requestOptions: RequestOptions(path: '/api/auth/login/'),
-          type: DioExceptionType.connectionError,
-          message: 'Failed to connect to server.',
-        ),
-      );
+        // Stub login to throw a network-level DioException (no response).
+        when(
+          () => authMockDio.post<Map<String, dynamic>>(
+            '/api/auth/login/',
+            data: any(named: 'data'),
+            options: any(named: 'options'),
+            queryParameters: any(named: 'queryParameters'),
+            cancelToken: any(named: 'cancelToken'),
+            onSendProgress: any(named: 'onSendProgress'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          ),
+        ).thenThrow(
+          DioException(
+            requestOptions: RequestOptions(path: '/api/auth/login/'),
+            type: DioExceptionType.connectionError,
+            message: 'Failed to connect to server.',
+          ),
+        );
 
-      final harness = AppHarness(
-        fakeStorage: FakeSecureStorage(),
-        extraOverrides: [
-          authProvider.overrideWith(() => _DioOverrideAuth(authMockDio)),
-        ],
-      );
+        final harness = AppHarness(
+          fakeStorage: FakeSecureStorage(),
+          extraOverrides: [
+            authProvider.overrideWith(() => _DioOverrideAuth(authMockDio)),
+          ],
+        );
 
-      await harness.pump(tester);
-      await harness.init(tester);
+        await harness.pump(tester);
+        await harness.init(tester);
 
-      // Start on /login.
-      harness.read(appRouterProvider).go('/login');
-      await tester.pumpAndSettle();
-      expect(find.byType(LoginScreen), findsOneWidget);
+        // Start on /login.
+        harness.read(appRouterProvider).go('/login');
+        await tester.pumpAndSettle();
+        expect(find.byType(LoginScreen), findsOneWidget);
 
-      // Fill in credentials.
-      await tester.enterText(
-        find.widgetWithText(TextFormField, 'Email'),
-        'user@example.com',
-      );
-      await tester.enterText(
-        find.widgetWithText(TextFormField, 'Password'),
-        'mypassword',
-      );
+        // Fill in credentials.
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Email'),
+          'user@example.com',
+        );
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Password'),
+          'mypassword',
+        );
 
-      // Submit the form.
-      await tester.tap(find.widgetWithText(FilledButton, 'Log in'));
-      await tester.pumpAndSettle();
+        // Submit the form.
+        await tester.tap(find.widgetWithText(FilledButton, 'Log in'));
+        await tester.pumpAndSettle();
 
-      // Auth state must remain unauthenticated.
-      final authState = harness.read(authProvider);
-      expect(authState, equals(const AuthState.unauthenticated()));
+        // Auth state must remain unauthenticated.
+        final authState = harness.read(authProvider);
+        expect(authState, equals(const AuthState.unauthenticated()));
 
-      // Still on LoginScreen.
-      expect(find.byType(LoginScreen), findsOneWidget);
-      expect(find.byType(DashboardScreen), findsNothing);
+        // Still on LoginScreen.
+        expect(find.byType(LoginScreen), findsOneWidget);
+        expect(find.byType(DashboardScreen), findsNothing);
 
-      // A generic error message must be visible.
-      // The screen catches DioException with no response and shows the
-      // parseAuthError fallback or the generic catch-all message.
-      final dioFallback = find.textContaining('Invalid email or password.');
-      final genericError =
-          find.textContaining('An unexpected error occurred.');
-      expect(
-        dioFallback.evaluate().isNotEmpty || genericError.evaluate().isNotEmpty,
-        isTrue,
-        reason: 'Expected an error message on LoginScreen after network error',
-      );
-    });
+        // A generic error message must be visible.
+        // The screen catches DioException with no response and shows the
+        // parseAuthError fallback or the generic catch-all message.
+        final dioFallback = find.textContaining('Invalid email or password.');
+        final genericError = find.textContaining(
+          'An unexpected error occurred.',
+        );
+        expect(
+          dioFallback.evaluate().isNotEmpty ||
+              genericError.evaluate().isNotEmpty,
+          isTrue,
+          reason:
+              'Expected an error message on LoginScreen after network error',
+        );
+      },
+    );
   });
 }

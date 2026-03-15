@@ -6,7 +6,9 @@ Widget wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
 
 void main() {
   group('ErrorBanner', () {
-    testWidgets('is not present when not included in widget tree', (tester) async {
+    testWidgets('is not present when not included in widget tree', (
+      tester,
+    ) async {
       // ErrorBanner always renders when present, so absence is tested by
       // simply not including it and confirming the type is not found.
       await tester.pumpWidget(wrap(const SizedBox.shrink()));
@@ -67,7 +69,9 @@ void main() {
       expect(textWidget.style?.color, colorScheme.onErrorContainer);
     });
 
-    testWidgets('handles a long error message without overflow', (tester) async {
+    testWidgets('handles a long error message without overflow', (
+      tester,
+    ) async {
       const longMessage =
           'This is a very long error message that goes on and on and should '
           'not cause any layout overflow errors in the banner widget because '
@@ -81,7 +85,9 @@ void main() {
       // RenderFlex overflow errors captured by the test framework.
     });
 
-    testWidgets('renders with an empty string without throwing', (tester) async {
+    testWidgets('renders with an empty string without throwing', (
+      tester,
+    ) async {
       // The widget accepts any String including empty; it should render.
       await tester.pumpWidget(wrap(const ErrorBanner('')));
       await tester.pump();

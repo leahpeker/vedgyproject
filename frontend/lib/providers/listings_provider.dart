@@ -11,9 +11,7 @@ part 'listings_provider.g.dart';
 
 /// Builds the query parameter map for the browse listings API.
 Map<String, dynamic> buildBrowseQuery(ListingFilters filters, {int? page}) {
-  final queryParams = <String, dynamic>{
-    'page': page ?? filters.page,
-  };
+  final queryParams = <String, dynamic>{'page': page ?? filters.page};
   if (filters.city != null) queryParams['city'] = filters.city;
   if (filters.borough != null) queryParams['borough'] = filters.borough;
   if (filters.rentalType != null) {

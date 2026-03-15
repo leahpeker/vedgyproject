@@ -100,9 +100,7 @@ class _PhotoGalleryState extends State<PhotoGallery> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(4),
-                    child: VedgyImage(
-                      url: widget.photos[index].url,
-                    ),
+                    child: VedgyImage(url: widget.photos[index].url),
                   ),
                 ),
               );
@@ -135,7 +133,8 @@ class _Photo extends StatelessWidget {
             child: Center(
               child: CircularProgressIndicator(
                 value: progress.expectedTotalBytes != null
-                    ? progress.cumulativeBytesLoaded / progress.expectedTotalBytes!
+                    ? progress.cumulativeBytesLoaded /
+                          progress.expectedTotalBytes!
                     : null,
               ),
             ),
@@ -156,7 +155,9 @@ class _Placeholder extends StatelessWidget {
         child: Icon(
           Icons.home_outlined,
           size: 64,
-          color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+          color: Theme.of(
+            context,
+          ).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
         ),
       ),
     );

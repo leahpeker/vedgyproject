@@ -21,9 +21,9 @@ class BrowseScreen extends ConsumerWidget {
 
     final title = Text(
       'Browse listings',
-      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+      style: Theme.of(
+        context,
+      ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
     );
 
     if (isWide) {
@@ -87,10 +87,7 @@ class BrowseScreen extends ConsumerWidget {
   ) {
     return accAsync.when(
       loading: () => const SliverToBoxAdapter(
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: _SkeletonGrid(),
-        ),
+        child: Padding(padding: EdgeInsets.all(16), child: _SkeletonGrid()),
       ),
       error: (err, _) {
         String errorMessage = 'Something went wrong';
@@ -130,10 +127,9 @@ class BrowseScreen extends ConsumerWidget {
                       Icon(
                         Icons.search_off,
                         size: 64,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurfaceVariant
-                            .withValues(alpha: 0.4),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
                       ),
                       const SizedBox(height: 16),
                       Text(
@@ -153,12 +149,10 @@ class BrowseScreen extends ConsumerWidget {
               hasMore: acc.hasMore,
               isLoadingMore: acc.isLoadingMore,
               loadMoreError: acc.loadMoreError,
-              onLoadMore: () => ref
-                  .read(browseAccumulatorProvider.notifier)
-                  .loadMore(),
-              onRetry: () => ref
-                  .read(browseAccumulatorProvider.notifier)
-                  .loadMore(),
+              onLoadMore: () =>
+                  ref.read(browseAccumulatorProvider.notifier).loadMore(),
+              onRetry: () =>
+                  ref.read(browseAccumulatorProvider.notifier).loadMore(),
             ),
     );
   }
@@ -223,8 +217,8 @@ class _ListingGrid extends StatelessWidget {
             child: Text(
               'Showing ${listings.length} of $totalCount listings',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
           if (loadMoreError) ...[
@@ -236,14 +230,11 @@ class _ListingGrid extends StatelessWidget {
                   Text(
                     'Failed to load more listings.',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.error,
-                        ),
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   ),
                   const SizedBox(height: 8),
-                  TextButton(
-                    onPressed: onRetry,
-                    child: const Text('Retry'),
-                  ),
+                  TextButton(onPressed: onRetry, child: const Text('Retry')),
                 ],
               ),
             ),

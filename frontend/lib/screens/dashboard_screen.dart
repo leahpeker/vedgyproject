@@ -25,11 +25,13 @@ class DashboardScreen extends ConsumerWidget {
                 e.type == DioExceptionType.receiveTimeout ||
                 e.type == DioExceptionType.sendTimeout ||
                 e.type == DioExceptionType.connectionError) {
-              errorMessage = 'Unable to connect. Check your connection and try again.';
+              errorMessage =
+                  'Unable to connect. Check your connection and try again.';
             } else if (e.response?.statusCode == 404) {
               errorMessage = 'Dashboard not found';
             } else if (e.response?.statusCode == 403) {
-              errorMessage = 'You don\'t have permission to view your dashboard';
+              errorMessage =
+                  'You don\'t have permission to view your dashboard';
             }
           }
           return Center(
@@ -65,8 +67,8 @@ class DashboardScreen extends ConsumerWidget {
                   Text(
                     'My Listings',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const Spacer(),
                   FilledButton.icon(
@@ -173,17 +175,22 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   Future<void> _confirmDeactivate(
-      BuildContext context, WidgetRef ref, Listing listing) async {
+    BuildContext context,
+    WidgetRef ref,
+    Listing listing,
+  ) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Deactivate listing?'),
         content: Text(
-            'This will hide "${listing.title}" from the browse page. You can edit and resubmit later.'),
+          'This will hide "${listing.title}" from the browse page. You can edit and resubmit later.',
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
@@ -195,25 +202,34 @@ class DashboardScreen extends ConsumerWidget {
     if (ok == true && context.mounted) {
       try {
         await ref.read(listingActionsProvider).deactivateListing(listing.id);
-        ref.read(notificationQueueProvider.notifier).show('Listing deactivated.');
+        ref
+            .read(notificationQueueProvider.notifier)
+            .show('Listing deactivated.');
       } catch (e) {
-        ref.read(notificationQueueProvider.notifier).showError('Failed to deactivate: $e');
+        ref
+            .read(notificationQueueProvider.notifier)
+            .showError('Failed to deactivate: $e');
       }
     }
   }
 
   Future<void> _confirmDelete(
-      BuildContext context, WidgetRef ref, Listing listing) async {
+    BuildContext context,
+    WidgetRef ref,
+    Listing listing,
+  ) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete listing?'),
         content: Text(
-            '"${listing.title}" and all its photos will be permanently deleted.'),
+          '"${listing.title}" and all its photos will be permanently deleted.',
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
@@ -227,7 +243,9 @@ class DashboardScreen extends ConsumerWidget {
         await ref.read(listingActionsProvider).deleteListing(listing.id);
         ref.read(notificationQueueProvider.notifier).show('Listing deleted.');
       } catch (e) {
-        ref.read(notificationQueueProvider.notifier).showError('Failed to delete: $e');
+        ref
+            .read(notificationQueueProvider.notifier)
+            .showError('Failed to delete: $e');
       }
     }
   }
@@ -265,10 +283,9 @@ class _Section extends StatelessWidget {
             const SizedBox(width: 6),
             Text(
               '$title (${listings.length})',
-              style: Theme.of(context)
-                  .textTheme
-                  .titleMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -276,11 +293,12 @@ class _Section extends StatelessWidget {
         if (listings.isEmpty)
           Padding(
             padding: const EdgeInsets.only(left: 24, bottom: 24),
-            child: Text(emptyText,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color:
-                          Theme.of(context).colorScheme.onSurfaceVariant,
-                    )),
+            child: Text(
+              emptyText,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
           )
         else
           ...listings.map((l) => _ListingRow(listing: l, actions: actions(l))),
@@ -304,8 +322,7 @@ class _ListingRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final price =
-        listing.price != null ? '\$${listing.price}/mo' : 'Price TBD';
+    final price = listing.price != null ? '\$${listing.price}/mo' : 'Price TBD';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -330,18 +347,14 @@ class _ListingRow extends StatelessWidget {
                       price,
                     ].join(' · '),
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color:
-                              Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 8),
-            Wrap(
-              spacing: 4,
-              children: actions,
-            ),
+            Wrap(spacing: 4, children: actions),
           ],
         ),
       ),
@@ -397,50 +410,50 @@ class _SkeletonDashboard extends StatelessWidget {
     final color = Theme.of(context).colorScheme.surfaceContainerHighest;
 
     Widget box({double? w, double h = 16, double? radius}) => Container(
-          width: w ?? double.infinity,
-          height: h,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(radius ?? 4),
-          ),
-        );
+      width: w ?? double.infinity,
+      height: h,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(radius ?? 4),
+      ),
+    );
 
     Widget skeletonRow() => Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        box(w: 200, h: 14),
-                        const SizedBox(height: 6),
-                        box(w: 120, h: 12),
-                      ],
-                    ),
-                  ),
-                  box(w: 60, h: 12),
-                ],
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    box(w: 200, h: 14),
+                    const SizedBox(height: 6),
+                    box(w: 120, h: 12),
+                  ],
+                ),
               ),
-            ),
+              box(w: 60, h: 12),
+            ],
           ),
-        );
+        ),
+      ),
+    );
 
     Widget skeletonSection() => Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            box(w: 120, h: 16),
-            const SizedBox(height: 10),
-            skeletonRow(),
-            skeletonRow(),
-            const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 16),
-          ],
-        );
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        box(w: 120, h: 16),
+        const SizedBox(height: 10),
+        skeletonRow(),
+        skeletonRow(),
+        const SizedBox(height: 16),
+        const Divider(),
+        const SizedBox(height: 16),
+      ],
+    );
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),

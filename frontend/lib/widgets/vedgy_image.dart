@@ -24,12 +24,12 @@ class VedgyImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final placeholderColor =
-        Theme.of(context).colorScheme.surfaceContainerHighest;
-    final iconColor = Theme.of(context)
-        .colorScheme
-        .onSurfaceVariant
-        .withValues(alpha: 0.5);
+    final placeholderColor = Theme.of(
+      context,
+    ).colorScheme.surfaceContainerHighest;
+    final iconColor = Theme.of(
+      context,
+    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5);
 
     return Image.network(
       url,

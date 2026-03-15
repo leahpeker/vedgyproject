@@ -36,11 +36,13 @@ class _AuthInterceptor extends QueuedInterceptorsWrapper {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    _ref.read(authProvider).whenOrNull(
-      authenticated: (_, token) {
-        options.headers['Authorization'] = 'Bearer $token';
-      },
-    );
+    _ref
+        .read(authProvider)
+        .whenOrNull(
+          authenticated: (_, token) {
+            options.headers['Authorization'] = 'Bearer $token';
+          },
+        );
     handler.next(options);
   }
 

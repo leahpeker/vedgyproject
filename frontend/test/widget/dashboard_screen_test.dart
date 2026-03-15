@@ -47,29 +47,23 @@ import '../helpers/test_fixtures.dart';
 /// Minimal GoRouter placing DashboardScreen at /dashboard with stub routes
 /// for other paths the screen may navigate to.
 GoRouter _makeRouter() => GoRouter(
-      initialLocation: '/dashboard',
-      routes: [
-        GoRoute(
-          path: '/dashboard',
-          builder: (_, __) => const DashboardScreen(),
-        ),
-        GoRoute(
-          path: '/create',
-          builder: (_, __) =>
-              const Scaffold(body: Text('Create listing page')),
-        ),
-        GoRoute(
-          path: '/listing/:id',
-          builder: (_, __) =>
-              const Scaffold(body: Text('Listing detail page')),
-        ),
-        GoRoute(
-          path: '/edit/:id',
-          builder: (_, __) =>
-              const Scaffold(body: Text('Edit listing page')),
-        ),
-      ],
-    );
+  initialLocation: '/dashboard',
+  routes: [
+    GoRoute(path: '/dashboard', builder: (_, __) => const DashboardScreen()),
+    GoRoute(
+      path: '/create',
+      builder: (_, __) => const Scaffold(body: Text('Create listing page')),
+    ),
+    GoRoute(
+      path: '/listing/:id',
+      builder: (_, __) => const Scaffold(body: Text('Listing detail page')),
+    ),
+    GoRoute(
+      path: '/edit/:id',
+      builder: (_, __) => const Scaffold(body: Text('Edit listing page')),
+    ),
+  ],
+);
 
 /// Wraps the router inside a ProviderScope with the required overrides.
 ///
@@ -184,14 +178,13 @@ void main() {
     // -----------------------------------------------------------------------
     // 1. Loading state: skeleton dashboard is shown
     // -----------------------------------------------------------------------
-    testWidgets('shows skeleton loading state while provider is loading',
-        (tester) async {
+    testWidgets('shows skeleton loading state while provider is loading', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(
-        _buildApp(
-          dashboardValue: const AsyncValue.loading(),
-        ),
+        _buildApp(dashboardValue: const AsyncValue.loading()),
       );
 
       await tester.pump();
@@ -215,8 +208,9 @@ void main() {
     // -----------------------------------------------------------------------
     // 2. Empty state: all sections show empty-text messages
     // -----------------------------------------------------------------------
-    testWidgets('shows empty state messages when dashboard has no listings',
-        (tester) async {
+    testWidgets('shows empty state messages when dashboard has no listings', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(
@@ -239,8 +233,9 @@ void main() {
     // -----------------------------------------------------------------------
     // 3. Section headings include counts
     // -----------------------------------------------------------------------
-    testWidgets('shows section headings with zero counts when empty',
-        (tester) async {
+    testWidgets('shows section headings with zero counts when empty', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(
@@ -260,8 +255,9 @@ void main() {
     // -----------------------------------------------------------------------
     // 4. Listings shown: cards appear for each listing
     // -----------------------------------------------------------------------
-    testWidgets('shows listing card when active listing is present',
-        (tester) async {
+    testWidgets('shows listing card when active listing is present', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(
@@ -309,13 +305,12 @@ void main() {
     // -----------------------------------------------------------------------
     // 6. Error state: shows error icon and Retry button
     // -----------------------------------------------------------------------
-    testWidgets('shows error icon and Retry button when provider fails',
-        (tester) async {
+    testWidgets('shows error icon and Retry button when provider fails', (
+      tester,
+    ) async {
       _configureView(tester);
 
-      await tester.pumpWidget(
-        _buildApp(dashboardValue: _errorDashboardValue),
-      );
+      await tester.pumpWidget(_buildApp(dashboardValue: _errorDashboardValue));
 
       await tester.pumpAndSettle();
 
@@ -337,21 +332,15 @@ void main() {
     // -----------------------------------------------------------------------
     // 7. Error state: error message text contains the provider error
     // -----------------------------------------------------------------------
-    testWidgets('shows error message text when provider fails',
-        (tester) async {
+    testWidgets('shows error message text when provider fails', (tester) async {
       _configureView(tester);
 
-      await tester.pumpWidget(
-        _buildApp(dashboardValue: _errorDashboardValue),
-      );
+      await tester.pumpWidget(_buildApp(dashboardValue: _errorDashboardValue));
 
       await tester.pumpAndSettle();
 
       // The error state now shows a user-friendly message (not the raw exception).
-      expect(
-        find.textContaining('Something went wrong'),
-        findsOneWidget,
-      );
+      expect(find.textContaining('Something went wrong'), findsOneWidget);
     });
 
     // -----------------------------------------------------------------------
@@ -374,32 +363,35 @@ void main() {
     //    authenticated auth state override
     // -----------------------------------------------------------------------
     testWidgets(
-        'shows dashboard data when authenticated with an active listing',
-        (tester) async {
-      _configureView(tester);
+      'shows dashboard data when authenticated with an active listing',
+      (tester) async {
+        _configureView(tester);
 
-      const testUser = User(
-        id: 'user-uuid-001',
-        email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-      );
+        const testUser = User(
+          id: 'user-uuid-001',
+          email: 'test@example.com',
+          firstName: 'Test',
+          lastName: 'User',
+        );
 
-      await tester.pumpWidget(
-        _buildApp(
-          authState: const AuthState.authenticated(
-              testUser, 'test-access-token'),
-          dashboardValue: _activeDashboardValue(),
-        ),
-      );
+        await tester.pumpWidget(
+          _buildApp(
+            authState: const AuthState.authenticated(
+              testUser,
+              'test-access-token',
+            ),
+            dashboardValue: _activeDashboardValue(),
+          ),
+        );
 
-      await tester.pumpAndSettle();
+        await tester.pumpAndSettle();
 
-      // Dashboard content is rendered for the authenticated user.
-      expect(find.text('My Listings'), findsOneWidget);
-      expect(find.text('Cozy Vegan Room'), findsOneWidget);
-      expect(find.text('Active (1)'), findsOneWidget);
-    });
+        // Dashboard content is rendered for the authenticated user.
+        expect(find.text('My Listings'), findsOneWidget);
+        expect(find.text('Cozy Vegan Room'), findsOneWidget);
+        expect(find.text('Active (1)'), findsOneWidget);
+      },
+    );
 
     // -----------------------------------------------------------------------
     // 10. Listing card shows city and price
@@ -421,12 +413,12 @@ void main() {
     // -----------------------------------------------------------------------
     // 11. Error state: no section headings shown
     // -----------------------------------------------------------------------
-    testWidgets('does not show section headings in error state', (tester) async {
+    testWidgets('does not show section headings in error state', (
+      tester,
+    ) async {
       _configureView(tester);
 
-      await tester.pumpWidget(
-        _buildApp(dashboardValue: _errorDashboardValue),
-      );
+      await tester.pumpWidget(_buildApp(dashboardValue: _errorDashboardValue));
 
       await tester.pumpAndSettle();
 

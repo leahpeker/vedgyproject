@@ -29,13 +29,13 @@ import '../helpers/fake_secure_storage.dart';
 
 /// Minimal GoRouter used in tests — single route renders AppScaffold.
 GoRouter _makeRouter(Widget body) => GoRouter(
-      routes: [
-        GoRoute(
-          path: '/',
-          builder: (_, __) => AppScaffold(child: body),
-        ),
-      ],
-    );
+  routes: [
+    GoRoute(
+      path: '/',
+      builder: (_, __) => AppScaffold(child: body),
+    ),
+  ],
+);
 
 /// Wraps [child] inside a full [ProviderScope] + [MaterialApp.router].
 ///
@@ -70,13 +70,13 @@ void main() {
     // -----------------------------------------------------------------------
     // 1. No snackbar when provider state is null
     // -----------------------------------------------------------------------
-    testWidgets('no snackbar is shown when notificationQueueProvider is null',
-        (tester) async {
+    testWidgets('no snackbar is shown when notificationQueueProvider is null', (
+      tester,
+    ) async {
       await tester.pumpWidget(
-        wrap(
-          [notificationQueueProvider.overrideWithValue(null)],
-          const Text('body'),
-        ),
+        wrap([
+          notificationQueueProvider.overrideWithValue(null),
+        ], const Text('body')),
       );
       await tester.pumpAndSettle();
 
@@ -86,17 +86,13 @@ void main() {
     // -----------------------------------------------------------------------
     // 2. Snackbar appears when provider emits a notification
     // -----------------------------------------------------------------------
-    testWidgets('snackbar is shown with the notification message',
-        (tester) async {
+    testWidgets('snackbar is shown with the notification message', (
+      tester,
+    ) async {
       // Start with null so the listener fires on the *transition* from
       // null → notification.  We achieve this by pumping the widget, then
       // mutating the provider state through the notifier.
-      await tester.pumpWidget(
-        wrap(
-          [],
-          const Text('body'),
-        ),
-      );
+      await tester.pumpWidget(wrap([], const Text('body')));
       await tester.pumpAndSettle();
 
       // No snackbar yet.
@@ -111,7 +107,9 @@ void main() {
           .show('Item saved successfully');
 
       await tester.pump(); // let the listener fire
-      await tester.pump(const Duration(milliseconds: 300)); // snackbar animation
+      await tester.pump(
+        const Duration(milliseconds: 300),
+      ); // snackbar animation
 
       expect(find.text('Item saved successfully'), findsOneWidget);
       expect(find.byType(SnackBar), findsOneWidget);
@@ -120,14 +118,10 @@ void main() {
     // -----------------------------------------------------------------------
     // 3. Error notification uses error colour
     // -----------------------------------------------------------------------
-    testWidgets('error notification snackbar uses error background colour',
-        (tester) async {
-      await tester.pumpWidget(
-        wrap(
-          [],
-          const Text('body'),
-        ),
-      );
+    testWidgets('error notification snackbar uses error background colour', (
+      tester,
+    ) async {
+      await tester.pumpWidget(wrap([], const Text('body')));
       await tester.pumpAndSettle();
 
       final container = ProviderScope.containerOf(
@@ -153,14 +147,10 @@ void main() {
     // -----------------------------------------------------------------------
     // 4. Normal (non-error) notification uses green/success colour
     // -----------------------------------------------------------------------
-    testWidgets('normal notification snackbar uses green background colour',
-        (tester) async {
-      await tester.pumpWidget(
-        wrap(
-          [],
-          const Text('body'),
-        ),
-      );
+    testWidgets('normal notification snackbar uses green background colour', (
+      tester,
+    ) async {
+      await tester.pumpWidget(wrap([], const Text('body')));
       await tester.pumpAndSettle();
 
       final container = ProviderScope.containerOf(
@@ -185,10 +175,9 @@ void main() {
     testWidgets('AppScaffold renders the provided body widget', (tester) async {
       const bodyKey = Key('test_body');
       await tester.pumpWidget(
-        wrap(
-          [notificationQueueProvider.overrideWithValue(null)],
-          const Text('Hello Vedgy', key: bodyKey),
-        ),
+        wrap([
+          notificationQueueProvider.overrideWithValue(null),
+        ], const Text('Hello Vedgy', key: bodyKey)),
       );
       await tester.pumpAndSettle();
 

@@ -113,9 +113,7 @@ void _stubSignupSuccess(MockDio mockDio) {
       onSendProgress: any(named: 'onSendProgress'),
       onReceiveProgress: any(named: 'onReceiveProgress'),
     ),
-  ).thenAnswer(
-    (_) async => okResponse(validTokensJson, '/api/auth/signup/'),
-  );
+  ).thenAnswer((_) async => okResponse(validTokensJson, '/api/auth/signup/'));
 }
 
 void _stubMeSuccess(MockDio mockDio) {
@@ -128,9 +126,7 @@ void _stubMeSuccess(MockDio mockDio) {
       cancelToken: any(named: 'cancelToken'),
       onReceiveProgress: any(named: 'onReceiveProgress'),
     ),
-  ).thenAnswer(
-    (_) async => okResponse(userJson, '/api/auth/me/'),
-  );
+  ).thenAnswer((_) async => okResponse(userJson, '/api/auth/me/'));
 }
 
 void _stubDashboardSuccess(MockDio mockDio) {
@@ -236,8 +232,9 @@ void main() {
     //    User enters credentials → Dio returns 400 with email error →
     //    error message shown on SignupScreen; auth state remains unauthenticated.
     // -----------------------------------------------------------------------
-    testWidgets('failed signup (email taken) shows error on SignupScreen',
-        (tester) async {
+    testWidgets('failed signup (email taken) shows error on SignupScreen', (
+      tester,
+    ) async {
       _configureView(tester);
 
       final authMockDio = MockDio();
@@ -317,7 +314,9 @@ void main() {
       // An error message must be visible. The parseAuthError function looks for
       // a 'detail' key in the response, so when we return {'email': '...'}, it
       // falls back to the fallback message defined in signup_screen.dart.
-      final fallbackError = find.textContaining('Sign up failed. Please try again.');
+      final fallbackError = find.textContaining(
+        'Sign up failed. Please try again.',
+      );
       expect(
         fallbackError.evaluate().isNotEmpty,
         isTrue,
@@ -330,8 +329,9 @@ void main() {
     //    User enters mismatched passwords → client-side form validation
     //    catches the error → stays on SignupScreen, no Dio call is made.
     // -----------------------------------------------------------------------
-    testWidgets('password mismatch shows validation error, no Dio call',
-        (tester) async {
+    testWidgets('password mismatch shows validation error, no Dio call', (
+      tester,
+    ) async {
       _configureView(tester);
 
       final authMockDio = MockDio();

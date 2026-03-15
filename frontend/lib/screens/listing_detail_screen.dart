@@ -17,7 +17,10 @@ class ListingDetailScreen extends ConsumerWidget {
 
     return listingAsync.when(
       loading: () => const Scaffold(body: _SkeletonDetail()),
-      error: (err, _) => _ErrorBody(err: err, onRetry: () => ref.invalidate(listingDetailProvider(id))),
+      error: (err, _) => _ErrorBody(
+        err: err,
+        onRetry: () => ref.invalidate(listingDetailProvider(id)),
+      ),
       data: (listing) => _DetailBody(listing: listing),
     );
   }
@@ -35,7 +38,8 @@ class _ErrorBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isNotFound = err.toString().contains('404') ||
+    final isNotFound =
+        err.toString().contains('404') ||
         err.toString().contains('not found') ||
         err.toString().contains('403');
 
@@ -98,7 +102,8 @@ class _DetailBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
-    final isAuthenticated = authState.whenOrNull(authenticated: (user, token) => true) ?? false;
+    final isAuthenticated =
+        authState.whenOrNull(authenticated: (user, token) => true) ?? false;
 
     return Scaffold(
       body: CustomScrollView(
@@ -132,21 +137,33 @@ class _DetailBody extends ConsumerWidget {
                           children: [
                             Expanded(
                               flex: 2,
-                              child: _MainColumn(listing: listing, isAuthenticated: isAuthenticated),
+                              child: _MainColumn(
+                                listing: listing,
+                                isAuthenticated: isAuthenticated,
+                              ),
                             ),
                             const SizedBox(width: 24),
                             SizedBox(
                               width: 300,
-                              child: _SidebarColumn(listing: listing, isAuthenticated: isAuthenticated),
+                              child: _SidebarColumn(
+                                listing: listing,
+                                isAuthenticated: isAuthenticated,
+                              ),
                             ),
                           ],
                         );
                       }
                       return Column(
                         children: [
-                          _MainColumn(listing: listing, isAuthenticated: isAuthenticated),
+                          _MainColumn(
+                            listing: listing,
+                            isAuthenticated: isAuthenticated,
+                          ),
                           const SizedBox(height: 16),
-                          _SidebarColumn(listing: listing, isAuthenticated: isAuthenticated),
+                          _SidebarColumn(
+                            listing: listing,
+                            isAuthenticated: isAuthenticated,
+                          ),
                         ],
                       );
                     },
@@ -186,7 +203,9 @@ class _MainColumn extends StatelessWidget {
             Expanded(
               child: Text(
                 listing.title,
-                style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             if (listing.price != null) ...[
@@ -212,11 +231,17 @@ class _MainColumn extends StatelessWidget {
         // Location
         Row(
           children: [
-            Icon(Icons.location_on_outlined, size: 16, color: theme.colorScheme.onSurfaceVariant),
+            Icon(
+              Icons.location_on_outlined,
+              size: 16,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
             const SizedBox(width: 4),
             Text(
               _locationText(),
-              style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -231,7 +256,8 @@ class _MainColumn extends StatelessWidget {
             _Chip(listing.roomType, color: Colors.purple),
             _Chip(listing.veganHousehold, color: Colors.teal),
             _Chip(listing.furnished),
-            if (listing.seekingRoommate) const _Chip('Seeking roommate', color: Colors.green),
+            if (listing.seekingRoommate)
+              const _Chip('Seeking roommate', color: Colors.green),
           ],
         ),
         const SizedBox(height: 20),
@@ -266,10 +292,14 @@ class _MainColumn extends StatelessWidget {
           ),
 
         // Requirements
-        if (listing.rentalRequirements != null && listing.rentalRequirements!.isNotEmpty)
+        if (listing.rentalRequirements != null &&
+            listing.rentalRequirements!.isNotEmpty)
           _Section(
             title: 'Requirements & preferences',
-            child: Text(listing.rentalRequirements!, style: theme.textTheme.bodyMedium),
+            child: Text(
+              listing.rentalRequirements!,
+              style: theme.textTheme.bodyMedium,
+            ),
           ),
 
         // Pet policy
@@ -291,8 +321,20 @@ class _MainColumn extends StatelessWidget {
 }
 
 String _fmtDate(DateTime dt) {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
   return '${months[dt.month - 1]} ${dt.day}, ${dt.year}';
 }
 
@@ -318,13 +360,21 @@ class _SidebarColumn extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Details', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'Details',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 _DetailRow('Rental type', listing.rentalType),
                 _DetailRow('Room type', listing.roomType),
                 _DetailRow('Furnished', listing.furnished),
                 _DetailRow('Vegan household', listing.veganHousehold),
-                _DetailRow('Seeking roommate', listing.seekingRoommate ? 'Yes' : 'No'),
+                _DetailRow(
+                  'Seeking roommate',
+                  listing.seekingRoommate ? 'Yes' : 'No',
+                ),
                 if (listing.startDate != null)
                   _DetailRow('Available from', _fmtDate(listing.startDate!)),
                 if (listing.endDate != null)
@@ -345,7 +395,12 @@ class _SidebarColumn extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Posted by', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+                Text(
+                  'Posted by',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -355,13 +410,17 @@ class _SidebarColumn extends StatelessWidget {
                         listing.user.firstName.isNotEmpty
                             ? listing.user.firstName[0].toUpperCase()
                             : '?',
-                        style: TextStyle(color: theme.colorScheme.onPrimaryContainer),
+                        style: TextStyle(
+                          color: theme.colorScheme.onPrimaryContainer,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Text(
                       '${listing.user.firstName} ${listing.user.lastName[0]}.',
-                      style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),
@@ -382,7 +441,9 @@ class _SidebarColumn extends StatelessWidget {
                 children: [
                   Text(
                     'Contact ${listing.user.firstName}',
-                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -393,9 +454,16 @@ class _SidebarColumn extends StatelessWidget {
                     const SizedBox(height: 12),
                     Row(
                       children: [
-                        Icon(Icons.phone_outlined, size: 16, color: theme.colorScheme.primary),
+                        Icon(
+                          Icons.phone_outlined,
+                          size: 16,
+                          color: theme.colorScheme.primary,
+                        ),
                         const SizedBox(width: 6),
-                        Text(listing.phoneNumber!, style: theme.textTheme.bodyMedium),
+                        Text(
+                          listing.phoneNumber!,
+                          style: theme.textTheme.bodyMedium,
+                        ),
                       ],
                     ),
                   ],
@@ -413,7 +481,9 @@ class _SidebarColumn extends StatelessWidget {
                 children: [
                   Text(
                     'Contact listing owner',
-                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   const Text('Sign in to contact listing owners.'),
@@ -421,7 +491,8 @@ class _SidebarColumn extends StatelessWidget {
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton(
-                      onPressed: () => context.go('/login?redirect=/listing/${listing.id}'),
+                      onPressed: () =>
+                          context.go('/login?redirect=/listing/${listing.id}'),
                       child: const Text('Sign in to contact'),
                     ),
                   ),
@@ -456,7 +527,9 @@ class _Section extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               child,
@@ -481,14 +554,19 @@ class _DetailRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          )),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
               value,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
               textAlign: TextAlign.end,
             ),
           ),
@@ -515,7 +593,9 @@ class _Chip extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: base.withValues(alpha: 0.9)),
+        style: Theme.of(
+          context,
+        ).textTheme.labelSmall?.copyWith(color: base.withValues(alpha: 0.9)),
       ),
     );
   }
@@ -533,13 +613,13 @@ class _SkeletonDetail extends StatelessWidget {
     final color = Theme.of(context).colorScheme.surfaceContainerHighest;
 
     Widget box({double? w, double h = 16, double? radius}) => Container(
-          width: w ?? double.infinity,
-          height: h,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(radius ?? 4),
-          ),
-        );
+      width: w ?? double.infinity,
+      height: h,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(radius ?? 4),
+      ),
+    );
 
     return CustomScrollView(
       slivers: [
@@ -564,13 +644,15 @@ class _SkeletonDetail extends StatelessWidget {
                     box(w: 140, h: 14),
                     const SizedBox(height: 16),
                     // Chips row
-                    Row(children: [
-                      box(w: 80, h: 24, radius: 12),
-                      const SizedBox(width: 8),
-                      box(w: 80, h: 24, radius: 12),
-                      const SizedBox(width: 8),
-                      box(w: 100, h: 24, radius: 12),
-                    ]),
+                    Row(
+                      children: [
+                        box(w: 80, h: 24, radius: 12),
+                        const SizedBox(width: 8),
+                        box(w: 80, h: 24, radius: 12),
+                        const SizedBox(width: 8),
+                        box(w: 100, h: 24, radius: 12),
+                      ],
+                    ),
                     const SizedBox(height: 20),
                     // Photo area
                     box(h: 260, radius: 8),

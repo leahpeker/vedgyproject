@@ -23,12 +23,14 @@ class _PayScreenState extends ConsumerState<PayScreen> {
     try {
       await ref.read(listingActionsProvider).submitForReview(widget.id);
       if (mounted) {
-        ref.read(notificationQueueProvider.notifier)
+        ref
+            .read(notificationQueueProvider.notifier)
             .show("Listing submitted! We'll review it shortly.");
         context.go('/dashboard');
       }
     } catch (e) {
-      ref.read(notificationQueueProvider.notifier)
+      ref
+          .read(notificationQueueProvider.notifier)
           .showError('Submission failed: $e');
       if (mounted) setState(() => _submitting = false);
     }
@@ -49,22 +51,25 @@ class _PayScreenState extends ConsumerState<PayScreen> {
               children: [
                 Text(
                   'Submit Your Listing',
-                  style: Theme.of(context)
-                      .textTheme
-                      .headlineMedium
-                      ?.copyWith(fontWeight: FontWeight.bold),
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                listingAsync.whenData((l) => Text(
-                      l.title,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant),
-                    )).value ?? const SizedBox.shrink(),
+                listingAsync
+                        .whenData(
+                          (l) => Text(
+                            l.title,
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                          ),
+                        )
+                        .value ??
+                    const SizedBox.shrink(),
                 const SizedBox(height: 32),
 
                 // Why we charge card
@@ -74,11 +79,11 @@ class _PayScreenState extends ConsumerState<PayScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('About listing fees',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontWeight: FontWeight.bold)),
+                        Text(
+                          'About listing fees',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
                         const SizedBox(height: 12),
                         const _BulletPoint(
                           icon: Icons.shield_outlined,
@@ -114,11 +119,11 @@ class _PayScreenState extends ConsumerState<PayScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Payment',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontWeight: FontWeight.bold)),
+                        Text(
+                          'Payment',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
+                        ),
                         const SizedBox(height: 12),
                         Text(
                           'Sliding scale — pay what works for your budget. Payment integration coming soon.',
@@ -138,8 +143,10 @@ class _PayScreenState extends ConsumerState<PayScreen> {
                           ? const SizedBox(
                               width: 18,
                               height: 18,
-                              child:
-                                  CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             )
                           : const Text('Submit for Review'),
                     ),
@@ -171,8 +178,7 @@ class _BulletPoint extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18,
-              color: Theme.of(context).colorScheme.primary),
+          Icon(icon, size: 18, color: Theme.of(context).colorScheme.primary),
           const SizedBox(width: 10),
           Expanded(child: Text(text)),
         ],

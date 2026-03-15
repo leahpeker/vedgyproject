@@ -80,11 +80,7 @@ void main() {
 
   group('validateListingForm price validation', () {
     test('empty price is allowed (optional field)', () {
-      final errors = validateListingForm(
-        title: 'Test',
-        city: 'NYC',
-        price: '',
-      );
+      final errors = validateListingForm(title: 'Test', city: 'NYC', price: '');
       expect(errors, isNot(contains('Price must be a positive whole number.')));
     });
 
@@ -190,10 +186,7 @@ void main() {
         startDate: '2026-03-01',
         endDate: '2026-06-15',
       );
-      expect(
-        errors,
-        isNot(contains('Start date must be before end date.')),
-      );
+      expect(errors, isNot(contains('Start date must be before end date.')));
     });
 
     test('same start and end date does not produce error', () {
@@ -203,10 +196,7 @@ void main() {
         startDate: '2026-06-01',
         endDate: '2026-06-01',
       );
-      expect(
-        errors,
-        isNot(contains('Start date must be before end date.')),
-      );
+      expect(errors, isNot(contains('Start date must be before end date.')));
     });
 
     test('only start date provided does not produce date error', () {
@@ -215,10 +205,7 @@ void main() {
         city: 'NYC',
         startDate: '2026-06-01',
       );
-      expect(
-        errors,
-        isNot(contains('Start date must be before end date.')),
-      );
+      expect(errors, isNot(contains('Start date must be before end date.')));
     });
 
     test('only end date provided does not produce date error', () {
@@ -227,10 +214,7 @@ void main() {
         city: 'NYC',
         endDate: '2026-06-01',
       );
-      expect(
-        errors,
-        isNot(contains('Start date must be before end date.')),
-      );
+      expect(errors, isNot(contains('Start date must be before end date.')));
     });
 
     test('invalid date strings do not produce date error', () {
@@ -240,10 +224,7 @@ void main() {
         startDate: 'not-a-date',
         endDate: 'also-not-a-date',
       );
-      expect(
-        errors,
-        isNot(contains('Start date must be before end date.')),
-      );
+      expect(errors, isNot(contains('Start date must be before end date.')));
     });
   });
 
@@ -260,15 +241,9 @@ void main() {
     });
 
     test('empty title and null city produce two errors', () {
-      final errors = validateListingForm(
-        title: '',
-        city: null,
-      );
+      final errors = validateListingForm(title: '', city: null);
       expect(errors.length, 2);
-      expect(
-        errors,
-        containsAll(['Title is required.', 'City is required.']),
-      );
+      expect(errors, containsAll(['Title is required.', 'City is required.']));
     });
 
     test('all invalid fields produce three errors', () {
@@ -289,10 +264,7 @@ void main() {
     });
 
     test('empty price with valid title and city returns no errors', () {
-      final errors = validateListingForm(
-        title: 'Cozy room',
-        city: 'Chicago',
-      );
+      final errors = validateListingForm(title: 'Cozy room', city: 'Chicago');
       expect(errors, isEmpty);
     });
 

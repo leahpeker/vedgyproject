@@ -80,10 +80,7 @@ GoRouter appRouter(Ref ref) {
       ShellRoute(
         builder: (context, state, child) => AppScaffold(child: child),
         routes: [
-          GoRoute(
-            path: '/',
-            builder: (context, state) => const HomeScreen(),
-          ),
+          GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
           GoRoute(
             path: '/login',
             builder: (context, state) => const LoginScreen(),

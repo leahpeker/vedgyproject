@@ -46,12 +46,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       // destination rather than always defaulting to /dashboard.
     } on DioException catch (e) {
       // _authDio bypasses _ErrorInterceptor — parse the raw response.
-      setState(() => _error = parseAuthError(
-            e.response?.data,
-            fallback: 'Invalid email or password.',
-          ));
+      setState(
+        () => _error = parseAuthError(
+          e.response?.data,
+          fallback: 'Invalid email or password.',
+        ),
+      );
     } catch (_) {
-      setState(() => _error = 'An unexpected error occurred. Please try again.');
+      setState(
+        () => _error = 'An unexpected error occurred. Please try again.',
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -83,9 +87,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       Text(
                         'Log in',
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineSmall
+                        style: Theme.of(context).textTheme.headlineSmall
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 24),
@@ -131,8 +133,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
                         ),
-                        validator: (v) =>
-                            (v == null || v.isEmpty) ? 'Password is required' : null,
+                        validator: (v) => (v == null || v.isEmpty)
+                            ? 'Password is required'
+                            : null,
                       ),
                       const SizedBox(height: 24),
 
@@ -159,9 +162,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           const Text("Don't have an account?"),
                           TextButton(
                             onPressed: () {
-                              final redirect = GoRouterState.of(context)
-                                  .uri
-                                  .queryParameters['redirect'];
+                              final redirect = GoRouterState.of(
+                                context,
+                              ).uri.queryParameters['redirect'];
                               final signupPath = redirect != null
                                   ? '/signup?redirect=$redirect'
                                   : '/signup';

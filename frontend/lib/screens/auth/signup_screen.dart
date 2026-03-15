@@ -48,7 +48,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     });
 
     try {
-      await ref.read(authProvider.notifier).signup(
+      await ref
+          .read(authProvider.notifier)
+          .signup(
             SignupRequest(
               email: _emailCtrl.text.trim(),
               firstName: _firstNameCtrl.text.trim(),
@@ -74,7 +76,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
         _fieldErrors = fieldErrors;
       });
     } catch (_) {
-      setState(() => _error = 'An unexpected error occurred. Please try again.');
+      setState(
+        () => _error = 'An unexpected error occurred. Please try again.',
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -106,9 +110,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     children: [
                       Text(
                         'Create an account',
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineSmall
+                        style: Theme.of(context).textTheme.headlineSmall
                             ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 24),
@@ -196,7 +198,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           ),
                         ),
                         validator: (v) {
-                          if (v == null || v.isEmpty) return 'Password is required';
+                          if (v == null || v.isEmpty)
+                            return 'Password is required';
                           if (v.length < 8) {
                             return 'Password must be at least 8 characters';
                           }
@@ -261,9 +264,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           const Text('Already have an account?'),
                           TextButton(
                             onPressed: () {
-                              final redirect = GoRouterState.of(context)
-                                  .uri
-                                  .queryParameters['redirect'];
+                              final redirect = GoRouterState.of(
+                                context,
+                              ).uri.queryParameters['redirect'];
                               final loginPath = redirect != null
                                   ? '/login?redirect=$redirect'
                                   : '/login';

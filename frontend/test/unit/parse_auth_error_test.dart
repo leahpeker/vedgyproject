@@ -59,13 +59,15 @@ void main() {
       expect(parseAuthError(data, fallback: fallback), fallback);
     });
 
-    test('Non-empty List whose first element has no msg key returns fallback',
-        () {
-      final data = [
-        <String, dynamic>{'type': 'value_error'},
-      ];
-      expect(parseAuthError(data, fallback: fallback), fallback);
-    });
+    test(
+      'Non-empty List whose first element has no msg key returns fallback',
+      () {
+        final data = [
+          <String, dynamic>{'type': 'value_error'},
+        ];
+        expect(parseAuthError(data, fallback: fallback), fallback);
+      },
+    );
 
     test('Empty list returns fallback', () {
       final data = <dynamic>[];
@@ -84,8 +86,10 @@ void main() {
     });
 
     test('String data returns fallback', () {
-      expect(parseAuthError('Internal Server Error', fallback: fallback),
-          fallback);
+      expect(
+        parseAuthError('Internal Server Error', fallback: fallback),
+        fallback,
+      );
     });
 
     test('Integer data returns fallback', () {

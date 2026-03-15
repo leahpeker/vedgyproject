@@ -32,19 +32,15 @@ import '../helpers/test_fixtures.dart';
 // ---------------------------------------------------------------------------
 
 GoRouter _makeRouter() => GoRouter(
-      initialLocation: '/browse',
-      routes: [
-        GoRoute(
-          path: '/browse',
-          builder: (_, __) => const BrowseScreen(),
-        ),
-        GoRoute(
-          path: '/listing/:id',
-          builder: (_, __) =>
-              const Scaffold(body: Text('Listing detail page')),
-        ),
-      ],
-    );
+  initialLocation: '/browse',
+  routes: [
+    GoRoute(path: '/browse', builder: (_, __) => const BrowseScreen()),
+    GoRoute(
+      path: '/listing/:id',
+      builder: (_, __) => const Scaffold(body: Text('Listing detail page')),
+    ),
+  ],
+);
 
 Widget _buildApp({
   required Override accumulatorOverride,
@@ -85,23 +81,23 @@ void _configureView(WidgetTester tester) {
 // Provider overrides
 // ---------------------------------------------------------------------------
 
-Override get _loadingOverride => browseAccumulatorProvider.overrideWith(
-      () => _NeverCompletesAccumulator(),
-    );
+Override get _loadingOverride =>
+    browseAccumulatorProvider.overrideWith(() => _NeverCompletesAccumulator());
 
 Override get _oneListingOverride => browseAccumulatorProvider.overrideWith(
-      () => _ImmediateAccumulator(BrowseAccumulatorState(
-        items: [Listing.fromJson(testListingJson)],
-        totalCount: 1,
-      )),
-    );
+  () => _ImmediateAccumulator(
+    BrowseAccumulatorState(
+      items: [Listing.fromJson(testListingJson)],
+      totalCount: 1,
+    ),
+  ),
+);
 
 Override get _emptyListingsOverride => browseAccumulatorProvider.overrideWith(
-      () => _ImmediateAccumulator(const BrowseAccumulatorState(
-        items: [],
-        totalCount: 0,
-      )),
-    );
+  () => _ImmediateAccumulator(
+    const BrowseAccumulatorState(items: [], totalCount: 0),
+  ),
+);
 
 // For the error state, we skip the error test since AsyncNotifier
 // overrideWith doesn't propagate errors cleanly in Riverpod 3.
@@ -110,7 +106,8 @@ Override get _emptyListingsOverride => browseAccumulatorProvider.overrideWith(
 // Stub notifiers for overrideWith
 class _NeverCompletesAccumulator extends BrowseAccumulator {
   @override
-  Future<BrowseAccumulatorState> build() => Completer<BrowseAccumulatorState>().future;
+  Future<BrowseAccumulatorState> build() =>
+      Completer<BrowseAccumulatorState>().future;
 }
 
 class _ImmediateAccumulator extends BrowseAccumulator {
@@ -127,8 +124,9 @@ class _ImmediateAccumulator extends BrowseAccumulator {
 
 void main() {
   group('BrowseScreen', () {
-    testWidgets('shows skeleton loading state while provider is loading',
-        (tester) async {
+    testWidgets('shows skeleton loading state while provider is loading', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(_buildApp(accumulatorOverride: _loadingOverride));
@@ -146,11 +144,14 @@ void main() {
       expect(find.text('Cozy Vegan Room'), findsNothing);
     });
 
-    testWidgets('shows listing card titles when provider has data',
-        (tester) async {
+    testWidgets('shows listing card titles when provider has data', (
+      tester,
+    ) async {
       _configureView(tester);
 
-      await tester.pumpWidget(_buildApp(accumulatorOverride: _oneListingOverride));
+      await tester.pumpWidget(
+        _buildApp(accumulatorOverride: _oneListingOverride),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('Cozy Vegan Room'), findsOneWidget);
@@ -161,18 +162,22 @@ void main() {
     testWidgets('shows listing price in listing card', (tester) async {
       _configureView(tester);
 
-      await tester.pumpWidget(_buildApp(accumulatorOverride: _oneListingOverride));
+      await tester.pumpWidget(
+        _buildApp(accumulatorOverride: _oneListingOverride),
+      );
       await tester.pumpAndSettle();
 
       expect(find.textContaining('\$1200/mo'), findsOneWidget);
     });
 
-    testWidgets('shows No listings found when provider returns empty list',
-        (tester) async {
+    testWidgets('shows No listings found when provider returns empty list', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(
-          _buildApp(accumulatorOverride: _emptyListingsOverride));
+        _buildApp(accumulatorOverride: _emptyListingsOverride),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('No listings match your filters.'), findsOneWidget);
@@ -185,13 +190,12 @@ void main() {
       _configureView(tester);
 
       await tester.pumpWidget(
-          _buildApp(accumulatorOverride: _emptyListingsOverride));
+        _buildApp(accumulatorOverride: _emptyListingsOverride),
+      );
       await tester.pumpAndSettle();
 
       expect(
-        find.byWidgetPredicate(
-          (w) => w is Icon && w.icon == Icons.search_off,
-        ),
+        find.byWidgetPredicate((w) => w is Icon && w.icon == Icons.search_off),
         findsOneWidget,
       );
     });
@@ -200,11 +204,14 @@ void main() {
     // errors cleanly in Riverpod 3. Error UI is covered by the error path
     // in browse_screen.dart and tested when the real provider encounters errors.
 
-    testWidgets('shows Filters label and Clear all button in data state',
-        (tester) async {
+    testWidgets('shows Filters label and Clear all button in data state', (
+      tester,
+    ) async {
       _configureView(tester);
 
-      await tester.pumpWidget(_buildApp(accumulatorOverride: _oneListingOverride));
+      await tester.pumpWidget(
+        _buildApp(accumulatorOverride: _oneListingOverride),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('Filters'), findsOneWidget);
@@ -225,7 +232,8 @@ void main() {
       _configureView(tester);
 
       await tester.pumpWidget(
-          _buildApp(accumulatorOverride: _emptyListingsOverride));
+        _buildApp(accumulatorOverride: _emptyListingsOverride),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('Filters'), findsOneWidget);
@@ -235,7 +243,9 @@ void main() {
     testWidgets('shows City filter dropdown in data state', (tester) async {
       _configureView(tester);
 
-      await tester.pumpWidget(_buildApp(accumulatorOverride: _oneListingOverride));
+      await tester.pumpWidget(
+        _buildApp(accumulatorOverride: _oneListingOverride),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('City'), findsOneWidget);
@@ -244,14 +254,17 @@ void main() {
     testWidgets('shows Browse listings heading in data state', (tester) async {
       _configureView(tester);
 
-      await tester.pumpWidget(_buildApp(accumulatorOverride: _oneListingOverride));
+      await tester.pumpWidget(
+        _buildApp(accumulatorOverride: _oneListingOverride),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('Browse listings'), findsOneWidget);
     });
 
-    testWidgets('shows all listing titles when multiple listings returned',
-        (tester) async {
+    testWidgets('shows all listing titles when multiple listings returned', (
+      tester,
+    ) async {
       _configureView(tester);
 
       final secondListing = Listing.fromJson({
@@ -261,10 +274,12 @@ void main() {
       });
       final firstListing = Listing.fromJson(testListingJson);
       final multiOverride = browseAccumulatorProvider.overrideWith(
-        () => _ImmediateAccumulator(BrowseAccumulatorState(
-          items: [firstListing, secondListing],
-          totalCount: 2,
-        )),
+        () => _ImmediateAccumulator(
+          BrowseAccumulatorState(
+            items: [firstListing, secondListing],
+            totalCount: 2,
+          ),
+        ),
       );
 
       await tester.pumpWidget(_buildApp(accumulatorOverride: multiOverride));
@@ -277,7 +292,9 @@ void main() {
     testWidgets('shows result count text', (tester) async {
       _configureView(tester);
 
-      await tester.pumpWidget(_buildApp(accumulatorOverride: _oneListingOverride));
+      await tester.pumpWidget(
+        _buildApp(accumulatorOverride: _oneListingOverride),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('Showing 1 of 1 listings'), findsOneWidget);

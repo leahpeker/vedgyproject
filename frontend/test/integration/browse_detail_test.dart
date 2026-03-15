@@ -89,9 +89,7 @@ void _stubDetailSuccess(MockDio mockDio, String id) {
       cancelToken: any(named: 'cancelToken'),
       onReceiveProgress: any(named: 'onReceiveProgress'),
     ),
-  ).thenAnswer(
-    (_) async => okResponse(testListingJson, '/api/listings/$id/'),
-  );
+  ).thenAnswer((_) async => okResponse(testListingJson, '/api/listings/$id/'));
 }
 
 // ---------------------------------------------------------------------------
@@ -112,9 +110,9 @@ void main() {
     //    navigates to /listing/{id} →
     //    ListingDetailScreen is shown with listing data.
     // -----------------------------------------------------------------------
-    testWidgets(
-        'tapping a listing from browse navigates to detail screen',
-        (tester) async {
+    testWidgets('tapping a listing from browse navigates to detail screen', (
+      tester,
+    ) async {
       _configureView(tester);
 
       final apiMockDio = MockDio();
@@ -145,28 +143,42 @@ void main() {
 
       // Find the listing tile with "Cozy Vegan Room" title.
       final listingTileFinder = find.text('Cozy Vegan Room');
-      expect(listingTileFinder, findsOneWidget,
-          reason: 'Listing tile "Cozy Vegan Room" should be visible');
+      expect(
+        listingTileFinder,
+        findsOneWidget,
+        reason: 'Listing tile "Cozy Vegan Room" should be visible',
+      );
 
       // Tap the listing.
       await tester.tap(listingTileFinder);
       await tester.pumpAndSettle();
 
       // Verify ListingDetailScreen is now visible.
-      expect(find.byType(ListingDetailScreen), findsOneWidget,
-          reason: 'ListingDetailScreen should be shown after tapping');
+      expect(
+        find.byType(ListingDetailScreen),
+        findsOneWidget,
+        reason: 'ListingDetailScreen should be shown after tapping',
+      );
 
       // Verify we're on the correct route.
-      final route = harness.read(appRouterProvider).routeInformationProvider
+      final route = harness
+          .read(appRouterProvider)
+          .routeInformationProvider
           .value
           .location;
-      expect(route, contains('/listing/listing-uuid-001'),
-          reason: 'Route should contain the listing ID');
+      expect(
+        route,
+        contains('/listing/listing-uuid-001'),
+        reason: 'Route should contain the listing ID',
+      );
 
       // Verify the detail screen is showing the listing data by checking
       // for key text from the listing.
-      expect(find.text('Cozy Vegan Room'), findsOneWidget,
-          reason: 'Listing title should be visible in detail screen');
+      expect(
+        find.text('Cozy Vegan Room'),
+        findsOneWidget,
+        reason: 'Listing title should be visible in detail screen',
+      );
     });
   });
 }

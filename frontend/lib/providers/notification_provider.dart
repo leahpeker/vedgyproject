@@ -4,10 +4,7 @@ part 'notification_provider.g.dart';
 
 /// Payload for a single snackbar notification.
 class AppNotification {
-  const AppNotification({
-    required this.message,
-    this.isError = false,
-  });
+  const AppNotification({required this.message, this.isError = false});
 
   final String message;
   final bool isError;

@@ -36,27 +36,23 @@ import '../helpers/fake_secure_storage.dart';
 /// Minimal router that places LoginScreen at /login with stubs for
 /// routes that LoginScreen can navigate to.
 GoRouter _makeRouter() => GoRouter(
-      initialLocation: '/login',
-      routes: [
-        GoRoute(
-          path: '/login',
-          builder: (_, __) => const LoginScreen(),
-        ),
-        GoRoute(
-          path: '/signup',
-          builder: (_, __) => const Scaffold(body: Text('Sign up page')),
-        ),
-        GoRoute(
-          path: '/dashboard',
-          builder: (_, __) => const Scaffold(body: Text('Dashboard page')),
-        ),
-        GoRoute(
-          path: '/password-reset',
-          builder: (_, __) =>
-              const Scaffold(body: Text('Password reset page')),
-        ),
-      ],
-    );
+  initialLocation: '/login',
+  routes: [
+    GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
+    GoRoute(
+      path: '/signup',
+      builder: (_, __) => const Scaffold(body: Text('Sign up page')),
+    ),
+    GoRoute(
+      path: '/dashboard',
+      builder: (_, __) => const Scaffold(body: Text('Dashboard page')),
+    ),
+    GoRoute(
+      path: '/password-reset',
+      builder: (_, __) => const Scaffold(body: Text('Password reset page')),
+    ),
+  ],
+);
 
 /// Wraps the router inside a ProviderScope with the required overrides.
 Widget _buildApp() {
@@ -132,8 +128,9 @@ void main() {
     // -----------------------------------------------------------------------
     // 3. Validation errors shown when form is submitted empty
     // -----------------------------------------------------------------------
-    testWidgets('shows password validation error on empty submit',
-        (tester) async {
+    testWidgets('shows password validation error on empty submit', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(_buildApp());
@@ -150,8 +147,9 @@ void main() {
     // -----------------------------------------------------------------------
     // 4. Email validation fires — login screen stays on screen
     // -----------------------------------------------------------------------
-    testWidgets('stays on login screen when only password is filled',
-        (tester) async {
+    testWidgets('stays on login screen when only password is filled', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(_buildApp());
@@ -208,8 +206,9 @@ void main() {
     // -----------------------------------------------------------------------
     // 8. Tapping Forgot password navigates to /password-reset
     // -----------------------------------------------------------------------
-    testWidgets('tapping Forgot password navigates to password-reset screen',
-        (tester) async {
+    testWidgets('tapping Forgot password navigates to password-reset screen', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(_buildApp());
@@ -237,8 +236,9 @@ void main() {
     // -----------------------------------------------------------------------
     // 10. No error banner shown on initial render
     // -----------------------------------------------------------------------
-    testWidgets('does not show an error message on first render',
-        (tester) async {
+    testWidgets('does not show an error message on first render', (
+      tester,
+    ) async {
       _configureView(tester);
 
       await tester.pumpWidget(_buildApp());

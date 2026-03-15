@@ -55,15 +55,19 @@ class ListingCard extends StatelessWidget {
                       _Tag(listing.roomType),
                       if (listing.furnished.toLowerCase() != 'unfurnished')
                         _Tag(listing.furnished),
-                      if (listing.seekingRoommate) const _Tag('Seeking roommate'),
+                      if (listing.seekingRoommate)
+                        const _Tag('Seeking roommate'),
                     ],
                   ),
                   const SizedBox(height: 8),
                   // Location
                   Row(
                     children: [
-                      Icon(Icons.location_on_outlined,
-                          size: 14, color: theme.colorScheme.onSurfaceVariant),
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 14,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                       const SizedBox(width: 2),
                       Expanded(
                         child: Text(
@@ -126,7 +130,9 @@ class _PhotoThumbnail extends StatelessWidget {
           child: Icon(
             Icons.home_outlined,
             size: 48,
-            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
           ),
         ),
       );

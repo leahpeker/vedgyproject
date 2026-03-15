@@ -35,10 +35,12 @@ void main() {
       expect(validateEmail('user+tag@example.com'), isNull);
     });
 
-    test('whitespace-padded valid email returns null (trims before validating)',
-        () {
-      expect(validateEmail('  user@example.com  '), isNull);
-    });
+    test(
+      'whitespace-padded valid email returns null (trims before validating)',
+      () {
+        expect(validateEmail('  user@example.com  '), isNull);
+      },
+    );
 
     // --- Invalid format cases ---
 

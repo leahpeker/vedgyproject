@@ -63,11 +63,15 @@ class _DioOverrideAuth extends Auth {
       );
       final tokens = AuthTokens.fromJson(refreshResponse.data!);
 
-      await ref.read(secureStorageProvider).saveRefreshToken(tokens.refreshToken);
+      await ref
+          .read(secureStorageProvider)
+          .saveRefreshToken(tokens.refreshToken);
 
       final meResponse = await _dio.get<Map<String, dynamic>>(
         '/api/auth/me/',
-        options: Options(headers: {'Authorization': 'Bearer ${tokens.accessToken}'}),
+        options: Options(
+          headers: {'Authorization': 'Bearer ${tokens.accessToken}'},
+        ),
       );
       final user = User.fromJson(meResponse.data!);
       state = AuthState.authenticated(user, tokens.accessToken);
@@ -114,29 +118,28 @@ void main() {
     //    Expected: AuthState.unauthenticated(), app shows the home screen
     //    (router stays at "/" because "/" is not a protected route).
     // -----------------------------------------------------------------------
-    testWidgets('cold start with no token → unauthenticated, shows home screen',
-        (tester) async {
-      _configureView(tester);
+    testWidgets(
+      'cold start with no token → unauthenticated, shows home screen',
+      (tester) async {
+        _configureView(tester);
 
-      // Empty storage: no refresh token present.
-      final storage = FakeSecureStorage();
-      final harness = AppHarness(fakeStorage: storage);
+        // Empty storage: no refresh token present.
+        final storage = FakeSecureStorage();
+        final harness = AppHarness(fakeStorage: storage);
 
-      await harness.pump(tester);
-      await harness.init(tester);
+        await harness.pump(tester);
+        await harness.init(tester);
 
-      // Auth state must be unauthenticated.
-      final authState = harness.read(authProvider);
-      expect(
-        authState,
-        equals(const AuthState.unauthenticated()),
-      );
+        // Auth state must be unauthenticated.
+        final authState = harness.read(authProvider);
+        expect(authState, equals(const AuthState.unauthenticated()));
 
-      // The initial route "/" shows HomeScreen.
-      // No Dio call is needed — AuthState.initial triggers a loading spinner
-      // on HomeScreen, which resolves once init() completes.
-      expect(find.byType(HomeScreen), findsOneWidget);
-    });
+        // The initial route "/" shows HomeScreen.
+        // No Dio call is needed — AuthState.initial triggers a loading spinner
+        // on HomeScreen, which resolves once init() completes.
+        expect(find.byType(HomeScreen), findsOneWidget);
+      },
+    );
 
     // -----------------------------------------------------------------------
     // 2. Cold start — refresh token present, Dio responds successfully
@@ -145,79 +148,78 @@ void main() {
     //    forced anywhere; router only redirects /login → /dashboard.
     // -----------------------------------------------------------------------
     testWidgets(
-        'cold start with valid token → authenticated, stays on home screen',
-        (tester) async {
-      _configureView(tester);
+      'cold start with valid token → authenticated, stays on home screen',
+      (tester) async {
+        _configureView(tester);
 
-      // Storage pre-loaded with a refresh token.
-      final storage = FakeSecureStorage(
-        initialRefreshToken: validTokensJson['refresh'] as String,
-      );
+        // Storage pre-loaded with a refresh token.
+        final storage = FakeSecureStorage(
+          initialRefreshToken: validTokensJson['refresh'] as String,
+        );
 
-      final mockDio = MockDio();
+        final mockDio = MockDio();
 
-      // Stub /api/auth/refresh/ → returns valid access + refresh tokens.
-      when(
-        () => mockDio.post<Map<String, dynamic>>(
-          '/api/auth/refresh/',
-          data: any(named: 'data'),
-          options: any(named: 'options'),
-          queryParameters: any(named: 'queryParameters'),
-          cancelToken: any(named: 'cancelToken'),
-          onSendProgress: any(named: 'onSendProgress'),
-          onReceiveProgress: any(named: 'onReceiveProgress'),
-        ),
-      ).thenAnswer(
-        (_) async => okResponse(validTokensJson, '/api/auth/refresh/'),
-      );
+        // Stub /api/auth/refresh/ → returns valid access + refresh tokens.
+        when(
+          () => mockDio.post<Map<String, dynamic>>(
+            '/api/auth/refresh/',
+            data: any(named: 'data'),
+            options: any(named: 'options'),
+            queryParameters: any(named: 'queryParameters'),
+            cancelToken: any(named: 'cancelToken'),
+            onSendProgress: any(named: 'onSendProgress'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          ),
+        ).thenAnswer(
+          (_) async => okResponse(validTokensJson, '/api/auth/refresh/'),
+        );
 
-      // Stub /api/auth/me/ → returns user details.
-      when(
-        () => mockDio.get<Map<String, dynamic>>(
-          '/api/auth/me/',
-          data: any(named: 'data'),
-          queryParameters: any(named: 'queryParameters'),
-          options: any(named: 'options'),
-          cancelToken: any(named: 'cancelToken'),
-          onReceiveProgress: any(named: 'onReceiveProgress'),
-        ),
-      ).thenAnswer(
-        (_) async => okResponse(userJson, '/api/auth/me/'),
-      );
+        // Stub /api/auth/me/ → returns user details.
+        when(
+          () => mockDio.get<Map<String, dynamic>>(
+            '/api/auth/me/',
+            data: any(named: 'data'),
+            queryParameters: any(named: 'queryParameters'),
+            options: any(named: 'options'),
+            cancelToken: any(named: 'cancelToken'),
+            onReceiveProgress: any(named: 'onReceiveProgress'),
+          ),
+        ).thenAnswer((_) async => okResponse(userJson, '/api/auth/me/'));
 
-      final harness = AppHarness(
-        fakeStorage: storage,
-        extraOverrides: [
-          authProvider.overrideWith(() => _DioOverrideAuth(mockDio)),
-        ],
-      );
+        final harness = AppHarness(
+          fakeStorage: storage,
+          extraOverrides: [
+            authProvider.overrideWith(() => _DioOverrideAuth(mockDio)),
+          ],
+        );
 
-      await harness.pump(tester);
-      await harness.init(tester);
+        await harness.pump(tester);
+        await harness.init(tester);
 
-      // Auth state must be authenticated.
-      final authState = harness.read(authProvider);
-      expect(
-        authState.whenOrNull(authenticated: (user, token) => true),
-        isTrue,
-      );
+        // Auth state must be authenticated.
+        final authState = harness.read(authProvider);
+        expect(
+          authState.whenOrNull(authenticated: (user, token) => true),
+          isTrue,
+        );
 
-      // The "/" route is still rendered — authenticated users are not
-      // redirected away from home (only away from /login and /signup).
-      expect(find.byType(HomeScreen), findsOneWidget);
+        // The "/" route is still rendered — authenticated users are not
+        // redirected away from home (only away from /login and /signup).
+        expect(find.byType(HomeScreen), findsOneWidget);
 
-      // LoginScreen must not be present.
-      expect(find.byType(LoginScreen), findsNothing);
-    });
+        // LoginScreen must not be present.
+        expect(find.byType(LoginScreen), findsNothing);
+      },
+    );
 
     // -----------------------------------------------------------------------
     // 3. Cold start — refresh token present but Dio responds with 401
     //    Expected: AuthState.unauthenticated(), token cleared from storage,
     //    app shows home screen (not /login; "/" is a public route).
     // -----------------------------------------------------------------------
-    testWidgets(
-        'cold start with expired token → unauthenticated after 401',
-        (tester) async {
+    testWidgets('cold start with expired token → unauthenticated after 401', (
+      tester,
+    ) async {
       _configureView(tester);
 
       // Storage pre-loaded with a stale refresh token.
@@ -252,10 +254,7 @@ void main() {
 
       // Auth state must be unauthenticated after a failed refresh.
       final authState = harness.read(authProvider);
-      expect(
-        authState,
-        equals(const AuthState.unauthenticated()),
-      );
+      expect(authState, equals(const AuthState.unauthenticated()));
 
       // The refresh token must have been cleared from storage.
       expect(await storage.getRefreshToken(), isNull);

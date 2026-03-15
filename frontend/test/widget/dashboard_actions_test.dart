@@ -27,26 +27,23 @@ import '../integration/helpers/mock_dio.dart';
 // ---------------------------------------------------------------------------
 
 GoRouter _makeRouter() => GoRouter(
-      initialLocation: '/dashboard',
-      routes: [
-        GoRoute(
-          path: '/dashboard',
-          builder: (_, __) => const DashboardScreen(),
-        ),
-        GoRoute(
-          path: '/create',
-          builder: (_, __) => const Scaffold(body: Text('Create')),
-        ),
-        GoRoute(
-          path: '/listing/:id',
-          builder: (_, __) => const Scaffold(body: Text('Detail')),
-        ),
-        GoRoute(
-          path: '/edit/:id',
-          builder: (_, __) => const Scaffold(body: Text('Edit')),
-        ),
-      ],
-    );
+  initialLocation: '/dashboard',
+  routes: [
+    GoRoute(path: '/dashboard', builder: (_, __) => const DashboardScreen()),
+    GoRoute(
+      path: '/create',
+      builder: (_, __) => const Scaffold(body: Text('Create')),
+    ),
+    GoRoute(
+      path: '/listing/:id',
+      builder: (_, __) => const Scaffold(body: Text('Detail')),
+    ),
+    GoRoute(
+      path: '/edit/:id',
+      builder: (_, __) => const Scaffold(body: Text('Edit')),
+    ),
+  ],
+);
 
 Widget _buildApp({
   required AsyncValue<DashboardOut> dashboardValue,
@@ -90,13 +87,15 @@ AsyncValue<DashboardOut> _draftDashboard() {
     'title': 'My Draft Listing',
     'status': 'draft',
   });
-  return AsyncValue.data(DashboardOut(
-    drafts: [draftListing],
-    paymentSubmitted: const [],
-    active: const [],
-    expired: const [],
-    deactivated: const [],
-  ));
+  return AsyncValue.data(
+    DashboardOut(
+      drafts: [draftListing],
+      paymentSubmitted: const [],
+      active: const [],
+      expired: const [],
+      deactivated: const [],
+    ),
+  );
 }
 
 AsyncValue<DashboardOut> _activeDashboard() {
@@ -106,13 +105,15 @@ AsyncValue<DashboardOut> _activeDashboard() {
     'title': 'My Active Listing',
     'status': 'active',
   });
-  return AsyncValue.data(DashboardOut(
-    drafts: const [],
-    paymentSubmitted: const [],
-    active: [activeListing],
-    expired: const [],
-    deactivated: const [],
-  ));
+  return AsyncValue.data(
+    DashboardOut(
+      drafts: const [],
+      paymentSubmitted: const [],
+      active: [activeListing],
+      expired: const [],
+      deactivated: const [],
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -121,15 +122,15 @@ AsyncValue<DashboardOut> _activeDashboard() {
 
 void main() {
   group('DashboardScreen actions', () {
-    testWidgets('tapping Delete shows confirmation dialog with listing title',
-        (tester) async {
+    testWidgets('tapping Delete shows confirmation dialog with listing title', (
+      tester,
+    ) async {
       _configureView(tester);
       final mockDio = MockDio();
 
-      await tester.pumpWidget(_buildApp(
-        dashboardValue: _draftDashboard(),
-        mockDio: mockDio,
-      ));
+      await tester.pumpWidget(
+        _buildApp(dashboardValue: _draftDashboard(), mockDio: mockDio),
+      );
       await tester.pumpAndSettle();
 
       // Find and tap the Delete button.
@@ -144,22 +145,22 @@ void main() {
       expect(find.byType(AlertDialog), findsOneWidget);
     });
 
-    testWidgets('confirming delete calls DELETE on correct API path',
-        (tester) async {
+    testWidgets('confirming delete calls DELETE on correct API path', (
+      tester,
+    ) async {
       _configureView(tester);
       final mockDio = MockDio();
 
-      when(() => mockDio.delete<void>('/api/listings/draft-uuid/'))
-          .thenAnswer((_) async => Response(
-                statusCode: 204,
-                requestOptions:
-                    RequestOptions(path: '/api/listings/draft-uuid/'),
-              ));
+      when(() => mockDio.delete<void>('/api/listings/draft-uuid/')).thenAnswer(
+        (_) async => Response(
+          statusCode: 204,
+          requestOptions: RequestOptions(path: '/api/listings/draft-uuid/'),
+        ),
+      );
 
-      await tester.pumpWidget(_buildApp(
-        dashboardValue: _draftDashboard(),
-        mockDio: mockDio,
-      ));
+      await tester.pumpWidget(
+        _buildApp(dashboardValue: _draftDashboard(), mockDio: mockDio),
+      );
       await tester.pumpAndSettle();
 
       // Tap Delete, then confirm.
@@ -171,15 +172,15 @@ void main() {
       verify(() => mockDio.delete<void>('/api/listings/draft-uuid/')).called(1);
     });
 
-    testWidgets('cancelling delete dismisses dialog without API call',
-        (tester) async {
+    testWidgets('cancelling delete dismisses dialog without API call', (
+      tester,
+    ) async {
       _configureView(tester);
       final mockDio = MockDio();
 
-      await tester.pumpWidget(_buildApp(
-        dashboardValue: _draftDashboard(),
-        mockDio: mockDio,
-      ));
+      await tester.pumpWidget(
+        _buildApp(dashboardValue: _draftDashboard(), mockDio: mockDio),
+      );
       await tester.pumpAndSettle();
 
       // Tap Delete, then cancel.
@@ -194,15 +195,13 @@ void main() {
       verifyNever(() => mockDio.delete<void>(any()));
     });
 
-    testWidgets('tapping Deactivate shows confirmation dialog',
-        (tester) async {
+    testWidgets('tapping Deactivate shows confirmation dialog', (tester) async {
       _configureView(tester);
       final mockDio = MockDio();
 
-      await tester.pumpWidget(_buildApp(
-        dashboardValue: _activeDashboard(),
-        mockDio: mockDio,
-      ));
+      await tester.pumpWidget(
+        _buildApp(dashboardValue: _activeDashboard(), mockDio: mockDio),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Deactivate'));
@@ -212,22 +211,27 @@ void main() {
       expect(find.byType(AlertDialog), findsOneWidget);
     });
 
-    testWidgets('confirming deactivate calls POST on correct API path',
-        (tester) async {
+    testWidgets('confirming deactivate calls POST on correct API path', (
+      tester,
+    ) async {
       _configureView(tester);
       final mockDio = MockDio();
 
-      when(() => mockDio.post<Map<String, dynamic>>(
-            '/api/listings/active-uuid/deactivate/',
-          )).thenAnswer((_) async => okResponse(
-            {...testListingJson, 'id': 'active-uuid', 'status': 'deactivated'},
-            '/api/listings/active-uuid/deactivate/',
-          ));
+      when(
+        () => mockDio.post<Map<String, dynamic>>(
+          '/api/listings/active-uuid/deactivate/',
+        ),
+      ).thenAnswer(
+        (_) async => okResponse({
+          ...testListingJson,
+          'id': 'active-uuid',
+          'status': 'deactivated',
+        }, '/api/listings/active-uuid/deactivate/'),
+      );
 
-      await tester.pumpWidget(_buildApp(
-        dashboardValue: _activeDashboard(),
-        mockDio: mockDio,
-      ));
+      await tester.pumpWidget(
+        _buildApp(dashboardValue: _activeDashboard(), mockDio: mockDio),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Deactivate'));
@@ -235,9 +239,11 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Deactivate'));
       await tester.pumpAndSettle();
 
-      verify(() => mockDio.post<Map<String, dynamic>>(
-            '/api/listings/active-uuid/deactivate/',
-          )).called(1);
+      verify(
+        () => mockDio.post<Map<String, dynamic>>(
+          '/api/listings/active-uuid/deactivate/',
+        ),
+      ).called(1);
     });
   });
 }

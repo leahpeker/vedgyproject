@@ -126,9 +126,7 @@ void main() {
     test('resets state back to null after showError()', () {
       final container = makeContainer();
 
-      container
-          .read(notificationQueueProvider.notifier)
-          .showError('Error msg');
+      container.read(notificationQueueProvider.notifier).showError('Error msg');
       expect(container.read(notificationQueueProvider), isNotNull);
 
       container.read(notificationQueueProvider.notifier).clear();

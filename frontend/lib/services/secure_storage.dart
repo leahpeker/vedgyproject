@@ -18,9 +18,7 @@ class SecureStorageService {
   Future<void> saveRefreshToken(String token) =>
       _storage.write(key: _refreshTokenKey, value: token);
 
-  Future<String?> getRefreshToken() =>
-      _storage.read(key: _refreshTokenKey);
+  Future<String?> getRefreshToken() => _storage.read(key: _refreshTokenKey);
 
-  Future<void> clearTokens() =>
-      _storage.delete(key: _refreshTokenKey);
+  Future<void> clearTokens() => _storage.delete(key: _refreshTokenKey);
 }

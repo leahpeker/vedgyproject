@@ -3,7 +3,7 @@ import 'package:vedgy/services/secure_storage.dart';
 /// In-memory SecureStorageService for tests — no platform channels.
 class FakeSecureStorage extends SecureStorageService {
   FakeSecureStorage({String? initialRefreshToken})
-      : _refreshToken = initialRefreshToken;
+    : _refreshToken = initialRefreshToken;
 
   String? _refreshToken;
 

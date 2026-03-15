@@ -66,8 +66,9 @@ void main() {
     //    Call notificationQueueProvider.notifier.show('Message') →
     //    snackbar appears with the message text.
     // -----------------------------------------------------------------------
-    testWidgets('show notification displays snackbar with message',
-        (tester) async {
+    testWidgets('show notification displays snackbar with message', (
+      tester,
+    ) async {
       _configureView(tester);
 
       final harness = AppHarness(
@@ -94,13 +95,19 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify the snackbar appears with the message.
-      expect(find.text(testMessage), findsWidgets,
-          reason: 'Notification message should appear in snackbar');
+      expect(
+        find.text(testMessage),
+        findsWidgets,
+        reason: 'Notification message should appear in snackbar',
+      );
 
       // Verify a SnackBar widget is found.
       final snackBarFinder = find.byType(SnackBar);
-      expect(snackBarFinder, findsOneWidget,
-          reason: 'SnackBar should be displayed');
+      expect(
+        snackBarFinder,
+        findsOneWidget,
+        reason: 'SnackBar should be displayed',
+      );
     });
 
     // -----------------------------------------------------------------------
@@ -108,8 +115,9 @@ void main() {
     //    Call notificationQueueProvider.notifier.showError('Error') →
     //    snackbar has error styling (red/error color background).
     // -----------------------------------------------------------------------
-    testWidgets('showError displays snackbar with error styling',
-        (tester) async {
+    testWidgets('showError displays snackbar with error styling', (
+      tester,
+    ) async {
       _configureView(tester);
 
       final harness = AppHarness(
@@ -134,20 +142,28 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify the snackbar appears with the error message.
-      expect(find.text(errorMessage), findsWidgets,
-          reason: 'Error message should appear in snackbar');
+      expect(
+        find.text(errorMessage),
+        findsWidgets,
+        reason: 'Error message should appear in snackbar',
+      );
 
       // Verify a SnackBar is displayed.
       final snackBarFinder = find.byType(SnackBar);
-      expect(snackBarFinder, findsOneWidget,
-          reason: 'SnackBar should be displayed for error');
+      expect(
+        snackBarFinder,
+        findsOneWidget,
+        reason: 'SnackBar should be displayed for error',
+      );
 
       // Verify the snackbar has error styling (red background).
       // The SnackBar's backgroundColor should be set to the error color.
-      final snackBar =
-          snackBarFinder.evaluate().single.widget as SnackBar;
-      expect(snackBar.backgroundColor, isNotNull,
-          reason: 'SnackBar should have a backgroundColor set');
+      final snackBar = snackBarFinder.evaluate().single.widget as SnackBar;
+      expect(
+        snackBar.backgroundColor,
+        isNotNull,
+        reason: 'SnackBar should have a backgroundColor set',
+      );
 
       // Check that the backgroundColor is not green (error color vs success).
       // AppScaffold uses green for success and error color for errors.
@@ -155,9 +171,11 @@ void main() {
       if (bgColor != null) {
         // For error, it should not be green.
         expect(
-          bgColor != Colors.green && bgColor != (Colors.green[700] ?? Colors.green),
+          bgColor != Colors.green &&
+              bgColor != (Colors.green[700] ?? Colors.green),
           isTrue,
-          reason: 'SnackBar background should not be green (should be error color)',
+          reason:
+              'SnackBar background should not be green (should be error color)',
         );
       }
     });
@@ -190,14 +208,21 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify snackbar is visible.
-      expect(find.text(testMessage), findsWidgets,
-          reason: 'Notification message should be visible');
+      expect(
+        find.text(testMessage),
+        findsWidgets,
+        reason: 'Notification message should be visible',
+      );
 
       // AppScaffold calls clear() immediately after showing the snackbar,
       // so the state should be null.
       final notification = harness.read(notificationQueueProvider);
-      expect(notification, isNull,
-          reason: 'Notification state should be null after AppScaffold shows snackbar');
+      expect(
+        notification,
+        isNull,
+        reason:
+            'Notification state should be null after AppScaffold shows snackbar',
+      );
     });
   });
 }

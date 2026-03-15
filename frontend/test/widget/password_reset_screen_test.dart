@@ -45,18 +45,18 @@ class MockDio extends Mock implements Dio {}
 /// Minimal router that places PasswordResetScreen at /password-reset with a
 /// /login stub so that Navigator.pop() has somewhere to return to.
 GoRouter _makeRouter() => GoRouter(
-      initialLocation: '/password-reset',
-      routes: [
-        GoRoute(
-          path: '/login',
-          builder: (_, __) => const Scaffold(body: Text('Log in page')),
-        ),
-        GoRoute(
-          path: '/password-reset',
-          builder: (_, __) => const PasswordResetScreen(),
-        ),
-      ],
-    );
+  initialLocation: '/password-reset',
+  routes: [
+    GoRoute(
+      path: '/login',
+      builder: (_, __) => const Scaffold(body: Text('Log in page')),
+    ),
+    GoRoute(
+      path: '/password-reset',
+      builder: (_, __) => const PasswordResetScreen(),
+    ),
+  ],
+);
 
 /// Wraps the router inside a ProviderScope with the required overrides.
 /// [mockDio] is used to control what the apiClientProvider returns.
@@ -129,7 +129,10 @@ void main() {
       await tester.pumpWidget(_buildApp(mockDio));
       await tester.pumpAndSettle();
 
-      expect(find.widgetWithText(FilledButton, 'Send reset link'), findsOneWidget);
+      expect(
+        find.widgetWithText(FilledButton, 'Send reset link'),
+        findsOneWidget,
+      );
     });
 
     // -----------------------------------------------------------------------
@@ -151,7 +154,9 @@ void main() {
     // -----------------------------------------------------------------------
     // 4. Validation rejects malformed email
     // -----------------------------------------------------------------------
-    testWidgets('shows invalid email error for malformed email', (tester) async {
+    testWidgets('shows invalid email error for malformed email', (
+      tester,
+    ) async {
       _configureView(tester);
 
       final mockDio = MockDio();
@@ -168,18 +173,20 @@ void main() {
     // -----------------------------------------------------------------------
     // 5. Success state shown after valid submission
     // -----------------------------------------------------------------------
-    testWidgets('shows Check your inbox success state after valid submission',
-        (tester) async {
+    testWidgets('shows Check your inbox success state after valid submission', (
+      tester,
+    ) async {
       _configureView(tester);
 
       final mockDio = MockDio();
-      when(() => mockDio.post<void>(
-            any(),
-            data: any(named: 'data'),
-          )).thenAnswer((_) async => Response<void>(
-            requestOptions: RequestOptions(path: '/api/auth/password-reset/'),
-            statusCode: 200,
-          ));
+      when(
+        () => mockDio.post<void>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => Response<void>(
+          requestOptions: RequestOptions(path: '/api/auth/password-reset/'),
+          statusCode: 200,
+        ),
+      );
 
       await tester.pumpWidget(_buildApp(mockDio));
       await tester.pumpAndSettle();
@@ -222,7 +229,9 @@ void main() {
     // -----------------------------------------------------------------------
     // 8. No error banner shown on initial render
     // -----------------------------------------------------------------------
-    testWidgets('does not show an error banner on first render', (tester) async {
+    testWidgets('does not show an error banner on first render', (
+      tester,
+    ) async {
       _configureView(tester);
 
       final mockDio = MockDio();
@@ -242,18 +251,20 @@ void main() {
     // -----------------------------------------------------------------------
     // 9. Success view shows Back to log in button (OutlinedButton)
     // -----------------------------------------------------------------------
-    testWidgets(
-        'success view shows a Back to log in OutlinedButton', (tester) async {
+    testWidgets('success view shows a Back to log in OutlinedButton', (
+      tester,
+    ) async {
       _configureView(tester);
 
       final mockDio = MockDio();
-      when(() => mockDio.post<void>(
-            any(),
-            data: any(named: 'data'),
-          )).thenAnswer((_) async => Response<void>(
-            requestOptions: RequestOptions(path: '/api/auth/password-reset/'),
-            statusCode: 200,
-          ));
+      when(
+        () => mockDio.post<void>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => Response<void>(
+          requestOptions: RequestOptions(path: '/api/auth/password-reset/'),
+          statusCode: 200,
+        ),
+      );
 
       await tester.pumpWidget(_buildApp(mockDio));
       await tester.pumpAndSettle();
@@ -262,7 +273,10 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Send reset link'));
       await tester.pumpAndSettle();
 
-      expect(find.widgetWithText(OutlinedButton, 'Back to log in'), findsOneWidget);
+      expect(
+        find.widgetWithText(OutlinedButton, 'Back to log in'),
+        findsOneWidget,
+      );
     });
   });
 }

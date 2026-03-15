@@ -96,9 +96,9 @@ class _VedgyNavBar extends ConsumerWidget implements PreferredSizeWidget {
   }
 
   List<Widget> _navLinks(BuildContext context) => [
-        _NavLink('Browse', () => context.go('/browse')),
-        _NavLink('Post a listing', () => context.go('/create')),
-      ];
+    _NavLink('Browse', () => context.go('/browse')),
+    _NavLink('Post a listing', () => context.go('/create')),
+  ];
 
   List<Widget> _authActions(
     BuildContext context,

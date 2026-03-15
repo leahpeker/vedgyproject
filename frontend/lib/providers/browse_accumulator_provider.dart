@@ -30,13 +30,12 @@ class BrowseAccumulatorState {
     int? totalCount,
     bool? isLoadingMore,
     bool? loadMoreError,
-  }) =>
-      BrowseAccumulatorState(
-        items: items ?? this.items,
-        totalCount: totalCount ?? this.totalCount,
-        isLoadingMore: isLoadingMore ?? this.isLoadingMore,
-        loadMoreError: loadMoreError ?? this.loadMoreError,
-      );
+  }) => BrowseAccumulatorState(
+    items: items ?? this.items,
+    totalCount: totalCount ?? this.totalCount,
+    isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+    loadMoreError: loadMoreError ?? this.loadMoreError,
+  );
 }
 
 @riverpod

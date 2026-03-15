@@ -31,7 +31,10 @@ class ListingActions {
   }
 
   /// Partially update a listing. Returns the updated [Listing].
-  Future<Listing> updateListing(String listingId, Map<String, dynamic> fields) async {
+  Future<Listing> updateListing(
+    String listingId,
+    Map<String, dynamic> fields,
+  ) async {
     final dio = _ref.read(apiClientProvider);
     final response = await dio.patch<Map<String, dynamic>>(
       '/api/listings/$listingId/',
