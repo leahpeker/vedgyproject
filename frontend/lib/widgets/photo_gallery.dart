@@ -102,7 +102,7 @@ class _PhotoGalleryState extends State<PhotoGallery> {
                     child: Image.network(
                       widget.photos[index].url,
                       fit: BoxFit.cover,
-                      errorBuilder: (ctx, err, st) => Container(
+                      errorBuilder: (ctx, err, st) => ColoredBox(
                         color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
                         child: const Icon(Icons.broken_image_outlined, size: 24),
                       ),

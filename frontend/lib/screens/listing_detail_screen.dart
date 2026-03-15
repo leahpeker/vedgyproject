@@ -231,7 +231,7 @@ class _MainColumn extends StatelessWidget {
             _Chip(listing.roomType, color: Colors.purple),
             _Chip(listing.veganHousehold, color: Colors.teal),
             _Chip(listing.furnished),
-            if (listing.seekingRoommate) _Chip('Seeking roommate', color: Colors.green),
+            if (listing.seekingRoommate) const _Chip('Seeking roommate', color: Colors.green),
           ],
         ),
         const SizedBox(height: 20),

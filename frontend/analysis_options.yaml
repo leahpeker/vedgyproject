@@ -10,5 +10,10 @@ analyzer:
 
 linter:
   rules:
+    avoid_unnecessary_containers: true
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
     prefer_single_quotes: true
     require_trailing_commas: true
+    sized_box_for_whitespace: true
+    use_colored_box: true

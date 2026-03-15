@@ -54,7 +54,7 @@ class ListingCard extends StatelessWidget {
                       _Tag(listing.roomType),
                       if (listing.furnished.toLowerCase() != 'unfurnished')
                         _Tag(listing.furnished),
-                      if (listing.seekingRoommate) _Tag('Seeking roommate'),
+                      if (listing.seekingRoommate) const _Tag('Seeking roommate'),
                     ],
                   ),
                   const SizedBox(height: 8),

@@ -438,7 +438,7 @@ class _ListingFormState extends ConsumerState<ListingForm> {
               const SizedBox(height: 24),
 
               // Basic info
-              _SectionHeader('Basic Information'),
+              const _SectionHeader('Basic Information'),
               _field(
                 label: 'Title *',
                 hint: 'Cozy room in vegan-friendly house',
@@ -456,7 +456,7 @@ class _ListingFormState extends ConsumerState<ListingForm> {
               const SizedBox(height: 24),
 
               // Location
-              _SectionHeader('Location'),
+              const _SectionHeader('Location'),
               _dropdown<String>(
                 label: 'City *',
                 value: _city,
@@ -492,7 +492,7 @@ class _ListingFormState extends ConsumerState<ListingForm> {
               const SizedBox(height: 24),
 
               // Rental details
-              _SectionHeader('Rental Details'),
+              const _SectionHeader('Rental Details'),
               _dropdown<String>(
                 label: 'Vegan Household *',
                 value: _veganHousehold,
@@ -595,7 +595,7 @@ class _ListingFormState extends ConsumerState<ListingForm> {
               const SizedBox(height: 24),
 
               // About you
-              _SectionHeader('About You'),
+              const _SectionHeader('About You'),
               _field(
                 label: 'About you as the lister *',
                 hint: 'Tell potential tenants about yourself, your lifestyle, interests...',
@@ -616,7 +616,7 @@ class _ListingFormState extends ConsumerState<ListingForm> {
               const SizedBox(height: 24),
 
               // Requirements
-              _SectionHeader('Rental Requirements'),
+              const _SectionHeader('Rental Requirements'),
               _field(
                 label: 'Requirements for potential tenants *',
                 hint: 'What are you looking for in a tenant?',
@@ -635,7 +635,7 @@ class _ListingFormState extends ConsumerState<ListingForm> {
               const SizedBox(height: 24),
 
               // Photos
-              _SectionHeader('Photos'),
+              const _SectionHeader('Photos'),
               _PhotoSection(
                 photos: _photos,
                 uploading: _uploadingPhotos,
@@ -645,7 +645,7 @@ class _ListingFormState extends ConsumerState<ListingForm> {
               const SizedBox(height: 24),
 
               // Additional options
-              _SectionHeader('Additional Options'),
+              const _SectionHeader('Additional Options'),
               SwitchListTile(
                 title: const Text('Seeking a roommate (not just a tenant)'),
                 value: _seekingRoommate,

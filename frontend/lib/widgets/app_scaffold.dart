@@ -284,7 +284,7 @@ class _VedgyFooter extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Wrap(
+            const Wrap(
               spacing: 24,
               runSpacing: 8,
               children: [
