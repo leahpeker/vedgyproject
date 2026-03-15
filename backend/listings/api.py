@@ -2,7 +2,9 @@
 
 from uuid import UUID
 
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from ninja import File, Query, Router
 from ninja.files import UploadedFile
 from ninja_jwt.authentication import JWTAuth
@@ -64,8 +66,10 @@ def _get_owned_listing(request, listing_id: UUID):
 @router.get("/", response=PaginatedListings)
 def browse_listings(request, filters: Query[ListingFilters]):
     """Browse active listings with optional filters."""
+    now = timezone.now()
     listings = (
         Listing.objects.filter(status=ListingStatus.ACTIVE)
+        .filter(Q(expires_at__gt=now) | Q(expires_at__isnull=True))
         .select_related("user")
         .prefetch_related("photos")
     )
@@ -117,6 +121,7 @@ def create_listing(request, data: ListingIn):
         description=data.description or "",
         city=data.city or "",
         borough=data.borough,
+        neighborhood=data.neighborhood,
         price=data.price,
         start_date=data.start_date,
         end_date=data.end_date,
@@ -124,6 +129,8 @@ def create_listing(request, data: ListingIn):
         room_type=data.room_type or "",
         vegan_household=data.vegan_household or "",
         furnished=data.furnished or "",
+        size=data.size,
+        transportation=data.transportation,
         lister_relationship=data.lister_relationship or "",
         seeking_roommate=data.seeking_roommate,
         about_lister=data.about_lister or "",

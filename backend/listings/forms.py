@@ -91,6 +91,7 @@ class ListingForm(forms.ModelForm):
             "description",
             "city",
             "borough",
+            "neighborhood",
             "price",
             "start_date",
             "end_date",
@@ -103,6 +104,8 @@ class ListingForm(forms.ModelForm):
             "rental_requirements",
             "pet_policy",
             "furnished",
+            "size",
+            "transportation",
             "phone_number",
             "include_phone",
         ]

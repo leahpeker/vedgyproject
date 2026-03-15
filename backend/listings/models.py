@@ -4,7 +4,7 @@ import uuid
 from datetime import timedelta
 
 from django.conf import settings
-from django.db import models
+from django.db import models, transaction
 from django.utils import timezone
 
 
@@ -66,6 +66,7 @@ class Listing(models.Model):
     description = models.TextField(blank=True, default="")
     city = models.CharField(max_length=100, blank=True, default="")
     borough = models.CharField(max_length=50, blank=True, null=True)
+    neighborhood = models.CharField(max_length=200, blank=True, null=True)
 
     # Rental details
     rental_type = models.CharField(
@@ -82,6 +83,8 @@ class Listing(models.Model):
     furnished = models.CharField(
         max_length=30, choices=FURNISHED_CHOICES, blank=True, default=""
     )
+    size = models.CharField(max_length=200, blank=True, null=True)
+    transportation = models.CharField(max_length=200, blank=True, null=True)
 
     # Household info
     vegan_household = models.CharField(
@@ -111,9 +114,10 @@ class Listing(models.Model):
 
     def activate_listing(self):
         """Activate listing after payment"""
-        self.status = ListingStatus.ACTIVE
-        self.expires_at = timezone.now() + timedelta(days=30)
-        self.save()
+        with transaction.atomic():
+            self.status = ListingStatus.ACTIVE
+            self.expires_at = timezone.now() + timedelta(days=30)
+            self.save()
 
     def __str__(self):
         status_display = dict(ListingStatus.CHOICES).get(self.status, self.status)

@@ -19,6 +19,7 @@ class ListingDraftSchema(BaseModel):
     description: Optional[str] = None
     city: Optional[str] = None
     borough: Optional[str] = None
+    neighborhood: Optional[str] = None
     price: Optional[int] = None
     start_date: Optional[date] = None
     end_date: Optional[date] = None
@@ -30,6 +31,8 @@ class ListingDraftSchema(BaseModel):
     rental_requirements: Optional[str] = None
     pet_policy: Optional[str] = None
     furnished: Optional[str] = None
+    size: Optional[str] = None
+    transportation: Optional[str] = None
     phone_number: Optional[str] = None
     seeking_roommate: bool = False
     include_phone: bool = False
@@ -72,6 +75,8 @@ class ListingOut(Schema):
     room_type: str
     vegan_household: str
     furnished: str
+    size: str | None = None
+    transportation: str | None = None
     lister_relationship: str
     seeking_roommate: bool
     about_lister: str | None = None
@@ -93,7 +98,7 @@ class ListingOut(Schema):
             description=listing.description,
             city=listing.city,
             borough=listing.borough,
-            neighborhood=getattr(listing, "neighborhood", None),
+            neighborhood=listing.neighborhood,
             price=listing.price,
             start_date=listing.start_date,
             end_date=listing.end_date,
@@ -101,6 +106,8 @@ class ListingOut(Schema):
             room_type=listing.room_type,
             vegan_household=listing.vegan_household,
             furnished=listing.furnished,
+            size=listing.size,
+            transportation=listing.transportation,
             lister_relationship=listing.lister_relationship,
             seeking_roommate=listing.seeking_roommate,
             about_lister=listing.about_lister or None,
@@ -125,6 +132,7 @@ class ListingIn(Schema):
     description: str | None = None
     city: str | None = None
     borough: str | None = None
+    neighborhood: str | None = None
     price: int | None = None
     start_date: date | None = None
     end_date: date | None = None
@@ -132,6 +140,8 @@ class ListingIn(Schema):
     room_type: str | None = None
     vegan_household: str | None = None
     furnished: str | None = None
+    size: str | None = None
+    transportation: str | None = None
     lister_relationship: str | None = None
     seeking_roommate: bool = False
     about_lister: str | None = None
