@@ -3,8 +3,11 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_http_methods
 from django_ratelimit.decorators import ratelimit
@@ -24,8 +27,10 @@ def index(request):
 
 def browse_listings(request):
     """Browse active listings"""
+    now = timezone.now()
     listings = (
         Listing.objects.filter(status=ListingStatus.ACTIVE)
+        .filter(Q(expires_at__gt=now) | Q(expires_at__isnull=True))
         .select_related("user")
         .prefetch_related("photos")
     )
@@ -101,18 +106,22 @@ def listing_detail(request, listing_id):
             # Not the owner and not an admin
             return redirect("browse")
 
-    # Check if user submitted payment
+    # Check if user submitted payment (new listing or renewal)
     if request.GET.get("payment") == "submitted":
-        if (
-            listing.status == ListingStatus.DRAFT
-            and request.user.is_authenticated
-            and listing.user_id == request.user.id
-        ):
-            listing.status = ListingStatus.PAYMENT_SUBMITTED
-            listing.save()
-            messages.success(
-                request, "Payment submitted! Your listing is awaiting approval."
-            )
+        if request.user.is_authenticated and listing.user_id == request.user.id:
+            if listing.status == ListingStatus.DRAFT:
+                listing.status = ListingStatus.PAYMENT_SUBMITTED
+                listing.save()
+                messages.success(
+                    request, "Payment submitted! Your listing is awaiting approval."
+                )
+            elif listing.status in (ListingStatus.EXPIRED, ListingStatus.DEACTIVATED):
+                listing.status = ListingStatus.PAYMENT_SUBMITTED
+                listing.expires_at = None
+                listing.save()
+                messages.success(
+                    request, "Renewal submitted! Your listing is awaiting approval."
+                )
 
     return render(request, "listing_detail.html", {"listing": listing})
 
@@ -262,17 +271,18 @@ def create_listing(request):
     if request.method == "POST":
         form = ListingForm(request.POST, request.FILES)
         if form.is_valid():
-            listing = form.save(commit=False)
-            listing.user = request.user
-            listing.status = ListingStatus.DRAFT
-            listing.save()
+            with transaction.atomic():
+                listing = form.save(commit=False)
+                listing.user = request.user
+                listing.status = ListingStatus.DRAFT
+                listing.save()
 
-            # Handle photo uploads
-            photos = request.FILES.getlist("photos")
-            for photo in photos[:10]:  # Limit to 10 photos
-                filename = save_picture(photo)
-                if filename:
-                    ListingPhoto.objects.create(listing=listing, filename=filename)
+                # Handle photo uploads
+                photos = request.FILES.getlist("photos")
+                for photo in photos[:10]:  # Limit to 10 photos
+                    filename = save_picture(photo)
+                    if filename:
+                        ListingPhoto.objects.create(listing=listing, filename=filename)
 
             messages.success(request, "Listing created!")
             return redirect("listing_preview", listing_id=listing.id)
@@ -290,17 +300,18 @@ def edit_listing(request, listing_id):
     if request.method == "POST":
         form = ListingForm(request.POST, request.FILES, instance=listing)
         if form.is_valid():
-            form.save()
+            with transaction.atomic():
+                form.save()
 
-            # Handle photo uploads
-            photos = request.FILES.getlist("photos")
-            current_photo_count = listing.photos.count()
-            remaining_slots = 10 - current_photo_count
+                # Handle photo uploads
+                photos = request.FILES.getlist("photos")
+                current_photo_count = listing.photos.count()
+                remaining_slots = 10 - current_photo_count
 
-            for photo in photos[:remaining_slots]:
-                filename = save_picture(photo)
-                if filename:
-                    ListingPhoto.objects.create(listing=listing, filename=filename)
+                for photo in photos[:remaining_slots]:
+                    filename = save_picture(photo)
+                    if filename:
+                        ListingPhoto.objects.create(listing=listing, filename=filename)
 
             messages.success(request, "Listing updated!")
             return redirect("listing_preview", listing_id=listing.id)

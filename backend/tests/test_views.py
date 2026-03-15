@@ -1,7 +1,10 @@
 """Test Django views"""
 
+from datetime import timedelta
+
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 
 from listings.models import Listing, ListingStatus
 from users.models import User
@@ -33,6 +36,15 @@ class TestPublicViews:
         response = client.get(reverse("browse"))
         assert response.status_code == 200
         assert draft_listing.title.encode() not in response.content
+
+    def test_browse_excludes_expired_by_date(self, client, active_listing):
+        """Active listing with past expires_at is excluded from browse."""
+        active_listing.expires_at = timezone.now() - timedelta(hours=1)
+        active_listing.save()
+
+        response = client.get(reverse("browse"))
+        assert response.status_code == 200
+        assert active_listing.title.encode() not in response.content
 
     def test_listing_detail(self, client, active_listing):
         """Test individual listing detail page"""
@@ -170,6 +182,43 @@ class TestDashboard:
         response = client.get(reverse("dashboard"))
         assert response.status_code == 200
         assert b"No listings yet" in response.content
+
+
+@pytest.mark.django_db
+class TestRenewal:
+    """Test listing renewal flow."""
+
+    def test_expired_listing_payment_submitted_transitions_to_payment_submitted(
+        self, client, logged_in_user, active_listing
+    ):
+        """Expired listing + ?payment=submitted transitions to payment_submitted."""
+        active_listing.status = ListingStatus.EXPIRED
+        active_listing.save()
+
+        response = client.get(
+            reverse("listing_detail", args=[active_listing.id]) + "?payment=submitted"
+        )
+        assert response.status_code == 200
+
+        active_listing.refresh_from_db()
+        assert active_listing.status == ListingStatus.PAYMENT_SUBMITTED
+        assert active_listing.expires_at is None
+
+    def test_deactivated_listing_payment_submitted_transitions_to_payment_submitted(
+        self, client, logged_in_user, active_listing
+    ):
+        """Deactivated listing + ?payment=submitted transitions to payment_submitted."""
+        active_listing.status = ListingStatus.DEACTIVATED
+        active_listing.save()
+
+        response = client.get(
+            reverse("listing_detail", args=[active_listing.id]) + "?payment=submitted"
+        )
+        assert response.status_code == 200
+
+        active_listing.refresh_from_db()
+        assert active_listing.status == ListingStatus.PAYMENT_SUBMITTED
+        assert active_listing.expires_at is None
 
 
 @pytest.mark.django_db
