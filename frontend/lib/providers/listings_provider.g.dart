@@ -61,8 +61,12 @@ abstract class _$BrowseFilters extends $Notifier<ListingFilters> {
   }
 }
 
+/// @Deprecated('Browse screen now uses browseAccumulatorProvider')
+
 @ProviderFor(browseListings)
 final browseListingsProvider = BrowseListingsProvider._();
+
+/// @Deprecated('Browse screen now uses browseAccumulatorProvider')
 
 final class BrowseListingsProvider
     extends
@@ -74,6 +78,7 @@ final class BrowseListingsProvider
     with
         $FutureModifier<PaginatedListings>,
         $FutureProvider<PaginatedListings> {
+  /// @Deprecated('Browse screen now uses browseAccumulatorProvider')
   BrowseListingsProvider._()
     : super(
         from: null,
@@ -100,7 +105,7 @@ final class BrowseListingsProvider
   }
 }
 
-String _$browseListingsHash() => r'aef99c2679537c9e19455bcdf1021d8d5c02e283';
+String _$browseListingsHash() => r'a6c0d6d0dfbc8db00cb6d8f3f4c5bc169ad47736';
 
 @ProviderFor(listingDetail)
 final listingDetailProvider = ListingDetailFamily._();
@@ -151,7 +156,7 @@ final class ListingDetailProvider
   }
 }
 
-String _$listingDetailHash() => r'2163cc3ede7d8977429228a6ee465dcf80224b03';
+String _$listingDetailHash() => r'57c547a221d3c9fdce8560a403babbd664392955';
 
 final class ListingDetailFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<Listing>, String> {

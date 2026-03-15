@@ -1,8 +1,8 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/listing.dart';
+import '../providers/browse_accumulator_provider.dart';
 import '../providers/listings_provider.dart';
 import '../widgets/filter_panel.dart';
 import '../widgets/listing_card.dart';
@@ -15,7 +15,7 @@ class BrowseScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final listingsAsync = ref.watch(browseListingsProvider);
+    final accAsync = ref.watch(browseAccumulatorProvider);
     final filters = ref.watch(browseFiltersProvider);
     final isWide = MediaQuery.sizeOf(context).width >= _kSidebarBreakpoint;
 
@@ -27,7 +27,6 @@ class BrowseScreen extends ConsumerWidget {
     );
 
     if (isWide) {
-      // Desktop: filter sidebar on left, scrollable grid on right.
       return Scaffold(
         body: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,7 +48,7 @@ class BrowseScreen extends ConsumerWidget {
             const VerticalDivider(width: 1),
             Expanded(
               child: CustomScrollView(
-                slivers: [_buildContent(context, ref, listingsAsync, filters)],
+                slivers: [_buildContent(context, ref, accAsync, filters)],
               ),
             ),
           ],
@@ -57,7 +56,6 @@ class BrowseScreen extends ConsumerWidget {
       );
     }
 
-    // Mobile/tablet: filter panel above grid.
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -75,15 +73,19 @@ class BrowseScreen extends ConsumerWidget {
               ),
             ),
           ),
-          _buildContent(context, ref, listingsAsync, filters),
+          _buildContent(context, ref, accAsync, filters),
         ],
       ),
     );
   }
 
-  // Returns a sliver for the listing content area (loading / error / empty / data).
-  Widget _buildContent(BuildContext context, WidgetRef ref, AsyncValue<PaginatedListings> listingsAsync, ListingFilters filters) {
-    return listingsAsync.when(
+  Widget _buildContent(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<BrowseAccumulatorState> accAsync,
+    ListingFilters filters,
+  ) {
+    return accAsync.when(
       loading: () => const SliverToBoxAdapter(
         child: Padding(
           padding: EdgeInsets.all(16),
@@ -92,18 +94,6 @@ class BrowseScreen extends ConsumerWidget {
       ),
       error: (err, _) {
         String errorMessage = 'Something went wrong';
-        if (err is DioException) {
-          if (err.type == DioExceptionType.connectionTimeout ||
-              err.type == DioExceptionType.receiveTimeout ||
-              err.type == DioExceptionType.sendTimeout ||
-              err.type == DioExceptionType.connectionError) {
-            errorMessage = 'Unable to connect. Check your connection and try again.';
-          } else if (err.response?.statusCode == 404) {
-            errorMessage = 'Listings not found';
-          } else if (err.response?.statusCode == 403) {
-            errorMessage = 'You don\'t have permission to view this';
-          }
-        }
         return SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.all(32),
@@ -120,7 +110,7 @@ class BrowseScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 8),
                   TextButton(
-                    onPressed: () => ref.invalidate(browseListingsProvider),
+                    onPressed: () => ref.invalidate(browseAccumulatorProvider),
                     child: const Text('Try again'),
                   ),
                 ],
@@ -129,7 +119,7 @@ class BrowseScreen extends ConsumerWidget {
           ),
         );
       },
-      data: (paginated) => paginated.items.isEmpty
+      data: (acc) => acc.items.isEmpty
           ? SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(48),
@@ -158,14 +148,17 @@ class BrowseScreen extends ConsumerWidget {
               ),
             )
           : _ListingGrid(
-              listings: paginated.items,
-              hasMore: paginated.items.length < paginated.count,
-              onLoadMore: () {
-                final current = ref.read(browseFiltersProvider);
-                ref.read(browseFiltersProvider.notifier).update(
-                      current.copyWith(page: current.page + 1),
-                    );
-              },
+              listings: acc.items,
+              totalCount: acc.totalCount,
+              hasMore: acc.hasMore,
+              isLoadingMore: acc.isLoadingMore,
+              loadMoreError: acc.loadMoreError,
+              onLoadMore: () => ref
+                  .read(browseAccumulatorProvider.notifier)
+                  .loadMore(),
+              onRetry: () => ref
+                  .read(browseAccumulatorProvider.notifier)
+                  .loadMore(),
             ),
     );
   }
@@ -178,15 +171,22 @@ class BrowseScreen extends ConsumerWidget {
 class _ListingGrid extends StatelessWidget {
   const _ListingGrid({
     required this.listings,
+    required this.totalCount,
     required this.hasMore,
+    required this.isLoadingMore,
+    required this.loadMoreError,
     required this.onLoadMore,
+    required this.onRetry,
   });
 
   final List<Listing> listings;
+  final int totalCount;
   final bool hasMore;
+  final bool isLoadingMore;
+  final bool loadMoreError;
   final VoidCallback onLoadMore;
+  final VoidCallback onRetry;
 
-  // Column count based on the available width of the grid area (not full screen).
   int _columnCount(double width) {
     if (width >= 900) return 3;
     if (width >= 500) return 2;
@@ -217,13 +217,49 @@ class _ListingGrid extends StatelessWidget {
               );
             },
           ),
-          if (hasMore) ...[
-            const SizedBox(height: 24),
+          const SizedBox(height: 16),
+          // Result count
+          Center(
+            child: Text(
+              'Showing ${listings.length} of $totalCount listings',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
+          ),
+          if (loadMoreError) ...[
+            const SizedBox(height: 12),
             Center(
-              child: OutlinedButton(
-                onPressed: onLoadMore,
-                child: const Text('Load more'),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Failed to load more listings.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: onRetry,
+                    child: const Text('Retry'),
+                  ),
+                ],
               ),
+            ),
+          ] else if (hasMore) ...[
+            const SizedBox(height: 12),
+            Center(
+              child: isLoadingMore
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : OutlinedButton(
+                      onPressed: onLoadMore,
+                      child: const Text('Load more'),
+                    ),
             ),
           ],
           const SizedBox(height: 24),
