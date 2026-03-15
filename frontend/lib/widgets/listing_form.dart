@@ -14,6 +14,7 @@ import '../services/api_client.dart';
 import '../utils/logger.dart';
 import '../utils/platform.dart';
 import 'listing_form_validators.dart';
+import 'vedgy_image.dart';
 
 // ---------------------------------------------------------------------------
 // Shared listing form — used by CreateListingScreen and EditListingScreen.
@@ -861,17 +862,10 @@ class _PhotoThumb extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(6),
-          child: Image.network(
-            photo.url,
+          child: VedgyImage(
+            url: photo.url,
             width: 80,
             height: 80,
-            fit: BoxFit.cover,
-            errorBuilder: (ctx, err, stack) => Container(
-              width: 80,
-              height: 80,
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              child: const Icon(Icons.broken_image_outlined),
-            ),
           ),
         ),
         Positioned(

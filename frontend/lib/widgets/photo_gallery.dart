@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/listing.dart';
+import 'vedgy_image.dart';
 
 class PhotoGallery extends StatefulWidget {
   const PhotoGallery({required this.photos, super.key});
@@ -99,13 +100,8 @@ class _PhotoGalleryState extends State<PhotoGallery> {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(4),
-                    child: Image.network(
-                      widget.photos[index].url,
-                      fit: BoxFit.cover,
-                      errorBuilder: (ctx, err, st) => ColoredBox(
-                        color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
-                        child: const Icon(Icons.broken_image_outlined, size: 24),
-                      ),
+                    child: VedgyImage(
+                      url: widget.photos[index].url,
                     ),
                   ),
                 ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../models/listing.dart';
+import 'vedgy_image.dart';
 
 class ListingCard extends StatelessWidget {
   const ListingCard({required this.listing, super.key});
@@ -131,30 +132,10 @@ class _PhotoThumbnail extends StatelessWidget {
       );
     }
 
-    return Image.network(
-      photos.first.url,
+    return VedgyImage(
+      url: photos.first.url,
       height: 160,
       width: double.infinity,
-      fit: BoxFit.cover,
-      errorBuilder: (context, err, st) => Container(
-        height: 160,
-        color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        child: Center(
-          child: Icon(
-            Icons.broken_image_outlined,
-            size: 48,
-            color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
-          ),
-        ),
-      ),
-      loadingBuilder: (context, child, progress) {
-        if (progress == null) return child;
-        return Container(
-          height: 160,
-          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          child: const Center(child: CircularProgressIndicator()),
-        );
-      },
     );
   }
 }
