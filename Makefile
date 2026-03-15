@@ -30,6 +30,8 @@ help:
 
 install:
 	uv sync
+	@which flutter >/dev/null 2>&1 || (echo "Installing Flutter via Homebrew..." && brew install --cask flutter)
+	cd frontend && flutter pub get
 
 run:
 	cd backend && uv run python manage.py runserver

@@ -5,7 +5,7 @@ description = "Open-source vegan housing platform"
 requires-python = ">=3.13"
 dependencies = [
     "django==5.2.6",
-    "psycopg2-binary==2.9.10",
+    "psycopg[binary]>=3.2,<4.0",
     "python-dotenv==1.1.1",
     "pillow==11.3.0",
     "boto3==1.40.50",
@@ -28,6 +28,8 @@ dev = [
     "autoflake",
     "black",
     "isort",
+    "flake8",
+    "mypy",
 ]
 
 [tool.pytest.ini_options]
@@ -37,3 +39,7 @@ python_classes = "Test*"
 python_functions = "test_*"
 addopts = "--verbose --strict-markers --tb=short --reuse-db"
 markers = ["django_db: Mark test as requiring database access"]
+filterwarnings = [
+    "ignore:No directory at.*staticfiles:UserWarning:django.core.handlers.base",
+    "ignore:'asyncio.iscoroutinefunction' is deprecated:DeprecationWarning:ninja.signature.utils",
+]
