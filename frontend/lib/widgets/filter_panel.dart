@@ -20,10 +20,26 @@ class _FilterPanelState extends ConsumerState<FilterPanel> {
 
   static const _cities = ['New York', 'Los Angeles', 'Chicago', 'Other'];
   static const _boroughs = ['Manhattan', 'Brooklyn', 'Queens', 'The Bronx', 'Staten Island'];
-  static const _rentalTypes = ['Long-term', 'Short-term', 'Both'];
-  static const _roomTypes = ['Entire place', 'Private room', 'Shared room'];
-  static const _veganHouseholds = ['Fully vegan', 'Mostly vegan', 'Vegan-friendly'];
-  static const _furnishedOptions = ['Furnished', 'Unfurnished', 'Partially furnished'];
+  static const _rentalTypes = [
+    ('sublet', 'Sublet'),
+    ('new_lease', 'New Lease'),
+    ('month_to_month', 'Month to Month'),
+    ('short_term', 'Short Term'),
+  ];
+  static const _roomTypes = [
+    ('private_room', 'Private Room'),
+    ('shared_room', 'Shared Room'),
+    ('entire_place', 'Entire Place'),
+  ];
+  static const _veganHouseholds = [
+    ('fully_vegan', 'Fully Vegan'),
+    ('mixed_household', 'Mixed Household'),
+  ];
+  static const _furnishedOptions = [
+    ('unfurnished', 'Unfurnished'),
+    ('partially_furnished', 'Partially Furnished'),
+    ('fully_furnished', 'Fully Furnished'),
+  ];
 
   @override
   void dispose() {
@@ -87,9 +103,6 @@ class _FilterPanelState extends ConsumerState<FilterPanel> {
             const SizedBox(height: 12),
             LayoutBuilder(
               builder: (context, constraints) {
-                // Compute item width so items never overflow: fit 3 cols on
-                // wide screens, 2 on medium, 1 on narrow. The 12px spacing
-                // between items is subtracted before dividing.
                 final w = constraints.maxWidth;
                 final cols = w >= 580 ? 3 : w >= 360 ? 2 : 1;
                 final itemW = (w - 12 * (cols - 1)) / cols;
@@ -99,7 +112,7 @@ class _FilterPanelState extends ConsumerState<FilterPanel> {
                   spacing: 12,
                   runSpacing: 12,
                   children: [
-                    _FilterDropdown(
+                    _PlainFilterDropdown(
                       width: itemW,
                       label: 'City',
                       value: filters.city,
@@ -107,42 +120,42 @@ class _FilterPanelState extends ConsumerState<FilterPanel> {
                       onChanged: (v) => _updateFilter((f) => f.copyWith(city: v, borough: null)),
                     ),
                     if (isNyc)
-                      _FilterDropdown(
+                      _PlainFilterDropdown(
                         width: itemW,
                         label: 'Borough',
                         value: filters.borough,
                         items: _boroughs,
                         onChanged: (v) => _updateFilter((f) => f.copyWith(borough: v)),
                       ),
-                    _FilterDropdown(
+                    _TupleFilterDropdown(
                       width: itemW,
                       label: 'Rental type',
                       value: filters.rentalType,
                       items: _rentalTypes,
                       onChanged: (v) => _updateFilter((f) => f.copyWith(rentalType: v)),
                     ),
-                    _FilterDropdown(
+                    _TupleFilterDropdown(
                       width: itemW,
                       label: 'Room type',
                       value: filters.roomType,
                       items: _roomTypes,
                       onChanged: (v) => _updateFilter((f) => f.copyWith(roomType: v)),
                     ),
-                    _FilterDropdown(
+                    _TupleFilterDropdown(
                       width: itemW,
                       label: 'Vegan household',
                       value: filters.veganHousehold,
                       items: _veganHouseholds,
                       onChanged: (v) => _updateFilter((f) => f.copyWith(veganHousehold: v)),
                     ),
-                    _FilterDropdown(
+                    _TupleFilterDropdown(
                       width: itemW,
                       label: 'Furnished',
                       value: filters.furnished,
                       items: _furnishedOptions,
                       onChanged: (v) => _updateFilter((f) => f.copyWith(furnished: v)),
                     ),
-                    _SeeingRoommateToggle(
+                    _SeekingRoommateToggle(
                       width: itemW,
                       value: filters.seekingRoommate,
                       onChanged: (v) => _updateFilter((f) => f.copyWith(seekingRoommate: v)),
@@ -186,8 +199,9 @@ class _FilterPanelState extends ConsumerState<FilterPanel> {
   }
 }
 
-class _FilterDropdown extends StatelessWidget {
-  const _FilterDropdown({
+/// Dropdown for plain string values (city, borough) where display = API value.
+class _PlainFilterDropdown extends StatelessWidget {
+  const _PlainFilterDropdown({
     required this.width,
     required this.label,
     required this.value,
@@ -224,8 +238,47 @@ class _FilterDropdown extends StatelessWidget {
   }
 }
 
-class _SeeingRoommateToggle extends StatelessWidget {
-  const _SeeingRoommateToggle({required this.width, required this.value, required this.onChanged});
+/// Dropdown for tuple (apiValue, displayLabel) items.
+class _TupleFilterDropdown extends StatelessWidget {
+  const _TupleFilterDropdown({
+    required this.width,
+    required this.label,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+  });
+
+  final double width;
+  final String label;
+  final String? value;
+  final List<(String, String)> items;
+  final void Function(String?) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: width,
+      child: DropdownButtonFormField<String>(
+        key: ValueKey(value),
+        initialValue: value,
+        decoration: InputDecoration(
+          labelText: label,
+          isDense: true,
+          border: const OutlineInputBorder(),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        ),
+        items: [
+          const DropdownMenuItem(value: null, child: Text('Any')),
+          ...items.map((pair) => DropdownMenuItem(value: pair.$1, child: Text(pair.$2))),
+        ],
+        onChanged: onChanged,
+      ),
+    );
+  }
+}
+
+class _SeekingRoommateToggle extends StatelessWidget {
+  const _SeekingRoommateToggle({required this.width, required this.value, required this.onChanged});
 
   final double width;
   final bool? value;

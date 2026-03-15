@@ -45,6 +45,8 @@ abstract class Listing with _$Listing {
     required String roomType,
     required String veganHousehold,
     required String furnished,
+    String? size,
+    String? transportation,
     required String listerRelationship,
     @Default(false) bool seekingRoommate,
     String? aboutLister,

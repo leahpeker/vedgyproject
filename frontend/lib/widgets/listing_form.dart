@@ -43,6 +43,8 @@ class _ListingFormState extends ConsumerState<ListingForm> {
   final _aboutLister = TextEditingController();
   final _rentalRequirements = TextEditingController();
   final _petPolicy = TextEditingController();
+  final _size = TextEditingController();
+  final _transportation = TextEditingController();
   final _phoneNumber = TextEditingController();
 
   // ---- Dropdown state ------------------------------------------------------
@@ -76,6 +78,7 @@ class _ListingFormState extends ConsumerState<ListingForm> {
     ('sublet', 'Sublet'),
     ('new_lease', 'New Lease'),
     ('month_to_month', 'Month to Month'),
+    ('short_term', 'Short Term'),
   ];
   static const _roomTypes = [
     ('private_room', 'Private Room'),
@@ -96,8 +99,6 @@ class _ListingFormState extends ConsumerState<ListingForm> {
     ('manager', 'I manage the space'),
     ('tenant', 'I am the current tenant'),
     ('roommate', 'I am a current roommate'),
-    ('agent', 'I am a rental agent/broker'),
-    ('other', 'Other'),
   ];
 
   @override
@@ -119,6 +120,8 @@ class _ListingFormState extends ConsumerState<ListingForm> {
       _aboutLister.text = l.aboutLister ?? '';
       _rentalRequirements.text = l.rentalRequirements ?? '';
       _petPolicy.text = l.petPolicy ?? '';
+      _size.text = l.size ?? '';
+      _transportation.text = l.transportation ?? '';
       _phoneNumber.text = l.phoneNumber ?? '';
       _city = l.city.isEmpty ? null : l.city;
       _borough = l.borough;
@@ -139,7 +142,8 @@ class _ListingFormState extends ConsumerState<ListingForm> {
     _debounce?.cancel();
     for (final c in [
       _title, _description, _neighborhood, _price, _startDate, _endDate,
-      _aboutLister, _rentalRequirements, _petPolicy, _phoneNumber,
+      _aboutLister, _rentalRequirements, _petPolicy, _size, _transportation,
+      _phoneNumber,
     ]) {
       c.dispose();
     }
@@ -567,6 +571,28 @@ class _ListingFormState extends ConsumerState<ListingForm> {
                   _onChange('furnished', v);
                 },
               ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _field(
+                      label: 'Size (optional)',
+                      hint: 'e.g. 12x10 feet, 200 sq ft',
+                      controller: _size,
+                      onChanged: (v) => _onChange('size', v),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _field(
+                      label: 'Transportation (optional)',
+                      hint: 'e.g. Near L train, Bus route 42',
+                      controller: _transportation,
+                      onChanged: (v) => _onChange('transportation', v),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 24),
 
               // About you
@@ -867,18 +893,25 @@ class _PhotoThumb extends StatelessWidget {
           ),
         ),
         Positioned(
-          top: -6,
-          right: -6,
+          top: -14,
+          right: -14,
           child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
             onTap: () => onDelete(photo),
-            child: Container(
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.error,
-                shape: BoxShape.circle,
+            child: SizedBox(
+              width: 48,
+              height: 48,
+              child: Center(
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.error,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.close, size: 13, color: Colors.white),
+                ),
               ),
-              child: const Icon(Icons.close, size: 13, color: Colors.white),
             ),
           ),
         ),

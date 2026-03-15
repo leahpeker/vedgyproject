@@ -553,7 +553,7 @@ as String,
 /// @nodoc
 mixin _$Listing {
 
- String get id; String get title; String get description; String get city; String? get borough; String? get neighborhood; int? get price; DateTime? get startDate; DateTime? get endDate; String get rentalType; String get roomType; String get veganHousehold; String get furnished; String get listerRelationship; bool get seekingRoommate; String? get aboutLister; String? get rentalRequirements; String? get petPolicy; bool get includePhone; String? get phoneNumber; String get status; ListingUser get user; List<ListingPhoto> get photos; DateTime get createdAt; DateTime? get expiresAt;
+ String get id; String get title; String get description; String get city; String? get borough; String? get neighborhood; int? get price; DateTime? get startDate; DateTime? get endDate; String get rentalType; String get roomType; String get veganHousehold; String get furnished; String? get size; String? get transportation; String get listerRelationship; bool get seekingRoommate; String? get aboutLister; String? get rentalRequirements; String? get petPolicy; bool get includePhone; String? get phoneNumber; String get status; ListingUser get user; List<ListingPhoto> get photos; DateTime get createdAt; DateTime? get expiresAt;
 /// Create a copy of Listing
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -566,16 +566,16 @@ $ListingCopyWith<Listing> get copyWith => _$ListingCopyWithImpl<Listing>(this as
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Listing&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.city, city) || other.city == city)&&(identical(other.borough, borough) || other.borough == borough)&&(identical(other.neighborhood, neighborhood) || other.neighborhood == neighborhood)&&(identical(other.price, price) || other.price == price)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.rentalType, rentalType) || other.rentalType == rentalType)&&(identical(other.roomType, roomType) || other.roomType == roomType)&&(identical(other.veganHousehold, veganHousehold) || other.veganHousehold == veganHousehold)&&(identical(other.furnished, furnished) || other.furnished == furnished)&&(identical(other.listerRelationship, listerRelationship) || other.listerRelationship == listerRelationship)&&(identical(other.seekingRoommate, seekingRoommate) || other.seekingRoommate == seekingRoommate)&&(identical(other.aboutLister, aboutLister) || other.aboutLister == aboutLister)&&(identical(other.rentalRequirements, rentalRequirements) || other.rentalRequirements == rentalRequirements)&&(identical(other.petPolicy, petPolicy) || other.petPolicy == petPolicy)&&(identical(other.includePhone, includePhone) || other.includePhone == includePhone)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.user, user) || other.user == user)&&const DeepCollectionEquality().equals(other.photos, photos)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Listing&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.city, city) || other.city == city)&&(identical(other.borough, borough) || other.borough == borough)&&(identical(other.neighborhood, neighborhood) || other.neighborhood == neighborhood)&&(identical(other.price, price) || other.price == price)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.rentalType, rentalType) || other.rentalType == rentalType)&&(identical(other.roomType, roomType) || other.roomType == roomType)&&(identical(other.veganHousehold, veganHousehold) || other.veganHousehold == veganHousehold)&&(identical(other.furnished, furnished) || other.furnished == furnished)&&(identical(other.size, size) || other.size == size)&&(identical(other.transportation, transportation) || other.transportation == transportation)&&(identical(other.listerRelationship, listerRelationship) || other.listerRelationship == listerRelationship)&&(identical(other.seekingRoommate, seekingRoommate) || other.seekingRoommate == seekingRoommate)&&(identical(other.aboutLister, aboutLister) || other.aboutLister == aboutLister)&&(identical(other.rentalRequirements, rentalRequirements) || other.rentalRequirements == rentalRequirements)&&(identical(other.petPolicy, petPolicy) || other.petPolicy == petPolicy)&&(identical(other.includePhone, includePhone) || other.includePhone == includePhone)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.user, user) || other.user == user)&&const DeepCollectionEquality().equals(other.photos, photos)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,title,description,city,borough,neighborhood,price,startDate,endDate,rentalType,roomType,veganHousehold,furnished,listerRelationship,seekingRoommate,aboutLister,rentalRequirements,petPolicy,includePhone,phoneNumber,status,user,const DeepCollectionEquality().hash(photos),createdAt,expiresAt]);
+int get hashCode => Object.hashAll([runtimeType,id,title,description,city,borough,neighborhood,price,startDate,endDate,rentalType,roomType,veganHousehold,furnished,size,transportation,listerRelationship,seekingRoommate,aboutLister,rentalRequirements,petPolicy,includePhone,phoneNumber,status,user,const DeepCollectionEquality().hash(photos),createdAt,expiresAt]);
 
 @override
 String toString() {
-  return 'Listing(id: $id, title: $title, description: $description, city: $city, borough: $borough, neighborhood: $neighborhood, price: $price, startDate: $startDate, endDate: $endDate, rentalType: $rentalType, roomType: $roomType, veganHousehold: $veganHousehold, furnished: $furnished, listerRelationship: $listerRelationship, seekingRoommate: $seekingRoommate, aboutLister: $aboutLister, rentalRequirements: $rentalRequirements, petPolicy: $petPolicy, includePhone: $includePhone, phoneNumber: $phoneNumber, status: $status, user: $user, photos: $photos, createdAt: $createdAt, expiresAt: $expiresAt)';
+  return 'Listing(id: $id, title: $title, description: $description, city: $city, borough: $borough, neighborhood: $neighborhood, price: $price, startDate: $startDate, endDate: $endDate, rentalType: $rentalType, roomType: $roomType, veganHousehold: $veganHousehold, furnished: $furnished, size: $size, transportation: $transportation, listerRelationship: $listerRelationship, seekingRoommate: $seekingRoommate, aboutLister: $aboutLister, rentalRequirements: $rentalRequirements, petPolicy: $petPolicy, includePhone: $includePhone, phoneNumber: $phoneNumber, status: $status, user: $user, photos: $photos, createdAt: $createdAt, expiresAt: $expiresAt)';
 }
 
 
@@ -586,7 +586,7 @@ abstract mixin class $ListingCopyWith<$Res>  {
   factory $ListingCopyWith(Listing value, $Res Function(Listing) _then) = _$ListingCopyWithImpl;
 @useResult
 $Res call({
- String id, String title, String description, String city, String? borough, String? neighborhood, int? price, DateTime? startDate, DateTime? endDate, String rentalType, String roomType, String veganHousehold, String furnished, String listerRelationship, bool seekingRoommate, String? aboutLister, String? rentalRequirements, String? petPolicy, bool includePhone, String? phoneNumber, String status, ListingUser user, List<ListingPhoto> photos, DateTime createdAt, DateTime? expiresAt
+ String id, String title, String description, String city, String? borough, String? neighborhood, int? price, DateTime? startDate, DateTime? endDate, String rentalType, String roomType, String veganHousehold, String furnished, String? size, String? transportation, String listerRelationship, bool seekingRoommate, String? aboutLister, String? rentalRequirements, String? petPolicy, bool includePhone, String? phoneNumber, String status, ListingUser user, List<ListingPhoto> photos, DateTime createdAt, DateTime? expiresAt
 });
 
 
@@ -603,7 +603,7 @@ class _$ListingCopyWithImpl<$Res>
 
 /// Create a copy of Listing
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? description = null,Object? city = null,Object? borough = freezed,Object? neighborhood = freezed,Object? price = freezed,Object? startDate = freezed,Object? endDate = freezed,Object? rentalType = null,Object? roomType = null,Object? veganHousehold = null,Object? furnished = null,Object? listerRelationship = null,Object? seekingRoommate = null,Object? aboutLister = freezed,Object? rentalRequirements = freezed,Object? petPolicy = freezed,Object? includePhone = null,Object? phoneNumber = freezed,Object? status = null,Object? user = null,Object? photos = null,Object? createdAt = null,Object? expiresAt = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? title = null,Object? description = null,Object? city = null,Object? borough = freezed,Object? neighborhood = freezed,Object? price = freezed,Object? startDate = freezed,Object? endDate = freezed,Object? rentalType = null,Object? roomType = null,Object? veganHousehold = null,Object? furnished = null,Object? size = freezed,Object? transportation = freezed,Object? listerRelationship = null,Object? seekingRoommate = null,Object? aboutLister = freezed,Object? rentalRequirements = freezed,Object? petPolicy = freezed,Object? includePhone = null,Object? phoneNumber = freezed,Object? status = null,Object? user = null,Object? photos = null,Object? createdAt = null,Object? expiresAt = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -618,7 +618,9 @@ as DateTime?,rentalType: null == rentalType ? _self.rentalType : rentalType // i
 as String,roomType: null == roomType ? _self.roomType : roomType // ignore: cast_nullable_to_non_nullable
 as String,veganHousehold: null == veganHousehold ? _self.veganHousehold : veganHousehold // ignore: cast_nullable_to_non_nullable
 as String,furnished: null == furnished ? _self.furnished : furnished // ignore: cast_nullable_to_non_nullable
-as String,listerRelationship: null == listerRelationship ? _self.listerRelationship : listerRelationship // ignore: cast_nullable_to_non_nullable
+as String,size: freezed == size ? _self.size : size // ignore: cast_nullable_to_non_nullable
+as String?,transportation: freezed == transportation ? _self.transportation : transportation // ignore: cast_nullable_to_non_nullable
+as String?,listerRelationship: null == listerRelationship ? _self.listerRelationship : listerRelationship // ignore: cast_nullable_to_non_nullable
 as String,seekingRoommate: null == seekingRoommate ? _self.seekingRoommate : seekingRoommate // ignore: cast_nullable_to_non_nullable
 as bool,aboutLister: freezed == aboutLister ? _self.aboutLister : aboutLister // ignore: cast_nullable_to_non_nullable
 as String?,rentalRequirements: freezed == rentalRequirements ? _self.rentalRequirements : rentalRequirements // ignore: cast_nullable_to_non_nullable
@@ -724,10 +726,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String description,  String city,  String? borough,  String? neighborhood,  int? price,  DateTime? startDate,  DateTime? endDate,  String rentalType,  String roomType,  String veganHousehold,  String furnished,  String listerRelationship,  bool seekingRoommate,  String? aboutLister,  String? rentalRequirements,  String? petPolicy,  bool includePhone,  String? phoneNumber,  String status,  ListingUser user,  List<ListingPhoto> photos,  DateTime createdAt,  DateTime? expiresAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String title,  String description,  String city,  String? borough,  String? neighborhood,  int? price,  DateTime? startDate,  DateTime? endDate,  String rentalType,  String roomType,  String veganHousehold,  String furnished,  String? size,  String? transportation,  String listerRelationship,  bool seekingRoommate,  String? aboutLister,  String? rentalRequirements,  String? petPolicy,  bool includePhone,  String? phoneNumber,  String status,  ListingUser user,  List<ListingPhoto> photos,  DateTime createdAt,  DateTime? expiresAt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Listing() when $default != null:
-return $default(_that.id,_that.title,_that.description,_that.city,_that.borough,_that.neighborhood,_that.price,_that.startDate,_that.endDate,_that.rentalType,_that.roomType,_that.veganHousehold,_that.furnished,_that.listerRelationship,_that.seekingRoommate,_that.aboutLister,_that.rentalRequirements,_that.petPolicy,_that.includePhone,_that.phoneNumber,_that.status,_that.user,_that.photos,_that.createdAt,_that.expiresAt);case _:
+return $default(_that.id,_that.title,_that.description,_that.city,_that.borough,_that.neighborhood,_that.price,_that.startDate,_that.endDate,_that.rentalType,_that.roomType,_that.veganHousehold,_that.furnished,_that.size,_that.transportation,_that.listerRelationship,_that.seekingRoommate,_that.aboutLister,_that.rentalRequirements,_that.petPolicy,_that.includePhone,_that.phoneNumber,_that.status,_that.user,_that.photos,_that.createdAt,_that.expiresAt);case _:
   return orElse();
 
 }
@@ -745,10 +747,10 @@ return $default(_that.id,_that.title,_that.description,_that.city,_that.borough,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String description,  String city,  String? borough,  String? neighborhood,  int? price,  DateTime? startDate,  DateTime? endDate,  String rentalType,  String roomType,  String veganHousehold,  String furnished,  String listerRelationship,  bool seekingRoommate,  String? aboutLister,  String? rentalRequirements,  String? petPolicy,  bool includePhone,  String? phoneNumber,  String status,  ListingUser user,  List<ListingPhoto> photos,  DateTime createdAt,  DateTime? expiresAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String title,  String description,  String city,  String? borough,  String? neighborhood,  int? price,  DateTime? startDate,  DateTime? endDate,  String rentalType,  String roomType,  String veganHousehold,  String furnished,  String? size,  String? transportation,  String listerRelationship,  bool seekingRoommate,  String? aboutLister,  String? rentalRequirements,  String? petPolicy,  bool includePhone,  String? phoneNumber,  String status,  ListingUser user,  List<ListingPhoto> photos,  DateTime createdAt,  DateTime? expiresAt)  $default,) {final _that = this;
 switch (_that) {
 case _Listing():
-return $default(_that.id,_that.title,_that.description,_that.city,_that.borough,_that.neighborhood,_that.price,_that.startDate,_that.endDate,_that.rentalType,_that.roomType,_that.veganHousehold,_that.furnished,_that.listerRelationship,_that.seekingRoommate,_that.aboutLister,_that.rentalRequirements,_that.petPolicy,_that.includePhone,_that.phoneNumber,_that.status,_that.user,_that.photos,_that.createdAt,_that.expiresAt);case _:
+return $default(_that.id,_that.title,_that.description,_that.city,_that.borough,_that.neighborhood,_that.price,_that.startDate,_that.endDate,_that.rentalType,_that.roomType,_that.veganHousehold,_that.furnished,_that.size,_that.transportation,_that.listerRelationship,_that.seekingRoommate,_that.aboutLister,_that.rentalRequirements,_that.petPolicy,_that.includePhone,_that.phoneNumber,_that.status,_that.user,_that.photos,_that.createdAt,_that.expiresAt);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -765,10 +767,10 @@ return $default(_that.id,_that.title,_that.description,_that.city,_that.borough,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String description,  String city,  String? borough,  String? neighborhood,  int? price,  DateTime? startDate,  DateTime? endDate,  String rentalType,  String roomType,  String veganHousehold,  String furnished,  String listerRelationship,  bool seekingRoommate,  String? aboutLister,  String? rentalRequirements,  String? petPolicy,  bool includePhone,  String? phoneNumber,  String status,  ListingUser user,  List<ListingPhoto> photos,  DateTime createdAt,  DateTime? expiresAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String title,  String description,  String city,  String? borough,  String? neighborhood,  int? price,  DateTime? startDate,  DateTime? endDate,  String rentalType,  String roomType,  String veganHousehold,  String furnished,  String? size,  String? transportation,  String listerRelationship,  bool seekingRoommate,  String? aboutLister,  String? rentalRequirements,  String? petPolicy,  bool includePhone,  String? phoneNumber,  String status,  ListingUser user,  List<ListingPhoto> photos,  DateTime createdAt,  DateTime? expiresAt)?  $default,) {final _that = this;
 switch (_that) {
 case _Listing() when $default != null:
-return $default(_that.id,_that.title,_that.description,_that.city,_that.borough,_that.neighborhood,_that.price,_that.startDate,_that.endDate,_that.rentalType,_that.roomType,_that.veganHousehold,_that.furnished,_that.listerRelationship,_that.seekingRoommate,_that.aboutLister,_that.rentalRequirements,_that.petPolicy,_that.includePhone,_that.phoneNumber,_that.status,_that.user,_that.photos,_that.createdAt,_that.expiresAt);case _:
+return $default(_that.id,_that.title,_that.description,_that.city,_that.borough,_that.neighborhood,_that.price,_that.startDate,_that.endDate,_that.rentalType,_that.roomType,_that.veganHousehold,_that.furnished,_that.size,_that.transportation,_that.listerRelationship,_that.seekingRoommate,_that.aboutLister,_that.rentalRequirements,_that.petPolicy,_that.includePhone,_that.phoneNumber,_that.status,_that.user,_that.photos,_that.createdAt,_that.expiresAt);case _:
   return null;
 
 }
@@ -780,7 +782,7 @@ return $default(_that.id,_that.title,_that.description,_that.city,_that.borough,
 @JsonSerializable()
 
 class _Listing implements Listing {
-  const _Listing({required this.id, required this.title, required this.description, required this.city, this.borough, this.neighborhood, this.price, this.startDate, this.endDate, required this.rentalType, required this.roomType, required this.veganHousehold, required this.furnished, required this.listerRelationship, this.seekingRoommate = false, this.aboutLister, this.rentalRequirements, this.petPolicy, this.includePhone = false, this.phoneNumber, required this.status, required this.user, final  List<ListingPhoto> photos = const [], required this.createdAt, this.expiresAt}): _photos = photos;
+  const _Listing({required this.id, required this.title, required this.description, required this.city, this.borough, this.neighborhood, this.price, this.startDate, this.endDate, required this.rentalType, required this.roomType, required this.veganHousehold, required this.furnished, this.size, this.transportation, required this.listerRelationship, this.seekingRoommate = false, this.aboutLister, this.rentalRequirements, this.petPolicy, this.includePhone = false, this.phoneNumber, required this.status, required this.user, final  List<ListingPhoto> photos = const [], required this.createdAt, this.expiresAt}): _photos = photos;
   factory _Listing.fromJson(Map<String, dynamic> json) => _$ListingFromJson(json);
 
 @override final  String id;
@@ -796,6 +798,8 @@ class _Listing implements Listing {
 @override final  String roomType;
 @override final  String veganHousehold;
 @override final  String furnished;
+@override final  String? size;
+@override final  String? transportation;
 @override final  String listerRelationship;
 @override@JsonKey() final  bool seekingRoommate;
 @override final  String? aboutLister;
@@ -828,16 +832,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Listing&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.city, city) || other.city == city)&&(identical(other.borough, borough) || other.borough == borough)&&(identical(other.neighborhood, neighborhood) || other.neighborhood == neighborhood)&&(identical(other.price, price) || other.price == price)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.rentalType, rentalType) || other.rentalType == rentalType)&&(identical(other.roomType, roomType) || other.roomType == roomType)&&(identical(other.veganHousehold, veganHousehold) || other.veganHousehold == veganHousehold)&&(identical(other.furnished, furnished) || other.furnished == furnished)&&(identical(other.listerRelationship, listerRelationship) || other.listerRelationship == listerRelationship)&&(identical(other.seekingRoommate, seekingRoommate) || other.seekingRoommate == seekingRoommate)&&(identical(other.aboutLister, aboutLister) || other.aboutLister == aboutLister)&&(identical(other.rentalRequirements, rentalRequirements) || other.rentalRequirements == rentalRequirements)&&(identical(other.petPolicy, petPolicy) || other.petPolicy == petPolicy)&&(identical(other.includePhone, includePhone) || other.includePhone == includePhone)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.user, user) || other.user == user)&&const DeepCollectionEquality().equals(other._photos, _photos)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Listing&&(identical(other.id, id) || other.id == id)&&(identical(other.title, title) || other.title == title)&&(identical(other.description, description) || other.description == description)&&(identical(other.city, city) || other.city == city)&&(identical(other.borough, borough) || other.borough == borough)&&(identical(other.neighborhood, neighborhood) || other.neighborhood == neighborhood)&&(identical(other.price, price) || other.price == price)&&(identical(other.startDate, startDate) || other.startDate == startDate)&&(identical(other.endDate, endDate) || other.endDate == endDate)&&(identical(other.rentalType, rentalType) || other.rentalType == rentalType)&&(identical(other.roomType, roomType) || other.roomType == roomType)&&(identical(other.veganHousehold, veganHousehold) || other.veganHousehold == veganHousehold)&&(identical(other.furnished, furnished) || other.furnished == furnished)&&(identical(other.size, size) || other.size == size)&&(identical(other.transportation, transportation) || other.transportation == transportation)&&(identical(other.listerRelationship, listerRelationship) || other.listerRelationship == listerRelationship)&&(identical(other.seekingRoommate, seekingRoommate) || other.seekingRoommate == seekingRoommate)&&(identical(other.aboutLister, aboutLister) || other.aboutLister == aboutLister)&&(identical(other.rentalRequirements, rentalRequirements) || other.rentalRequirements == rentalRequirements)&&(identical(other.petPolicy, petPolicy) || other.petPolicy == petPolicy)&&(identical(other.includePhone, includePhone) || other.includePhone == includePhone)&&(identical(other.phoneNumber, phoneNumber) || other.phoneNumber == phoneNumber)&&(identical(other.status, status) || other.status == status)&&(identical(other.user, user) || other.user == user)&&const DeepCollectionEquality().equals(other._photos, _photos)&&(identical(other.createdAt, createdAt) || other.createdAt == createdAt)&&(identical(other.expiresAt, expiresAt) || other.expiresAt == expiresAt));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,title,description,city,borough,neighborhood,price,startDate,endDate,rentalType,roomType,veganHousehold,furnished,listerRelationship,seekingRoommate,aboutLister,rentalRequirements,petPolicy,includePhone,phoneNumber,status,user,const DeepCollectionEquality().hash(_photos),createdAt,expiresAt]);
+int get hashCode => Object.hashAll([runtimeType,id,title,description,city,borough,neighborhood,price,startDate,endDate,rentalType,roomType,veganHousehold,furnished,size,transportation,listerRelationship,seekingRoommate,aboutLister,rentalRequirements,petPolicy,includePhone,phoneNumber,status,user,const DeepCollectionEquality().hash(_photos),createdAt,expiresAt]);
 
 @override
 String toString() {
-  return 'Listing(id: $id, title: $title, description: $description, city: $city, borough: $borough, neighborhood: $neighborhood, price: $price, startDate: $startDate, endDate: $endDate, rentalType: $rentalType, roomType: $roomType, veganHousehold: $veganHousehold, furnished: $furnished, listerRelationship: $listerRelationship, seekingRoommate: $seekingRoommate, aboutLister: $aboutLister, rentalRequirements: $rentalRequirements, petPolicy: $petPolicy, includePhone: $includePhone, phoneNumber: $phoneNumber, status: $status, user: $user, photos: $photos, createdAt: $createdAt, expiresAt: $expiresAt)';
+  return 'Listing(id: $id, title: $title, description: $description, city: $city, borough: $borough, neighborhood: $neighborhood, price: $price, startDate: $startDate, endDate: $endDate, rentalType: $rentalType, roomType: $roomType, veganHousehold: $veganHousehold, furnished: $furnished, size: $size, transportation: $transportation, listerRelationship: $listerRelationship, seekingRoommate: $seekingRoommate, aboutLister: $aboutLister, rentalRequirements: $rentalRequirements, petPolicy: $petPolicy, includePhone: $includePhone, phoneNumber: $phoneNumber, status: $status, user: $user, photos: $photos, createdAt: $createdAt, expiresAt: $expiresAt)';
 }
 
 
@@ -848,7 +852,7 @@ abstract mixin class _$ListingCopyWith<$Res> implements $ListingCopyWith<$Res> {
   factory _$ListingCopyWith(_Listing value, $Res Function(_Listing) _then) = __$ListingCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String title, String description, String city, String? borough, String? neighborhood, int? price, DateTime? startDate, DateTime? endDate, String rentalType, String roomType, String veganHousehold, String furnished, String listerRelationship, bool seekingRoommate, String? aboutLister, String? rentalRequirements, String? petPolicy, bool includePhone, String? phoneNumber, String status, ListingUser user, List<ListingPhoto> photos, DateTime createdAt, DateTime? expiresAt
+ String id, String title, String description, String city, String? borough, String? neighborhood, int? price, DateTime? startDate, DateTime? endDate, String rentalType, String roomType, String veganHousehold, String furnished, String? size, String? transportation, String listerRelationship, bool seekingRoommate, String? aboutLister, String? rentalRequirements, String? petPolicy, bool includePhone, String? phoneNumber, String status, ListingUser user, List<ListingPhoto> photos, DateTime createdAt, DateTime? expiresAt
 });
 
 
@@ -865,7 +869,7 @@ class __$ListingCopyWithImpl<$Res>
 
 /// Create a copy of Listing
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? description = null,Object? city = null,Object? borough = freezed,Object? neighborhood = freezed,Object? price = freezed,Object? startDate = freezed,Object? endDate = freezed,Object? rentalType = null,Object? roomType = null,Object? veganHousehold = null,Object? furnished = null,Object? listerRelationship = null,Object? seekingRoommate = null,Object? aboutLister = freezed,Object? rentalRequirements = freezed,Object? petPolicy = freezed,Object? includePhone = null,Object? phoneNumber = freezed,Object? status = null,Object? user = null,Object? photos = null,Object? createdAt = null,Object? expiresAt = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? title = null,Object? description = null,Object? city = null,Object? borough = freezed,Object? neighborhood = freezed,Object? price = freezed,Object? startDate = freezed,Object? endDate = freezed,Object? rentalType = null,Object? roomType = null,Object? veganHousehold = null,Object? furnished = null,Object? size = freezed,Object? transportation = freezed,Object? listerRelationship = null,Object? seekingRoommate = null,Object? aboutLister = freezed,Object? rentalRequirements = freezed,Object? petPolicy = freezed,Object? includePhone = null,Object? phoneNumber = freezed,Object? status = null,Object? user = null,Object? photos = null,Object? createdAt = null,Object? expiresAt = freezed,}) {
   return _then(_Listing(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
@@ -880,7 +884,9 @@ as DateTime?,rentalType: null == rentalType ? _self.rentalType : rentalType // i
 as String,roomType: null == roomType ? _self.roomType : roomType // ignore: cast_nullable_to_non_nullable
 as String,veganHousehold: null == veganHousehold ? _self.veganHousehold : veganHousehold // ignore: cast_nullable_to_non_nullable
 as String,furnished: null == furnished ? _self.furnished : furnished // ignore: cast_nullable_to_non_nullable
-as String,listerRelationship: null == listerRelationship ? _self.listerRelationship : listerRelationship // ignore: cast_nullable_to_non_nullable
+as String,size: freezed == size ? _self.size : size // ignore: cast_nullable_to_non_nullable
+as String?,transportation: freezed == transportation ? _self.transportation : transportation // ignore: cast_nullable_to_non_nullable
+as String?,listerRelationship: null == listerRelationship ? _self.listerRelationship : listerRelationship // ignore: cast_nullable_to_non_nullable
 as String,seekingRoommate: null == seekingRoommate ? _self.seekingRoommate : seekingRoommate // ignore: cast_nullable_to_non_nullable
 as bool,aboutLister: freezed == aboutLister ? _self.aboutLister : aboutLister // ignore: cast_nullable_to_non_nullable
 as String?,rentalRequirements: freezed == rentalRequirements ? _self.rentalRequirements : rentalRequirements // ignore: cast_nullable_to_non_nullable
