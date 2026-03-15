@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -18,11 +20,19 @@ Dio apiClient(Ref ref) {
 // Auth interceptor — attaches Bearer token and handles 401 refresh
 // ---------------------------------------------------------------------------
 
+/// Key used in [RequestOptions.extra] to mark a request as already retried,
+/// preventing infinite 401 → refresh → retry loops.
+const _retriedKey = '_retried';
+
 class _AuthInterceptor extends QueuedInterceptorsWrapper {
   _AuthInterceptor(this._ref, this._dio);
 
   final Ref _ref;
   final Dio _dio;
+
+  /// When non-null, a refresh is already in flight. Subsequent 401 handlers
+  /// await this instead of firing another refresh call.
+  Completer<String?>? _refreshCompleter;
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
@@ -44,18 +54,41 @@ class _AuthInterceptor extends QueuedInterceptorsWrapper {
       return;
     }
 
-    final newToken = await _ref.read(authProvider.notifier).refreshToken();
-    if (newToken == null) {
-      // Refresh failed — propagate the error; router will redirect to /login.
+    // Retry guard: if this request was already retried, don't loop.
+    if (err.requestOptions.extra[_retriedKey] == true) {
       handler.next(err);
       return;
     }
 
-    // Retry original request with new access token.
+    // Refresh lock: only the first caller triggers the actual refresh.
+    final String? newToken;
+    if (_refreshCompleter != null) {
+      newToken = await _refreshCompleter!.future;
+    } else {
+      final completer = Completer<String?>();
+      _refreshCompleter = completer;
+      try {
+        final token = await _ref.read(authProvider.notifier).refreshToken();
+        completer.complete(token);
+      } catch (e) {
+        completer.complete(null);
+      } finally {
+        _refreshCompleter = null;
+      }
+      newToken = await completer.future;
+    }
+
+    if (newToken == null) {
+      handler.next(err);
+      return;
+    }
+
+    // Retry original request with new access token and retry guard flag.
     try {
-      final retried = await _dio.fetch<dynamic>(
-        err.requestOptions..headers['Authorization'] = 'Bearer $newToken',
-      );
+      final opts = err.requestOptions
+        ..headers['Authorization'] = 'Bearer $newToken'
+        ..extra[_retriedKey] = true;
+      final retried = await _dio.fetch<dynamic>(opts);
       handler.resolve(retried);
     } on DioException catch (retryErr) {
       handler.next(retryErr);
