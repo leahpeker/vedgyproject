@@ -158,21 +158,6 @@ void main() {
     testWidgets('shows inline retry on load more error', (tester) async {
       _configureView(tester);
 
-      final override = browseAccumulatorProvider.overrideWith(
-        () => _StubAccumulator(const BrowseAccumulatorState(
-          items: [
-            // Use a const-friendly approach — just verify error state.
-          ],
-          totalCount: 0,
-          loadMoreError: true,
-        )),
-      );
-
-      // With 0 items and loadMoreError, the screen shows empty state
-      // (no items to preserve). For a real loadMore error test with
-      // existing items, we'd need a non-empty list.
-
-      // Test with items present + error:
       final overrideWithItems = browseAccumulatorProvider.overrideWith(
         () => _StubAccumulator(BrowseAccumulatorState(
           items: [_listing1],

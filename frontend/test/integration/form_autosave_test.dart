@@ -187,5 +187,38 @@ void main() {
             data: any(named: 'data'),
           )).called(1);
     });
+
+    testWidgets('no API call before debounce fires',
+        (tester) async {
+      _configureView(tester);
+      final mockDio = MockDio();
+      _stubCreateListing(mockDio);
+
+      await tester.pumpWidget(_buildApp(mockDio));
+      await tester.pumpAndSettle();
+
+      // Enter text but only pump 1 second — debounce is 2 seconds.
+      final titleField = find.widgetWithText(
+        TextField,
+        'Cozy room in vegan-friendly house',
+      );
+      await tester.enterText(titleField, 'Pending text');
+      await tester.pump(const Duration(seconds: 1));
+
+      // No POST yet — debounce hasn't fired.
+      verifyNever(() => mockDio.post<Map<String, dynamic>>(
+            '/api/listings/',
+            data: any(named: 'data'),
+          ));
+
+      // Now pump past the debounce.
+      await tester.pump(const Duration(seconds: 2));
+
+      // POST fires after the full debounce.
+      verify(() => mockDio.post<Map<String, dynamic>>(
+            '/api/listings/',
+            data: any(named: 'data'),
+          )).called(1);
+    });
   });
 }
