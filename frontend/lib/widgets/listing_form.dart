@@ -13,6 +13,7 @@ import '../providers/photo_provider.dart';
 import '../services/api_client.dart';
 import '../utils/logger.dart';
 import '../utils/platform.dart';
+import 'listing_form_validators.dart';
 
 // ---------------------------------------------------------------------------
 // Shared listing form — used by CreateListingScreen and EditListingScreen.
@@ -324,31 +325,13 @@ class _ListingFormState extends ConsumerState<ListingForm> {
   // ---- Submit validation ---------------------------------------------------
 
   /// Returns a list of error messages, or empty list if valid.
-  List<String> _validate() {
-    final errors = <String>[];
-    if (_title.text.trim().isEmpty) errors.add('Title is required.');
-    if (_city == null) errors.add('City is required.');
-    final priceText = _price.text.trim();
-    if (priceText.isNotEmpty) {
-      final parsed = int.tryParse(priceText);
-      if (parsed == null || parsed <= 0) {
-        errors.add('Price must be a positive whole number.');
-      }
-    }
-    // Validate start date before end date if both are provided
-    if (_startDate.text.isNotEmpty && _endDate.text.isNotEmpty) {
-      try {
-        final startDate = DateTime.parse(_startDate.text);
-        final endDate = DateTime.parse(_endDate.text);
-        if (startDate.isAfter(endDate)) {
-          errors.add('Start date must be before end date.');
-        }
-      } catch (_) {
-        // If date parsing fails, let the API validation handle it
-      }
-    }
-    return errors;
-  }
+  List<String> _validate() => validateListingForm(
+        title: _title.text,
+        city: _city,
+        price: _price.text,
+        startDate: _startDate.text,
+        endDate: _endDate.text,
+      );
 
   // ---- Preview navigation --------------------------------------------------
 

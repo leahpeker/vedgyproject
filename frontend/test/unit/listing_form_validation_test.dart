@@ -1,68 +1,11 @@
-// Unit tests for the ListingForm validation logic.
+// Unit tests for the listing form validation logic.
 //
-// The validation lives in `_ListingFormState._validate()` inside
-// `lib/widgets/listing_form.dart`.  Because that method is private and tied to
-// widget state, we mirror the exact logic as standalone helper functions here
-// and test those directly with plain `test()` calls (no widgets involved).
-//
-// Validation rules (as implemented in _validate()):
-//   Title  – required; _title.text.trim() must not be empty.
-//   City   – required; _city must not be null.
-//   Price  – optional; if the trimmed text is non-empty it must parse as int
-//            and the parsed value must be > 0.
+// Tests exercise the production `validateListingForm()` function from
+// `lib/widgets/listing_form_validators.dart` directly.
 
 import 'package:flutter_test/flutter_test.dart';
 
-// ---------------------------------------------------------------------------
-// Helpers that mirror _ListingFormState._validate() logic
-// ---------------------------------------------------------------------------
-
-/// Returns 'Title is required.' when the trimmed value is empty, else null.
-String? validateTitle(String? value) {
-  if (value == null || value.trim().isEmpty) return 'Title is required.';
-  return null;
-}
-
-/// Returns 'City is required.' when city is null, else null.
-String? validateCity(String? city) {
-  if (city == null) return 'City is required.';
-  return null;
-}
-
-/// Returns an error message when the price text is present but invalid,
-/// else null.
-///
-/// Rules (from _validate):
-///   - empty / whitespace-only → no error (field is optional)
-///   - non-numeric             → 'Price must be a positive whole number.'
-///   - zero                    → 'Price must be a positive whole number.'
-///   - negative                → 'Price must be a positive whole number.'
-///   - positive integer        → null (valid)
-String? validatePrice(String? value) {
-  final text = value?.trim() ?? '';
-  if (text.isEmpty) return null; // optional field
-  final parsed = int.tryParse(text);
-  if (parsed == null || parsed <= 0) {
-    return 'Price must be a positive whole number.';
-  }
-  return null;
-}
-
-/// Mirrors the full _validate() method, collecting all errors.
-List<String> validateListingForm({
-  required String title,
-  required String? city,
-  required String price,
-}) {
-  final errors = <String>[];
-  final titleError = validateTitle(title);
-  if (titleError != null) errors.add(titleError);
-  final cityError = validateCity(city);
-  if (cityError != null) errors.add(cityError);
-  final priceError = validatePrice(price);
-  if (priceError != null) errors.add(priceError);
-  return errors;
-}
+import 'package:vedgy/widgets/listing_form_validators.dart';
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -71,131 +14,242 @@ List<String> validateListingForm({
 void main() {
   // ---- Title ---------------------------------------------------------------
 
-  group('validateTitle', () {
-    test('null returns "Title is required."', () {
-      expect(validateTitle(null), 'Title is required.');
+  group('validateListingForm title validation', () {
+    test('empty title returns "Title is required."', () {
+      final errors = validateListingForm(title: '', city: 'New York');
+      expect(errors, contains('Title is required.'));
     });
 
-    test('empty string returns "Title is required."', () {
-      expect(validateTitle(''), 'Title is required.');
+    test('whitespace-only title returns "Title is required."', () {
+      final errors = validateListingForm(title: '   ', city: 'New York');
+      expect(errors, contains('Title is required.'));
     });
 
-    test('whitespace-only returns "Title is required."', () {
-      expect(validateTitle('   '), 'Title is required.');
+    test('tab character title returns "Title is required."', () {
+      final errors = validateListingForm(title: '\t', city: 'New York');
+      expect(errors, contains('Title is required.'));
     });
 
-    test('tab character returns "Title is required."', () {
-      expect(validateTitle('\t'), 'Title is required.');
+    test('non-empty title does not produce title error', () {
+      final errors = validateListingForm(
+        title: 'Cozy room in vegan house',
+        city: 'New York',
+      );
+      expect(errors, isNot(contains('Title is required.')));
     });
 
-    test('non-empty title returns null', () {
-      expect(validateTitle('Cozy room in vegan house'), isNull);
+    test('title with surrounding whitespace does not produce error', () {
+      final errors = validateListingForm(
+        title: '  Sunny studio  ',
+        city: 'New York',
+      );
+      expect(errors, isNot(contains('Title is required.')));
     });
 
-    test('title with surrounding whitespace returns null (trimmed)', () {
-      expect(validateTitle('  Sunny studio  '), isNull);
-    });
-
-    test('single character title returns null', () {
-      expect(validateTitle('A'), isNull);
+    test('single character title does not produce error', () {
+      final errors = validateListingForm(title: 'A', city: 'New York');
+      expect(errors, isNot(contains('Title is required.')));
     });
   });
 
   // ---- City ----------------------------------------------------------------
 
-  group('validateCity', () {
+  group('validateListingForm city validation', () {
     test('null city returns "City is required."', () {
-      expect(validateCity(null), 'City is required.');
+      final errors = validateListingForm(title: 'Test', city: null);
+      expect(errors, contains('City is required.'));
     });
 
-    test('"New York" returns null', () {
-      expect(validateCity('New York'), isNull);
+    test('"New York" does not produce city error', () {
+      final errors = validateListingForm(title: 'Test', city: 'New York');
+      expect(errors, isNot(contains('City is required.')));
     });
 
-    test('"Los Angeles" returns null', () {
-      expect(validateCity('Los Angeles'), isNull);
+    test('"Los Angeles" does not produce city error', () {
+      final errors = validateListingForm(title: 'Test', city: 'Los Angeles');
+      expect(errors, isNot(contains('City is required.')));
     });
 
-    test('"Chicago" returns null', () {
-      expect(validateCity('Chicago'), isNull);
-    });
-
-    test('arbitrary non-null string returns null (no allowlist check)', () {
-      expect(validateCity('Boston'), isNull);
+    test('arbitrary non-null string does not produce city error', () {
+      final errors = validateListingForm(title: 'Test', city: 'Boston');
+      expect(errors, isNot(contains('City is required.')));
     });
   });
 
   // ---- Price ---------------------------------------------------------------
 
-  group('validatePrice', () {
-    test('null returns null (optional field)', () {
-      expect(validatePrice(null), isNull);
+  group('validateListingForm price validation', () {
+    test('empty price is allowed (optional field)', () {
+      final errors = validateListingForm(
+        title: 'Test',
+        city: 'NYC',
+        price: '',
+      );
+      expect(errors, isNot(contains('Price must be a positive whole number.')));
     });
 
-    test('empty string returns null (optional field)', () {
-      expect(validatePrice(''), isNull);
+    test('whitespace-only price is allowed', () {
+      final errors = validateListingForm(
+        title: 'Test',
+        city: 'NYC',
+        price: '   ',
+      );
+      expect(errors, isNot(contains('Price must be a positive whole number.')));
     });
 
-    test('whitespace-only returns null (optional field)', () {
-      expect(validatePrice('   '), isNull);
+    test('non-numeric text returns price error', () {
+      final errors = validateListingForm(
+        title: 'Test',
+        city: 'NYC',
+        price: 'abc',
+      );
+      expect(errors, contains('Price must be a positive whole number.'));
     });
 
-    test('non-numeric text returns error message', () {
+    test('float string returns price error', () {
+      final errors = validateListingForm(
+        title: 'Test',
+        city: 'NYC',
+        price: '12.50',
+      );
+      expect(errors, contains('Price must be a positive whole number.'));
+    });
+
+    test('"0" returns price error', () {
+      final errors = validateListingForm(
+        title: 'Test',
+        city: 'NYC',
+        price: '0',
+      );
+      expect(errors, contains('Price must be a positive whole number.'));
+    });
+
+    test('negative number returns price error', () {
+      final errors = validateListingForm(
+        title: 'Test',
+        city: 'NYC',
+        price: '-500',
+      );
+      expect(errors, contains('Price must be a positive whole number.'));
+    });
+
+    test('"1" does not produce price error', () {
+      final errors = validateListingForm(
+        title: 'Test',
+        city: 'NYC',
+        price: '1',
+      );
+      expect(errors, isNot(contains('Price must be a positive whole number.')));
+    });
+
+    test('"1200" does not produce price error', () {
+      final errors = validateListingForm(
+        title: 'Test',
+        city: 'NYC',
+        price: '1200',
+      );
+      expect(errors, isNot(contains('Price must be a positive whole number.')));
+    });
+
+    test('price with surrounding whitespace "  800  " is valid', () {
+      final errors = validateListingForm(
+        title: 'Test',
+        city: 'NYC',
+        price: '  800  ',
+      );
+      expect(errors, isNot(contains('Price must be a positive whole number.')));
+    });
+
+    test('mixed letters and digits returns price error', () {
+      final errors = validateListingForm(
+        title: 'Test',
+        city: 'NYC',
+        price: '12abc',
+      );
+      expect(errors, contains('Price must be a positive whole number.'));
+    });
+  });
+
+  // ---- Date validation -----------------------------------------------------
+
+  group('validateListingForm date validation', () {
+    test('start date after end date returns error', () {
+      final errors = validateListingForm(
+        title: 'Test',
+        city: 'NYC',
+        startDate: '2026-06-15',
+        endDate: '2026-03-01',
+      );
+      expect(errors, contains('Start date must be before end date.'));
+    });
+
+    test('start date before end date does not produce error', () {
+      final errors = validateListingForm(
+        title: 'Test',
+        city: 'NYC',
+        startDate: '2026-03-01',
+        endDate: '2026-06-15',
+      );
       expect(
-        validatePrice('abc'),
-        'Price must be a positive whole number.',
+        errors,
+        isNot(contains('Start date must be before end date.')),
       );
     });
 
-    test('float string returns error message', () {
+    test('same start and end date does not produce error', () {
+      final errors = validateListingForm(
+        title: 'Test',
+        city: 'NYC',
+        startDate: '2026-06-01',
+        endDate: '2026-06-01',
+      );
       expect(
-        validatePrice('12.50'),
-        'Price must be a positive whole number.',
+        errors,
+        isNot(contains('Start date must be before end date.')),
       );
     });
 
-    test('"0" returns error message', () {
+    test('only start date provided does not produce date error', () {
+      final errors = validateListingForm(
+        title: 'Test',
+        city: 'NYC',
+        startDate: '2026-06-01',
+      );
       expect(
-        validatePrice('0'),
-        'Price must be a positive whole number.',
+        errors,
+        isNot(contains('Start date must be before end date.')),
       );
     });
 
-    test('negative number returns error message', () {
+    test('only end date provided does not produce date error', () {
+      final errors = validateListingForm(
+        title: 'Test',
+        city: 'NYC',
+        endDate: '2026-06-01',
+      );
       expect(
-        validatePrice('-500'),
-        'Price must be a positive whole number.',
+        errors,
+        isNot(contains('Start date must be before end date.')),
       );
     });
 
-    test('"1" returns null (minimum positive value)', () {
-      expect(validatePrice('1'), isNull);
-    });
-
-    test('typical rent value "1200" returns null', () {
-      expect(validatePrice('1200'), isNull);
-    });
-
-    test('large value "9999" returns null', () {
-      expect(validatePrice('9999'), isNull);
-    });
-
-    test('price with surrounding whitespace "  800  " returns null (trimmed)',
-        () {
-      expect(validatePrice('  800  '), isNull);
-    });
-
-    test('price that is letters mixed with digits returns error message', () {
+    test('invalid date strings do not produce date error', () {
+      final errors = validateListingForm(
+        title: 'Test',
+        city: 'NYC',
+        startDate: 'not-a-date',
+        endDate: 'also-not-a-date',
+      );
       expect(
-        validatePrice('12abc'),
-        'Price must be a positive whole number.',
+        errors,
+        isNot(contains('Start date must be before end date.')),
       );
     });
   });
 
-  // ---- Full form validation (mirrors _validate()) --------------------------
+  // ---- Full form validation ------------------------------------------------
 
-  group('validateListingForm', () {
+  group('validateListingForm combined', () {
     test('all valid fields returns empty error list', () {
       final errors = validateListingForm(
         title: 'Bright room in Brooklyn',
@@ -205,53 +259,16 @@ void main() {
       expect(errors, isEmpty);
     });
 
-    test('empty title adds title error', () {
-      final errors = validateListingForm(
-        title: '',
-        city: 'Chicago',
-        price: '800',
-      );
-      expect(errors, contains('Title is required.'));
-      expect(errors.length, 1);
-    });
-
-    test('null city adds city error', () {
-      final errors = validateListingForm(
-        title: 'Studio near the park',
-        city: null,
-        price: '950',
-      );
-      expect(errors, contains('City is required.'));
-      expect(errors.length, 1);
-    });
-
-    test('invalid price adds price error', () {
-      final errors = validateListingForm(
-        title: 'Sunny loft',
-        city: 'Los Angeles',
-        price: 'free',
-      );
-      expect(errors, contains('Price must be a positive whole number.'));
-      expect(errors.length, 1);
-    });
-
-    test('zero price adds price error', () {
-      final errors = validateListingForm(
-        title: 'Sunny loft',
-        city: 'Los Angeles',
-        price: '0',
-      );
-      expect(errors, contains('Price must be a positive whole number.'));
-    });
-
     test('empty title and null city produce two errors', () {
       final errors = validateListingForm(
         title: '',
         city: null,
-        price: '',
       );
       expect(errors.length, 2);
-      expect(errors, containsAll(['Title is required.', 'City is required.']));
+      expect(
+        errors,
+        containsAll(['Title is required.', 'City is required.']),
+      );
     });
 
     test('all invalid fields produce three errors', () {
@@ -271,13 +288,23 @@ void main() {
       );
     });
 
-    test('empty price is allowed (price is optional)', () {
+    test('empty price with valid title and city returns no errors', () {
       final errors = validateListingForm(
         title: 'Cozy room',
         city: 'Chicago',
-        price: '',
       );
       expect(errors, isEmpty);
+    });
+
+    test('all invalid including bad dates produce four errors', () {
+      final errors = validateListingForm(
+        title: '',
+        city: null,
+        price: 'free',
+        startDate: '2026-12-01',
+        endDate: '2026-01-01',
+      );
+      expect(errors.length, 4);
     });
   });
 }
