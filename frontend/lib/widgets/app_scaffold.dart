@@ -73,11 +73,12 @@ class _VedgyNavBar extends ConsumerWidget implements PreferredSizeWidget {
       foregroundColor: Colors.white,
       title: GestureDetector(
         onTap: () => context.go('/'),
-        child: const Row(
+        child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('🏡 ', style: TextStyle(fontSize: 18)),
-            Text(
+            Image.asset('assets/img/vedgy.png', width: 22, height: 22),
+            const SizedBox(width: 6),
+            const Text(
               'VedgyProject',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
@@ -201,10 +202,11 @@ class _VedgyDrawer extends ConsumerWidget {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Text('🏡 ', style: TextStyle(fontSize: 22)),
-                Text(
+                Image.asset('assets/img/vedgy.png', width: 24, height: 24),
+                const SizedBox(width: 6),
+                const Text(
                   'VedgyProject',
                   style: TextStyle(
                     color: Colors.white,
@@ -325,7 +327,8 @@ class _VedgyFooter extends StatelessWidget {
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('🏡 ', style: TextStyle(fontSize: 14)),
+                              Image.asset('assets/img/vedgy.png', width: 18, height: 18),
+                              const SizedBox(width: 4),
                               Text(
                                 'VedgyProject',
                                 style: headingStyle.copyWith(fontSize: 16),
