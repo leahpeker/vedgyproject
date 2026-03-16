@@ -36,6 +36,7 @@ class AppScaffold extends ConsumerWidget {
       appBar: _VedgyNavBar(onMenuPressed: _openDrawer),
       drawer: const _VedgyDrawer(),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(child: child),
           const _VedgyFooter(),
@@ -281,7 +282,7 @@ class _VedgyFooter extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             const Wrap(
