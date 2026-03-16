@@ -252,7 +252,10 @@ void main() {
 
       // The app starts at initialLocation '/'; HomeScreen should render.
       expect(find.byType(HomeScreen), findsOneWidget);
-      expect(find.text('Find Your Perfect Vegan-Friendly Home'), findsOneWidget);
+      expect(
+        find.text('Find Your Perfect Vegan-Friendly Home'),
+        findsOneWidget,
+      );
     });
   });
 

@@ -14,9 +14,7 @@ class HomeScreen extends ConsumerWidget {
     // Show a spinner while auth initialises from stored tokens.
     final isInitial = authState.whenOrNull(initial: () => true) ?? false;
     if (isInitial) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -25,10 +23,7 @@ class HomeScreen extends ConsumerWidget {
           children: [
             // Hero section
             Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 32,
-                vertical: 48,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 700),
@@ -36,9 +31,7 @@ class HomeScreen extends ConsumerWidget {
                     children: [
                       Text(
                         'Find Your Perfect Vegan-Friendly Home',
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineLarge
+                        style: Theme.of(context).textTheme.headlineLarge
                             ?.copyWith(fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
@@ -47,10 +40,8 @@ class HomeScreen extends ConsumerWidget {
                         'Connect with like-minded people for housing '
                         'that aligns with your values',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 32),
@@ -180,16 +171,16 @@ class _FeatureCard extends StatelessWidget {
           children: [
             Text(
               '$emoji $title',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               description,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
