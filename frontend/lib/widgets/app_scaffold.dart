@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../providers/auth_provider.dart';
 import '../providers/notification_provider.dart';
@@ -270,61 +271,185 @@ class _VedgyDrawer extends ConsumerWidget {
 class _VedgyFooter extends StatelessWidget {
   const _VedgyFooter();
 
+  static const _githubIssues =
+      'https://github.com/leahpeker/veglistings/issues';
+  static const _githubRepo = 'https://github.com/leahpeker/veglistings';
+
   @override
   Widget build(BuildContext context) {
-    final textStyle = TextStyle(
-      color: Colors.white.withValues(alpha: 0.8),
+    final headingStyle = TextStyle(
+      color: Colors.white.withValues(alpha: 0.95),
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+    );
+    final linkStyle = TextStyle(
+      color: Colors.white.withValues(alpha: 0.7),
       fontSize: 13,
+    );
+    final mutedStyle = TextStyle(
+      color: Colors.white.withValues(alpha: 0.5),
+      fontSize: 12,
     );
 
     return ColoredBox(
-      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.9),
+      color: const Color(0xFF1F2937),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Wrap(
-              spacing: 24,
-              runSpacing: 8,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 960),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                _FooterLink('Home', '/'),
-                _FooterLink('Browse', '/browse'),
-                _FooterLink('Post a listing', '/create'),
-                _FooterLink('About', '/about'),
+                Wrap(
+                  spacing: 48,
+                  runSpacing: 24,
+                  children: [
+                    // Brand column
+                    SizedBox(
+                      width: 200,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Vedgy',
+                            style: headingStyle.copyWith(fontSize: 16),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Connecting vegan-friendly renters and property owners.',
+                            style: linkStyle,
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Quick Links
+                    _FooterColumn(
+                      title: 'Quick Links',
+                      headingStyle: headingStyle,
+                      children: [
+                        _FooterLink(
+                          'Browse Listings',
+                          '/browse',
+                          style: linkStyle,
+                        ),
+                        _FooterLink(
+                          'Post a Listing',
+                          '/create',
+                          style: linkStyle,
+                        ),
+                      ],
+                    ),
+                    // Feedback & Support
+                    _FooterColumn(
+                      title: 'Feedback & Support',
+                      headingStyle: headingStyle,
+                      children: [
+                        _FooterExternalLink(
+                          'Report Issues',
+                          _githubIssues,
+                          style: linkStyle,
+                        ),
+                        _FooterLink('Contact Us', '/contact', style: linkStyle),
+                        _FooterExternalLink(
+                          'Source Code',
+                          _githubRepo,
+                          style: linkStyle,
+                        ),
+                      ],
+                    ),
+                    // Legal
+                    _FooterColumn(
+                      title: 'Legal',
+                      headingStyle: headingStyle,
+                      children: [
+                        _FooterLink(
+                          'Privacy Policy',
+                          '/privacy',
+                          style: linkStyle,
+                        ),
+                        _FooterLink('About', '/about', style: linkStyle),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Divider(color: Colors.white.withValues(alpha: 0.2), height: 1),
+                const SizedBox(height: 16),
+                Text(
+                  '© ${DateTime.now().year} Vedgy. All rights reserved.',
+                  style: mutedStyle,
+                ),
               ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              '© ${DateTime.now().year} Vedgy. Open-source vegan housing.',
-              style: textStyle,
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _FooterLink extends StatelessWidget {
-  const _FooterLink(this.label, this.route);
+class _FooterColumn extends StatelessWidget {
+  const _FooterColumn({
+    required this.title,
+    required this.headingStyle,
+    required this.children,
+  });
 
-  final String label;
-  final String route;
+  final String title;
+  final TextStyle headingStyle;
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => context.go(route),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: Colors.white.withValues(alpha: 0.85),
-          fontSize: 13,
-          decoration: TextDecoration.underline,
-          decorationColor: Colors.white54,
-        ),
+    return SizedBox(
+      width: 160,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: headingStyle),
+          const SizedBox(height: 12),
+          ...children,
+        ],
+      ),
+    );
+  }
+}
+
+class _FooterLink extends StatelessWidget {
+  const _FooterLink(this.label, this.route, {required this.style});
+
+  final String label;
+  final String route;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: GestureDetector(
+        onTap: () => context.go(route),
+        child: Text(label, style: style),
+      ),
+    );
+  }
+}
+
+class _FooterExternalLink extends StatelessWidget {
+  const _FooterExternalLink(this.label, this.url, {required this.style});
+
+  final String label;
+  final String url;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: GestureDetector(
+        onTap: () =>
+            launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
+        child: Text(label, style: style),
       ),
     );
   }

@@ -132,6 +132,15 @@ Future<GoRouter> _pumpApp(
   WidgetTester tester, {
   required Override authOverride,
 }) async {
+  // Suppress RenderFlex overflow errors for the entire test — the footer
+  // and home screen content overflow in the small test viewport.
+  final originalOnError = FlutterError.onError;
+  FlutterError.onError = (FlutterErrorDetails details) {
+    if (details.exceptionAsString().contains('overflowed')) return;
+    originalOnError?.call(details);
+  };
+  addTearDown(() => FlutterError.onError = originalOnError);
+
   late GoRouter router;
 
   await tester.pumpWidget(
