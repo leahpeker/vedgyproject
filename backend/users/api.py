@@ -5,7 +5,9 @@ from uuid import UUID
 from django.contrib.auth import authenticate
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
+from django.utils.http import urlsafe_base64_decode
 from ninja import Router, Schema
 from ninja_jwt.authentication import JWTAuth
 from ninja_jwt.tokens import RefreshToken
@@ -50,6 +52,13 @@ class UserOut(Schema):
 
 class PasswordResetIn(Schema):
     email: str
+
+
+class PasswordResetConfirmIn(Schema):
+    uidb64: str
+    token: str
+    new_password1: str
+    new_password2: str
 
 
 class MessageOut(Schema):
@@ -129,5 +138,38 @@ def password_reset(request, data: PasswordResetIn):
     """Trigger password reset email. Always returns 200 to avoid leaking emails."""
     form = PasswordResetForm(data={"email": data.email})
     if form.is_valid():
-        form.save(request=request, use_https=request.is_secure())
+        form.save(
+            request=request,
+            use_https=request.is_secure(),
+            email_template_name="password_reset_email.html",
+            html_email_template_name="password_reset_email.html",
+            subject_template_name="password_reset_subject.txt",
+        )
     return {"message": "If an account with that email exists, we've sent a reset link."}
+
+
+@router.post(
+    "/password-reset-confirm/", response={200: MessageOut, 400: ErrorOut}
+)
+def password_reset_confirm(request, data: PasswordResetConfirmIn):
+    """Validate token and set new password (replaces Django's CBV flow)."""
+    if data.new_password1 != data.new_password2:
+        return 400, {"detail": "Passwords do not match."}
+
+    try:
+        uid = urlsafe_base64_decode(data.uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return 400, {"detail": "Invalid reset link."}
+
+    if not default_token_generator.check_token(user, data.token):
+        return 400, {"detail": "Invalid or expired reset link."}
+
+    try:
+        validate_password(data.new_password1, user)
+    except ValidationError as e:
+        return 400, {"detail": " ".join(e.messages)}
+
+    user.set_password(data.new_password1)
+    user.save()
+    return {"message": "Password has been reset successfully."}

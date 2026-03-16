@@ -262,6 +262,108 @@ class TestPasswordReset:
         assert response.status_code == 200
 
 
+class TestPasswordResetConfirm:
+    @staticmethod
+    def _get_uid_and_token(user):
+        """Generate a valid uidb64 and token for the given user."""
+        from django.contrib.auth.tokens import default_token_generator
+        from django.utils.http import urlsafe_base64_encode
+
+        uid = urlsafe_base64_encode(str(user.pk).encode())
+        token = default_token_generator.make_token(user)
+        return uid, token
+
+    @pytest.mark.django_db
+    def test_valid_reset(self, api_client, test_user):
+        uid, token = self._get_uid_and_token(test_user)
+        response = api_client.post(
+            "/api/auth/password-reset-confirm/",
+            data=json.dumps(
+                {
+                    "uidb64": uid,
+                    "token": token,
+                    "new_password1": "newstrongpass123!",
+                    "new_password2": "newstrongpass123!",
+                }
+            ),
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        assert "reset" in response.json()["message"].lower()
+        # Verify the password actually changed
+        test_user.refresh_from_db()
+        assert test_user.check_password("newstrongpass123!")
+
+    @pytest.mark.django_db
+    def test_invalid_token(self, api_client, test_user):
+        uid, _ = self._get_uid_and_token(test_user)
+        response = api_client.post(
+            "/api/auth/password-reset-confirm/",
+            data=json.dumps(
+                {
+                    "uidb64": uid,
+                    "token": "bad-token",
+                    "new_password1": "newstrongpass123!",
+                    "new_password2": "newstrongpass123!",
+                }
+            ),
+            content_type="application/json",
+        )
+        assert response.status_code == 400
+        assert "invalid" in response.json()["detail"].lower()
+
+    @pytest.mark.django_db
+    def test_password_mismatch(self, api_client, test_user):
+        uid, token = self._get_uid_and_token(test_user)
+        response = api_client.post(
+            "/api/auth/password-reset-confirm/",
+            data=json.dumps(
+                {
+                    "uidb64": uid,
+                    "token": token,
+                    "new_password1": "newstrongpass123!",
+                    "new_password2": "differentpass456!",
+                }
+            ),
+            content_type="application/json",
+        )
+        assert response.status_code == 400
+        assert "do not match" in response.json()["detail"]
+
+    @pytest.mark.django_db
+    def test_weak_password(self, api_client, test_user):
+        uid, token = self._get_uid_and_token(test_user)
+        response = api_client.post(
+            "/api/auth/password-reset-confirm/",
+            data=json.dumps(
+                {
+                    "uidb64": uid,
+                    "token": token,
+                    "new_password1": "123",
+                    "new_password2": "123",
+                }
+            ),
+            content_type="application/json",
+        )
+        assert response.status_code == 400
+
+    @pytest.mark.django_db
+    def test_invalid_uid(self, api_client):
+        response = api_client.post(
+            "/api/auth/password-reset-confirm/",
+            data=json.dumps(
+                {
+                    "uidb64": "bad-uid",
+                    "token": "any-token",
+                    "new_password1": "newstrongpass123!",
+                    "new_password2": "newstrongpass123!",
+                }
+            ),
+            content_type="application/json",
+        )
+        assert response.status_code == 400
+
+
 # =============================================================================
 # Listings API tests
 # =============================================================================
