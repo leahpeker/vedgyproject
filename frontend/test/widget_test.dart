@@ -91,16 +91,19 @@ void main() {
       await tester.pumpWidget(_wrap(const HomeScreen()));
       await tester.pump();
 
-      expect(find.text('Find vegan-friendly housing.'), findsOneWidget);
-      expect(find.text('Browse listings'), findsOneWidget);
-      expect(find.text('Post a listing'), findsOneWidget);
+      expect(
+        find.text('Find Your Perfect Vegan-Friendly Home'),
+        findsOneWidget,
+      );
+      expect(find.text('Browse Listings'), findsOneWidget);
+      expect(find.text('Post a Listing'), findsOneWidget);
     });
 
-    testWidgets('Browse listings button navigates to /browse', (tester) async {
+    testWidgets('Browse Listings button navigates to /browse', (tester) async {
       await tester.pumpWidget(_wrap(const HomeScreen()));
       await tester.pump();
 
-      await tester.tap(find.text('Browse listings'));
+      await tester.tap(find.text('Browse Listings'));
       await tester.pumpAndSettle();
 
       expect(find.text('browse'), findsOneWidget);
