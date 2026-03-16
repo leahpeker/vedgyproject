@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../providers/auth_provider.dart';
 import '../screens/about_screen.dart';
 import '../screens/auth/login_screen.dart';
+import '../screens/auth/password_reset_confirm_screen.dart';
 import '../screens/auth/password_reset_screen.dart';
 import '../screens/auth/signup_screen.dart';
 import '../screens/browse_screen.dart';
@@ -92,6 +93,13 @@ GoRouter appRouter(Ref ref) {
           GoRoute(
             path: '/password-reset',
             builder: (context, state) => const PasswordResetScreen(),
+          ),
+          GoRoute(
+            path: '/password-reset-confirm/:uidb64/:token',
+            builder: (context, state) => PasswordResetConfirmScreen(
+              uidb64: state.pathParameters['uidb64']!,
+              token: state.pathParameters['token']!,
+            ),
           ),
           GoRoute(
             path: '/dashboard',
