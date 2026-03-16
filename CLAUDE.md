@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Vedgy is an open-source vegan housing platform built with Django 5.2 / Python 3.13. It connects vegan renters with vegan-friendly housing. Server-side rendered with HTMX + Alpine.js for interactivity, styled with Tailwind CSS (via CDN).
+Vedgy is an open-source vegan housing platform built with Django 5.2 / Python 3.13. It connects vegan renters with vegan-friendly housing. The Django backend is API-only (Django Ninja) + admin panel. The Flutter web frontend (Riverpod + GoRouter + Dio) handles all UI.
 
 ## Development Commands
 
@@ -54,8 +54,8 @@ After editing any `@freezed` or `@riverpod` annotated file, run `make frontend-c
 
 To run a single test file or test function:
 ```bash
-cd backend && uv run python -m pytest tests/test_views.py
-cd backend && uv run python -m pytest tests/test_views.py::TestClassName::test_function_name
+cd backend && uv run python -m pytest tests/test_api.py
+cd backend && uv run python -m pytest tests/test_api.py::TestClassName::test_function_name
 ```
 
 Pytest config is in `pyproject.toml`. Tests use `reuse-db` and the `django_db` marker for database access.
@@ -68,15 +68,15 @@ Pytest config is in `pyproject.toml`. Tests use `reuse-db` and the `django_db` m
 ```
 backend/
 ├── config/          # Django project settings, urls, wsgi
-├── listings/        # Main app: models, views, forms, utils, schemas
+├── listings/        # Main app: models, API endpoints, utils, schemas
 ├── users/           # Custom User model (email-based auth, UUID PKs)
-├── templates/       # All HTML templates (Django template engine)
-└── tests/           # Integration tests (conftest.py has shared fixtures)
+├── templates/       # Email-only templates (password reset email)
+└── tests/           # API and model tests (conftest.py has shared fixtures)
 frontend/
 └── lib/             # Flutter web app (Riverpod + GoRouter + Dio)
 ```
 
-The Django backend is both a server-rendered app and a REST API. The REST API (Django Ninja) lives under `/api/` and provides auth and listings endpoints consumed by the Flutter web frontend. The legacy HTMX/server-rendered views are still active under the root URL patterns. The only non-API JSON endpoint is the draft auto-save (`/listings/save-draft/`), which uses Pydantic for partial validation.
+The Django backend is an API-only server (Django Ninja) under `/api/` plus the admin panel. All UI is handled by the Flutter web frontend. In production, Django serves the Flutter SPA via a catch-all route (GoRouter handles client-side routing).
 
 ### Key Models
 
@@ -86,18 +86,17 @@ The Django backend is both a server-rendered app and a REST API. The REST API (D
 
 ### Photo Storage
 
-Photos are handled in `listings/utils.py`. They are validated (type, size, PIL verification), resized to 800x600, converted to JPEG (85% quality), and uploaded to Backblaze B2 (with local filesystem fallback). The `context_processors.py` provides the photo URL base to templates. HEIC/HEIF formats are supported.
-
-### Frontend Patterns
-
-- **Base template** (`templates/base.html`): nav, footer, Django messages
-- **HTMX**: Used for listing filter/browse (`_listings_partial.html` is the partial)
-- **Alpine.js**: Used for interactive UI components
-- **Forms**: Django ModelForms with Tailwind CSS widget classes applied in `forms.py`
+Photos are handled in `listings/utils.py`. They are validated (type, size, PIL verification), resized to 800x600, converted to JPEG (85% quality), and uploaded to Backblaze B2 (with local filesystem fallback). HEIC/HEIF formats are supported.
 
 ### URL Routing
 
-Django server-rendered routes live at the root level. `config/urls.py` includes `listings/urls.py` which defines: `/`, `/browse/`, `/listing/<id>/`, `/create/`, `/edit/<id>/`, `/dashboard/`, auth routes, etc. The REST API routes are mounted under `/api/` via Django Ninja (see the architecture description above).
+`config/urls.py` serves: admin panel (`/admin/`), API (`/api/`), and a Flutter catch-all for everything else. The REST API provides auth endpoints (`/api/auth/`) and listings endpoints (`/api/listings/`).
+
+### Password Reset Flow
+
+1. User requests reset via Flutter → `POST /api/auth/password-reset/` → Django sends email
+2. Email contains link to Flutter route `/password-reset-confirm/<uidb64>/<token>/`
+3. Flutter renders form, submits to `POST /api/auth/password-reset-confirm/`
 
 ## Environment & Deployment
 
@@ -109,7 +108,6 @@ Django server-rendered routes live at the root level. `config/urls.py` includes 
 
 ## Security Considerations
 
-- Rate limiting on auth endpoints (django-ratelimit): signup 5/hr, login 10/hr
-- Open redirect prevention in login/signup views
 - Path traversal protection in photo deletion
 - File upload validation: type checking, size limits (10MB), PIL image verification
+- JWT-based authentication for API endpoints

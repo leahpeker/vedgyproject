@@ -31,8 +31,8 @@ VedgyProject helps vegans find housing in vegan-friendly households. Whether you
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Django 5.0, PostgreSQL
-- **Frontend**: HTMX, Alpine.js, Tailwind CSS
+- **Backend**: Django 5.2 (API-only via Django Ninja), PostgreSQL
+- **Frontend**: Flutter Web (Riverpod + GoRouter + Dio)
 - **Storage**: Backblaze B2 for photo uploads
 - **Hosting**: Railway
 - **Payment**: Manual Venmo processing
@@ -122,8 +122,6 @@ VedgyProject helps vegans find housing in vegan-friendly households. Whether you
 
 **Long-term Goals:**
 
-- Separate REST API and frontend
-- Modern React/Vue.js frontend option
 - Native mobile apps
 - Advanced search and filtering
 
