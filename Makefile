@@ -1,5 +1,6 @@
 .PHONY: help install run down restart test clean format lint check migrate createsuperuser seed seed-reset \
-        db-start db-stop frontend-install frontend-run frontend-build frontend-codegen frontend-lint frontend-format frontend-fix frontend-test dev ci
+        db-start db-stop frontend-install frontend-run frontend-build frontend-codegen frontend-lint frontend-format frontend-fix frontend-test \
+        frontend-ios frontend-android dev ci
 
 help:
 	@echo "Backend commands:"
@@ -26,6 +27,8 @@ help:
 	@echo "  make frontend-format    Auto-format Dart files"
 	@echo "  make frontend-fix       Auto-apply dart fix suggestions"
 	@echo "  make frontend-test      Run Flutter test suite"
+	@echo "  make frontend-ios       Run Flutter app on iOS Simulator"
+	@echo "  make frontend-android   Run Flutter app on Android emulator"
 	@echo ""
 	@echo "  make dev                Run Django + Flutter concurrently"
 	@echo ""
@@ -112,6 +115,13 @@ frontend-fix:
 
 frontend-test:
 	cd frontend && flutter test
+
+frontend-ios:
+	open -a Simulator
+	cd frontend && flutter run -d iPhone --dart-define=API_URL=$${API_URL:-http://localhost:8000}
+
+frontend-android:
+	cd frontend && flutter run -d android --dart-define=API_URL=$${API_URL:-http://10.0.2.2:8000}
 
 # Run all pre-commit checks in sequence. Fix any failures before committing.
 ci: lint check test frontend-lint frontend-test

@@ -290,6 +290,7 @@ class _VedgyFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isWide = MediaQuery.sizeOf(context).width >= _kNavBreakpoint;
     final headingStyle = TextStyle(
       color: Colors.white.withValues(alpha: 0.95),
       fontSize: 14,
@@ -307,95 +308,126 @@ class _VedgyFooter extends StatelessWidget {
     return ColoredBox(
       color: const Color(0xFF1F2937),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        padding: EdgeInsets.symmetric(
+          horizontal: isWide ? 24 : 16,
+          vertical: isWide ? 32 : 16,
+        ),
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 960),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Wrap(
-                  spacing: 48,
-                  runSpacing: 24,
-                  children: [
-                    // Brand column
-                    SizedBox(
-                      width: 200,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                if (isWide)
+                  Wrap(
+                    spacing: 48,
+                    runSpacing: 24,
+                    children: [
+                      // Brand column
+                      SizedBox(
+                        width: 200,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Image.asset(
+                                  'assets/img/vedgy.png',
+                                  width: 18,
+                                  height: 18,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'VedgyProject',
+                                  style: headingStyle.copyWith(fontSize: 16),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Connecting vegan-friendly renters and property owners.',
+                              style: linkStyle,
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Quick Links
+                      _FooterColumn(
+                        title: 'Quick Links',
+                        headingStyle: headingStyle,
                         children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Image.asset('assets/img/vedgy.png', width: 18, height: 18),
-                              const SizedBox(width: 4),
-                              Text(
-                                'VedgyProject',
-                                style: headingStyle.copyWith(fontSize: 16),
-                              ),
-                            ],
+                          _FooterLink(
+                            'Browse Listings',
+                            '/browse',
+                            style: linkStyle,
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Connecting vegan-friendly renters and property owners.',
+                          _FooterLink(
+                            'Post a Listing',
+                            '/create',
                             style: linkStyle,
                           ),
                         ],
                       ),
-                    ),
-                    // Quick Links
-                    _FooterColumn(
-                      title: 'Quick Links',
-                      headingStyle: headingStyle,
-                      children: [
-                        _FooterLink(
-                          'Browse Listings',
-                          '/browse',
-                          style: linkStyle,
-                        ),
-                        _FooterLink(
-                          'Post a Listing',
-                          '/create',
-                          style: linkStyle,
-                        ),
-                      ],
-                    ),
-                    // Feedback & Support
-                    _FooterColumn(
-                      title: 'Feedback & Support',
-                      headingStyle: headingStyle,
-                      children: [
-                        _FooterExternalLink(
-                          'Report Issues',
-                          _githubIssues,
-                          style: linkStyle,
-                        ),
-                        _FooterLink('Contact Us', '/contact', style: linkStyle),
-                        _FooterExternalLink(
-                          'Source Code',
-                          _githubRepo,
-                          style: linkStyle,
-                        ),
-                      ],
-                    ),
-                    // Legal
-                    _FooterColumn(
-                      title: 'Legal',
-                      headingStyle: headingStyle,
-                      children: [
-                        _FooterLink(
-                          'Privacy Policy',
-                          '/privacy',
-                          style: linkStyle,
-                        ),
-                        _FooterLink('About', '/about', style: linkStyle),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
+                      // Feedback & Support
+                      _FooterColumn(
+                        title: 'Feedback & Support',
+                        headingStyle: headingStyle,
+                        children: [
+                          _FooterExternalLink(
+                            'Report Issues',
+                            _githubIssues,
+                            style: linkStyle,
+                          ),
+                          _FooterLink(
+                            'Contact Us',
+                            '/contact',
+                            style: linkStyle,
+                          ),
+                          _FooterExternalLink(
+                            'Source Code',
+                            _githubRepo,
+                            style: linkStyle,
+                          ),
+                        ],
+                      ),
+                      // Legal
+                      _FooterColumn(
+                        title: 'Legal',
+                        headingStyle: headingStyle,
+                        children: [
+                          _FooterLink(
+                            'Privacy Policy',
+                            '/privacy',
+                            style: linkStyle,
+                          ),
+                          _FooterLink('About', '/about', style: linkStyle),
+                        ],
+                      ),
+                    ],
+                  )
+                else
+                  // Compact mobile footer: single row of links
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 4,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      _FooterLink('Browse', '/browse', style: linkStyle),
+                      _FooterLink('Post', '/create', style: linkStyle),
+                      _FooterLink('Contact', '/contact', style: linkStyle),
+                      _FooterLink('Privacy', '/privacy', style: linkStyle),
+                      _FooterLink('About', '/about', style: linkStyle),
+                      _FooterExternalLink(
+                        'GitHub',
+                        _githubRepo,
+                        style: linkStyle,
+                      ),
+                    ],
+                  ),
+                SizedBox(height: isWide ? 24 : 8),
                 Divider(color: Colors.white.withValues(alpha: 0.2), height: 1),
-                const SizedBox(height: 16),
+                SizedBox(height: isWide ? 16 : 8),
                 Text(
                   '© ${DateTime.now().year} VedgyProject. All rights reserved.',
                   style: mutedStyle,
