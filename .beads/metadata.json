@@ -1,7 +1,0 @@
-{
-  "database": "dolt",
-  "backend": "dolt",
-  "dolt_mode": "server",
-  "dolt_database": "vedgyproject",
-  "project_id": "567e7e77-24a6-4a2b-8caf-093ad632fb57"
-}
