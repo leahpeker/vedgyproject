@@ -73,9 +73,15 @@ class _VedgyNavBar extends ConsumerWidget implements PreferredSizeWidget {
       foregroundColor: Colors.white,
       title: GestureDetector(
         onTap: () => context.go('/'),
-        child: const Text(
-          'Vedgy',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('🏡 ', style: TextStyle(fontSize: 18)),
+            Text(
+              'VedgyProject',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ],
         ),
       ),
       actions: isWide
@@ -195,13 +201,18 @@ class _VedgyDrawer extends ConsumerWidget {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
             ),
-            child: const Text(
-              'Vedgy',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+            child: const Row(
+              children: [
+                Text('🏡 ', style: TextStyle(fontSize: 22)),
+                Text(
+                  'VedgyProject',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
           ListTile(
@@ -311,9 +322,15 @@ class _VedgyFooter extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Vedgy',
-                            style: headingStyle.copyWith(fontSize: 16),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('🏡 ', style: TextStyle(fontSize: 14)),
+                              Text(
+                                'VedgyProject',
+                                style: headingStyle.copyWith(fontSize: 16),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 8),
                           Text(
@@ -377,7 +394,7 @@ class _VedgyFooter extends StatelessWidget {
                 Divider(color: Colors.white.withValues(alpha: 0.2), height: 1),
                 const SizedBox(height: 16),
                 Text(
-                  '© ${DateTime.now().year} Vedgy. All rights reserved.',
+                  '© ${DateTime.now().year} VedgyProject. All rights reserved.',
                   style: mutedStyle,
                 ),
               ],

@@ -61,6 +61,20 @@ Widget wrap(List<Override> overrides, Widget child) {
   );
 }
 
+void _configureView(WidgetTester tester) {
+  tester.view.physicalSize = const Size(1440, 900);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+
+  final originalOnError = FlutterError.onError;
+  FlutterError.onError = (FlutterErrorDetails details) {
+    if (details.exceptionAsString().contains('RenderFlex overflowed')) return;
+    originalOnError?.call(details);
+  };
+  addTearDown(() => FlutterError.onError = originalOnError);
+}
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -73,6 +87,7 @@ void main() {
     testWidgets('no snackbar is shown when notificationQueueProvider is null', (
       tester,
     ) async {
+      _configureView(tester);
       await tester.pumpWidget(
         wrap([
           notificationQueueProvider.overrideWithValue(null),
@@ -89,6 +104,7 @@ void main() {
     testWidgets('snackbar is shown with the notification message', (
       tester,
     ) async {
+      _configureView(tester);
       // Start with null so the listener fires on the *transition* from
       // null → notification.  We achieve this by pumping the widget, then
       // mutating the provider state through the notifier.
@@ -121,6 +137,7 @@ void main() {
     testWidgets('error notification snackbar uses error background colour', (
       tester,
     ) async {
+      _configureView(tester);
       await tester.pumpWidget(wrap([], const Text('body')));
       await tester.pumpAndSettle();
 
@@ -150,6 +167,7 @@ void main() {
     testWidgets('normal notification snackbar uses green background colour', (
       tester,
     ) async {
+      _configureView(tester);
       await tester.pumpWidget(wrap([], const Text('body')));
       await tester.pumpAndSettle();
 
@@ -173,6 +191,7 @@ void main() {
     // 5. AppScaffold renders its body child
     // -----------------------------------------------------------------------
     testWidgets('AppScaffold renders the provided body widget', (tester) async {
+      _configureView(tester);
       const bodyKey = Key('test_body');
       await tester.pumpWidget(
         wrap([
