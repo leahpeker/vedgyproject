@@ -13,7 +13,7 @@ from pillow_heif import register_heif_opener
 register_heif_opener()
 
 # File upload security settings
-ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'heic', 'heif'}
+ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "heic", "heif"}
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 # Try to import B2 SDK
@@ -32,7 +32,7 @@ def validate_image_file(file):
         raise ValidationError("File too large. Maximum size is 10MB.")
 
     # Check file extension
-    file_ext = file.name.lower().split('.')[-1]
+    file_ext = file.name.lower().split(".")[-1]
     if file_ext not in ALLOWED_EXTENSIONS:
         raise ValidationError(
             f"Invalid file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}"
@@ -53,13 +53,16 @@ def validate_image_file(file):
 
 
 def get_photo_url(filename):
-    """Get the URL for a photo (B2 or local)"""
+    """Get the URL for a photo (B2 or local).
+
+    Returns an absolute URL in all cases so Flutter web can load images
+    regardless of whether it's running on a different port than Django.
+    """
     if settings.B2_KEY_ID and settings.B2_BUCKET_NAME:
-        # Use S3-compatible URL format which should work better with CORS
         return f"https://{settings.B2_BUCKET_NAME}.s3.us-east-005.backblazeb2.com/{filename}"
-    else:
-        # Return local URL
-        return f"{settings.MEDIA_URL}{filename}"
+    # Local fallback: build an absolute URL using SITE_URL so that Flutter
+    # running on localhost:3000 can reach media files served by Django on :8000.
+    return f"{settings.SITE_URL}/{settings.MEDIA_URL}{filename}"
 
 
 def get_b2_api():
@@ -106,6 +109,7 @@ def save_picture_to_b2(form_picture):
         # Apply EXIF orientation to prevent rotation issues
         try:
             from PIL import ImageOps
+
             img = ImageOps.exif_transpose(img)
         except Exception:
             pass  # If EXIF orientation fails, continue without it
@@ -166,6 +170,7 @@ def save_picture(form_picture):
     # Apply EXIF orientation to prevent rotation issues
     try:
         from PIL import ImageOps
+
         img = ImageOps.exif_transpose(img)
     except Exception:
         pass  # If EXIF orientation fails, continue without it
@@ -210,7 +215,7 @@ def delete_photo_from_b2(filename):
 def delete_photo_file(filename):
     """Delete photo from B2 if configured, otherwise delete locally"""
     # Validate filename doesn't contain path traversal
-    if '..' in filename or filename.startswith('/'):
+    if ".." in filename or filename.startswith("/"):
         print(f"Invalid filename detected: {filename}")
         return
 

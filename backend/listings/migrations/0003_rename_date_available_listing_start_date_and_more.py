@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('listings', '0002_initial'),
+        ("listings", "0002_initial"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='listing',
-            old_name='date_available',
-            new_name='start_date',
+            model_name="listing",
+            old_name="date_available",
+            new_name="start_date",
         ),
         migrations.AddField(
-            model_name='listing',
-            name='end_date',
+            model_name="listing",
+            name="end_date",
             field=models.DateField(blank=True, null=True),
         ),
     ]

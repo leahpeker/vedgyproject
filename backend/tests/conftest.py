@@ -3,6 +3,22 @@
 from datetime import date
 
 import pytest
+
+
+@pytest.fixture(autouse=True)
+def use_plain_staticfiles(settings):
+    """Swap CompressedManifestStaticFilesStorage for plain StaticFilesStorage.
+
+    ManifestStaticFilesStorage requires a staticfiles.json manifest produced
+    by collectstatic, which doesn't exist in the test environment.
+    """
+    settings.STORAGES = {
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        }
+    }
+
+
 from django.test import Client
 
 from listings.models import Listing, ListingPhoto, ListingStatus
@@ -26,35 +42,6 @@ def test_user(db):
         last_name="User",
     )
     return user
-
-
-@pytest.fixture
-def test_admin(db):
-    """Create a test admin (staff user)"""
-    admin = User.objects.create_user(
-        username="admin@example.com",
-        email="admin@example.com",
-        password="adminpass123",
-        first_name="Admin",
-        last_name="User",
-        is_staff=True,
-        is_superuser=True,
-    )
-    return admin
-
-
-@pytest.fixture
-def logged_in_user(client, test_user):
-    """User that's already logged in"""
-    client.login(username="test@example.com", password="testpass123")
-    return test_user
-
-
-@pytest.fixture
-def logged_in_admin(client, test_admin):
-    """Admin that's already logged in"""
-    client.login(username="admin@example.com", password="adminpass123")
-    return test_admin
 
 
 @pytest.fixture
@@ -135,26 +122,6 @@ def active_listing(test_user):
 @pytest.fixture
 def listing_with_photos(active_listing):
     """Create a listing with photos"""
-    photo1 = ListingPhoto.objects.create(filename="test1.jpg", listing=active_listing)
-    photo2 = ListingPhoto.objects.create(filename="test2.jpg", listing=active_listing)
+    ListingPhoto.objects.create(filename="test1.jpg", listing=active_listing)
+    ListingPhoto.objects.create(filename="test2.jpg", listing=active_listing)
     return active_listing
-
-
-@pytest.fixture
-def sample_listing_data():
-    """Sample data for creating listings"""
-    return {
-        "title": "Sample Listing",
-        "description": "A great vegan space",
-        "city": "New York",
-        "price": 1500,
-        "start_date": "2024-02-01",
-        "rental_type": "sublet",
-        "room_type": "private_room",
-        "vegan_household": "fully_vegan",
-        "lister_relationship": "owner",
-        "about_lister": "Vegan homeowner",
-        "rental_requirements": "Must be vegan",
-        "pet_policy": "No pets",
-        "furnished": "partially_furnished",
-    }

@@ -1,0 +1,22 @@
+include: package:flutter_lints/flutter.yaml
+
+plugins:
+  riverpod_lint: ^3.1.3
+
+analyzer:
+  errors:
+    invalid_annotation_target: ignore
+    # Freezed uses abstract mixin members delegated via factory constructors.
+    # Dart 3.11 treats this as an error but it is a valid pattern — all instances
+    # are the concrete _Foo class which does implement the abstract members.
+    non_abstract_class_inherits_abstract_member: ignore
+
+linter:
+  rules:
+    avoid_unnecessary_containers: true
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
+    prefer_single_quotes: true
+    require_trailing_commas: true
+    sized_box_for_whitespace: true
+    use_colored_box: true

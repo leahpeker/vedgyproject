@@ -22,29 +22,6 @@ def test_user(db):
 
 
 @pytest.fixture
-def logged_in_user(client, test_user):
-    """User that's already logged in"""
-    client.force_login(test_user)
-    return test_user
-
-
-@pytest.fixture
-def logged_in_admin(client, db):
-    """Admin that's already logged in"""
-    admin = User.objects.create_user(
-        username="admin@example.com",
-        email="admin@example.com",
-        password="adminpass123",
-        first_name="Admin",
-        last_name="User",
-        is_staff=True,
-        is_superuser=True,
-    )
-    client.force_login(admin)
-    return admin
-
-
-@pytest.fixture
 def draft_listing(test_user):
     """Create a draft listing"""
     listing = Listing.objects.create(
@@ -122,26 +99,6 @@ def active_listing(test_user):
 @pytest.fixture
 def listing_with_photos(active_listing):
     """Create a listing with photos"""
-    photo1 = ListingPhoto.objects.create(filename="test1.jpg", listing=active_listing)
-    photo2 = ListingPhoto.objects.create(filename="test2.jpg", listing=active_listing)
+    ListingPhoto.objects.create(filename="test1.jpg", listing=active_listing)
+    ListingPhoto.objects.create(filename="test2.jpg", listing=active_listing)
     return active_listing
-
-
-@pytest.fixture
-def sample_listing_data():
-    """Sample data for creating listings"""
-    return {
-        "title": "Sample Listing",
-        "description": "A great vegan space",
-        "city": "New York",
-        "price": 1500,
-        "start_date": "2024-02-01",
-        "rental_type": "sublet",
-        "room_type": "private_room",
-        "vegan_household": "fully_vegan",
-        "lister_relationship": "owner",
-        "about_lister": "Vegan homeowner",
-        "rental_requirements": "Must be vegan",
-        "pet_policy": "No pets",
-        "furnished": "partially_furnished",
-    }

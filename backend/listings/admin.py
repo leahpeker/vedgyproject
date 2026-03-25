@@ -6,7 +6,6 @@ from django.utils.html import format_html
 
 from .models import Listing, ListingPhoto, ListingStatus
 
-
 # User admin is now in users/admin.py
 
 
@@ -111,9 +110,7 @@ class ListingAdmin(admin.ModelAdmin):
 
         try:
             available_date = (
-                obj.start_date.strftime("%B %d, %Y")
-                if obj.start_date
-                else "Not set"
+                obj.start_date.strftime("%B %d, %Y") if obj.start_date else "Not set"
             )
             location = f"{obj.city}, {obj.borough}" if obj.borough else obj.city
             description = (

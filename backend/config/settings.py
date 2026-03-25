@@ -9,10 +9,12 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-import dj_database_url
+
 import os
+from datetime import timedelta
 from pathlib import Path
 
+import dj_database_url
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -52,6 +54,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "users",
     "listings",
 ]
@@ -60,6 +63,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",  # Serve static files
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -72,7 +76,10 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],  # Templates in backend/templates
+        # On Railway, also look in staticfiles/ so the Flutter catch-all view
+        # can find flutter/index.html after `collectstatic` copies it there.
+        "DIRS": [BASE_DIR / "templates"]
+        + ([BASE_DIR / "staticfiles"] if IS_PRODUCTION else []),
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -80,7 +87,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "listings.context_processors.photo_url_processor",
             ],
         },
     },
@@ -98,7 +104,6 @@ DATABASES = {
         conn_max_age=600,
     )
 }
-
 
 
 # Password validation
@@ -146,9 +151,19 @@ STORAGES = {
     },
 }
 
+# Serve Flutter web build files at the root URL (e.g., /main.dart.js).
+# WhiteNoise serves these before Django URL routing, so the SPA catch-all
+# won't intercept requests for static assets.
+if IS_PRODUCTION:
+    WHITENOISE_ROOT = STATIC_ROOT / "flutter"
+
 # Media files (user uploads)
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+# Base URL of the Django server — used to build absolute photo URLs when B2
+# is not configured (local dev only). Flutter runs on a different port, so
+# relative media/ URLs would resolve against the wrong origin.
+SITE_URL = os.environ.get("SITE_URL", "http://localhost:8000")
 
 # Backblaze B2 Configuration
 B2_KEY_ID = os.environ.get("B2_KEY_ID")
@@ -181,11 +196,6 @@ if IS_PRODUCTION:
 
 # Session settings
 SESSION_COOKIE_AGE = 604800  # 7 days
-
-# Login URLs
-LOGIN_URL = "/login"
-LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "/"
 
 # Custom user model
 AUTH_USER_MODEL = "users.User"
@@ -240,3 +250,18 @@ LOGGING = {
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# CORS is only needed when the Flutter dev server runs on a different origin.
+# In production, Flutter is served from the same Django origin — no CORS needed.
+if DEBUG:
+    CORS_ALLOWED_ORIGINS = os.environ.get(
+        "CORS_ALLOWED_ORIGINS", "http://localhost:3000"
+    ).split(",")
+    CORS_ALLOW_CREDENTIALS = True
+
+# JWT configuration (for Flutter frontend auth)
+NINJA_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
