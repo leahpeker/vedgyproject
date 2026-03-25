@@ -7,6 +7,7 @@ VedgyProject is a community-driven platform connecting vegan renters with vegan-
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![Django](https://img.shields.io/badge/Django-5.0+-green.svg)](https://www.djangoproject.com/)
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B.svg)](https://flutter.dev/)
 
 ## 🌟 About VedgyProject
 
@@ -41,6 +42,12 @@ VedgyProject helps vegans find housing in vegan-friendly households. Whether you
 
 **We need your help to make VedgyProject better!** This is an open-source project built by and for the vegan community.
 
+### Prerequisites
+
+- [uv](https://docs.astral.sh/uv/) (Python package manager)
+- [Docker](https://docs.docker.com/get-docker/) (for local PostgreSQL)
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) (for the frontend — `make install` will install via Homebrew on macOS if missing)
+
 ### 🚀 Getting Started for Contributors
 
 1. **Fork this repository** (for contributing back to the main project)
@@ -60,32 +67,43 @@ VedgyProject helps vegans find housing in vegan-friendly households. Whether you
 
    The defaults in `.env.example` are pre-configured to work with the local Docker PostgreSQL container.
 
-4. **Start local PostgreSQL** (requires [Docker](https://docs.docker.com/get-docker/))
+4. **Start local PostgreSQL**
 
    ```bash
    make db-start
    ```
 
-5. **Install dependencies and run migrations** (requires [uv](https://docs.astral.sh/uv/))
+5. **Install dependencies and run migrations**
 
    ```bash
    make install
    make migrate
    ```
 
+   `make install` installs both Python (via uv) and Flutter (via `flutter pub get`) dependencies.
+
 6. **Run locally**
 
    ```bash
-   make run
+   make dev
    ```
 
-   Visit http://127.0.0.1:8000
+   This starts both the Django API server (http://localhost:8000) and the Flutter web app (http://localhost:3000) concurrently. Press Ctrl-C to stop both.
 
-7. **Run tests**
+   You can also run them separately:
 
    ```bash
-   make test
+   make run              # Django API only (localhost:8000)
+   make frontend-run     # Flutter web only (localhost:3000)
    ```
+
+7. **Run all checks**
+
+   ```bash
+   make ci
+   ```
+
+   Runs lint → Django checks → backend tests → frontend lint → frontend tests. All must pass before committing.
 
 8. **Create a feature branch and submit a PR**
 
@@ -94,6 +112,44 @@ VedgyProject helps vegans find housing in vegan-friendly households. Whether you
    ```
 
    When finished, open a Pull Request to the `development` branch.
+
+### 🔧 Make Commands
+
+**Backend:**
+
+| Command | Description |
+|---------|-------------|
+| `make install` | Install all dependencies (Python + Flutter) |
+| `make run` | Run Django dev server (localhost:8000) |
+| `make test` | Run Django pytest suite |
+| `make lint` | Run autoflake + isort + black |
+| `make check` | Run Django system checks |
+| `make migrate` | Run makemigrations + migrate |
+| `make createsuperuser` | Create Django admin user |
+| `make seed` | Seed DB with test users + listings |
+| `make seed-reset` | Delete and re-create all seed data |
+| `make db-start` | Start local PostgreSQL (Docker) |
+| `make db-stop` | Stop local PostgreSQL (Docker) |
+
+**Frontend:**
+
+| Command | Description |
+|---------|-------------|
+| `make frontend-install` | Install Flutter dependencies (`flutter pub get`) |
+| `make frontend-run` | Run Flutter web dev server (localhost:3000) |
+| `make frontend-build` | Build Flutter web release (requires `API_URL` env var) |
+| `make frontend-codegen` | Regenerate freezed/riverpod/json code |
+| `make frontend-lint` | Run dart format check + dart analyze |
+| `make frontend-format` | Auto-format Dart files |
+| `make frontend-fix` | Auto-apply dart fix suggestions |
+| `make frontend-test` | Run Flutter test suite |
+
+**Combined:**
+
+| Command | Description |
+|---------|-------------|
+| `make dev` | Run Django + Flutter concurrently |
+| `make ci` | Run all pre-commit checks (lint, check, test, frontend-lint, frontend-test) |
 
 ### 🐛 Ways to Contribute
 
